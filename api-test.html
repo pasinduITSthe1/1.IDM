@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QloApps API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #FF6B35; }
+        h2 { color: #333; margin-top: 0; }
+        button {
+            background: #FF6B35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #E54E1F;
+        }
+        .result {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #FF6B35;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .success { border-left-color: #4CAF50; }
+        .error { border-left-color: #f44336; }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 QloApps API Test Tool</h1>
+    <p>Use this tool to test the connection between your mobile app and QloApps backend.</p>
+
+    <div class="test-section">
+        <h2>1. Test Basic Connection</h2>
+        <p>Test if the PHP endpoint is accessible</p>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Dashboard Stats</h2>
+        <p>Fetch dashboard statistics from QloApps</p>
+        <button onclick="testDashboard()">Get Stats</button>
+        <div id="dashboard-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Login</h2>
+        <p>Test employee authentication</p>
+        <input type="email" id="test-email" placeholder="Email" value="pasindu.itsthe1@gmail.com">
+        <input type="password" id="test-password" placeholder="Password">
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Customer List</h2>
+        <p>Fetch customer list from QloApps</p>
+        <button onclick="testCustomers()">Get Customers</button>
+        <div id="customers-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost/1.IDM';
+        
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${isError ? 'error' : 'success'}">
+                ${typeof data === 'object' ? JSON.stringify(data, null, 2) : data}
+            </div>`;
+        }
+
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_BASE}/admin134miqa0b/ajax-mobile-api.php?controller=AdminDashboard&action=getStats`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                showResult('connection-result', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data
+                });
+            } catch (error) {
+                showResult('connection-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/admin134miqa0b/ajax-mobile-api.php?controller=AdminDashboard&action=getStats`);
+                const data = await response.json();
+                showResult('dashboard-result', data);
+            } catch (error) {
+                showResult('dashboard-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            
+            if (!email || !password) {
+                showResult('login-result', 'Please enter both email and password', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/admin134miqa0b/ajax-mobile-api.php?action=staffLogin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        passwd: password
+                    })
+                });
+                
+                const data = await response.json();
+                showResult('login-result', {
+                    status: response.status,
+                    response: data
+                }, !data.success);
+            } catch (error) {
+                showResult('login-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testCustomers() {
+            try {
+                const response = await fetch(`${API_BASE}/admin134miqa0b/ajax-mobile-api.php?controller=AdminCustomers&action=getCustomers`);
+                const data = await response.json();
+                showResult('customers-result', data);
+            } catch (error) {
+                showResult('customers-result', `Error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
