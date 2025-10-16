@@ -151,20 +151,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // Email Input
+                        // Username/Email Input
                         TextFormField(
                           controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: Icon(Icons.email_outlined),
+                          keyboardType: TextInputType.text,
+                          decoration: InputDecoration(
+                            labelText: _isDemoMode ? 'Email' : 'Username',
+                            hintText: _isDemoMode ? 'demo@hotel.com' : 'admin',
+                            prefixIcon: Icon(_isDemoMode
+                                ? Icons.email_outlined
+                                : Icons.person_outline),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your email';
-                            }
-                            if (!value.contains('@')) {
-                              return 'Please enter a valid email';
+                              return _isDemoMode
+                                  ? 'Please enter your email'
+                                  : 'Please enter your username';
                             }
                             return null;
                           },

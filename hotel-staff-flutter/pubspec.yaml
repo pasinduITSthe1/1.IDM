@@ -19,10 +19,12 @@ dependencies:
   camera: ^0.10.5+5
   image_picker: ^1.0.4
   image: ^4.1.3
+  image_cropper: ^8.0.2
   
   # OCR & Document Scanning
-  google_mlkit_text_recognition: ^0.11.0
+  google_mlkit_text_recognition: ^0.15.0
   mrz_parser: ^2.0.0
+  blinkid_flutter: ^7.5.0
   
   # State Management & Navigation
   provider: ^6.1.1
@@ -31,6 +33,7 @@ dependencies:
   # HTTP & API
   http: ^1.1.0
   dio: ^5.4.0
+  
   
   # Local Storage
   shared_preferences: ^2.2.2
@@ -46,6 +49,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -53,3 +57,11 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+
+flutter_launcher_icons:
+  android: true
+  ios: false  # Disabled - iOS project not configured
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#FF8C42"
+  adaptive_icon_foreground: "assets/icons/app_icon.png"
+  min_sdk_android: 21

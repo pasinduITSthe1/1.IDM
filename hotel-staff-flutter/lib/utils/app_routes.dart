@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import '../screens/login_screen.dart';
 import '../screens/dashboard_screen.dart';
-import '../screens/scan_document_screen.dart';
+import '../screens/scan_document_screen_v2.dart';
 import '../screens/guest_registration_screen.dart';
 import '../screens/guest_list_screen.dart';
 import '../screens/check_in_screen.dart';

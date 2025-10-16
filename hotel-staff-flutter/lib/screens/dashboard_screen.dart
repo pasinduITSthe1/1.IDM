@@ -110,6 +110,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             itemBuilder: (context) => [
                               PopupMenuItem(
                                 child: ListTile(
+                                  leading: const Icon(Icons.storage,
+                                      size: 20, color: Colors.blue),
+                                  title: const Text('Verify Database'),
+                                  contentPadding: EdgeInsets.zero,
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    await guestProvider.debugPrintStoredData();
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('✅ Check console/debug output for database details'),
+                                          backgroundColor: Colors.blue,
+                                          duration: Duration(seconds: 3),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                              PopupMenuItem(
+                                child: ListTile(
                                   leading: const Icon(Icons.logout_rounded,
                                       size: 20, color: Colors.red),
                                   title: const Text('Logout'),
@@ -216,7 +237,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   icon: Icons.login_rounded,
                                   color: const Color(0xFF00B894),
                                   onTap: () => context.push('/check-in'))),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 20),
                           Expanded(
                               child: _CompactActionCard(
                                   title: 'Check-Out',

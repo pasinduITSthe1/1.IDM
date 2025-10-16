@@ -26,6 +26,10 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  final _issuedCountryController = TextEditingController();
+  final _issuedDateController = TextEditingController();
+  final _expiryDateController = TextEditingController();
+  final _visitPurposeController = TextEditingController();
 
   String _selectedSex = 'M';
   String _selectedDocumentType = 'passport';
@@ -40,20 +44,74 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
   void _populateScannedData() {
     if (widget.scannedData != null) {
       debugPrint('📥 Received scanned data: ${widget.scannedData}');
+      debugPrint('📊 Scanned fields: ${widget.scannedData!.keys.join(", ")}');
 
       final data = widget.scannedData!;
+
+      // Populate text fields
       _firstNameController.text = data['firstName'] ?? '';
       _lastNameController.text = data['lastName'] ?? '';
       _documentNumberController.text = data['documentNumber'] ?? '';
       _dateOfBirthController.text = data['dateOfBirth'] ?? '';
       _nationalityController.text = data['nationality'] ?? '';
+      _issuedCountryController.text = data['issuedCountry'] ?? '';
+      _issuedDateController.text = data['issuedDate'] ?? '';
+      _visitPurposeController.text = data['visitPurpose'] ?? '';
 
-      if (data['sex'] != null) {
-        _selectedSex = data['sex'].toString().toUpperCase();
+      // Handle expiration date with multiple possible keys
+      if (data.containsKey('expirationDate')) {
+        _expiryDateController.text = data['expirationDate'] ?? '';
+      } else if (data.containsKey('expiryDate')) {
+        _expiryDateController.text = data['expiryDate'] ?? '';
       }
 
+      // Handle sex with validation
+      if (data['sex'] != null) {
+        final sex = data['sex'].toString().toUpperCase();
+        if (sex == 'M' || sex == 'F') {
+          _selectedSex = sex;
+        }
+      }
+
+      // Handle document type with mapping
       if (data['documentType'] != null) {
-        _selectedDocumentType = data['documentType'].toString().toLowerCase();
+        final docType = data['documentType'].toString().toLowerCase();
+        // Map common document type names
+        if (docType == 'passport') {
+          _selectedDocumentType = 'passport';
+        } else if (docType == 'id card' ||
+            docType == 'id_card' ||
+            docType == 'idcard') {
+          _selectedDocumentType = 'id_card';
+        } else if (docType == 'driver_license' || docType == 'license') {
+          _selectedDocumentType = 'driver_license';
+        } else {
+          _selectedDocumentType = docType;
+        }
+      }
+
+      // Log populated fields
+      int populatedCount = 0;
+      if (_firstNameController.text.isNotEmpty) populatedCount++;
+      if (_lastNameController.text.isNotEmpty) populatedCount++;
+      if (_documentNumberController.text.isNotEmpty) populatedCount++;
+      if (_dateOfBirthController.text.isNotEmpty) populatedCount++;
+      if (_nationalityController.text.isNotEmpty) populatedCount++;
+
+      debugPrint('✅ Auto-filled $populatedCount fields from scan');
+
+      // Show a snackbar with the results
+      if (populatedCount > 0) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  '✅ Auto-filled $populatedCount fields. Please verify and complete the form.'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        });
       }
     }
   }
@@ -68,6 +126,10 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _issuedCountryController.dispose();
+    _issuedDateController.dispose();
+    _expiryDateController.dispose();
+    _visitPurposeController.dispose();
     super.dispose();
   }
 
@@ -97,6 +159,58 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
     }
   }
 
+  Future<void> _selectIssuedDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppTheme.primaryOrange,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _issuedDateController.text =
+            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      });
+    }
+  }
+
+  Future<void> _selectExpiryDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 365)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppTheme.primaryOrange,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _expiryDateController.text =
+            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      });
+    }
+  }
+
   Future<void> _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -114,6 +228,18 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
         address:
             _addressController.text.isNotEmpty ? _addressController.text : null,
         documentType: _selectedDocumentType,
+        issuedCountry: _issuedCountryController.text.isNotEmpty
+            ? _issuedCountryController.text
+            : null,
+        issuedDate: _issuedDateController.text.isNotEmpty
+            ? _issuedDateController.text
+            : null,
+        expiryDate: _expiryDateController.text.isNotEmpty
+            ? _expiryDateController.text
+            : null,
+        visitPurpose: _visitPurposeController.text.isNotEmpty
+            ? _visitPurposeController.text
+            : null,
         status: 'pending',
       );
 
@@ -175,7 +301,7 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '✅ Form auto-filled from scanned document',
+                          ' Form auto-filled from scanned document',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -269,6 +395,42 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Issued Country
+              TextFormField(
+                controller: _issuedCountryController,
+                decoration: const InputDecoration(
+                  labelText: 'Issued Country',
+                  prefixIcon: Icon(Icons.public_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Issued Date
+              TextFormField(
+                controller: _issuedDateController,
+                readOnly: true,
+                onTap: _selectIssuedDate,
+                decoration: const InputDecoration(
+                  labelText: 'Issued Date',
+                  prefixIcon: Icon(Icons.calendar_today_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Expiry Date
+              TextFormField(
+                controller: _expiryDateController,
+                readOnly: true,
+                onTap: _selectExpiryDate,
+                decoration: const InputDecoration(
+                  labelText: 'Expiry Date',
+                  prefixIcon: Icon(Icons.event_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                ),
+              ),
+              const SizedBox(height: 16),
+
               // Date of Birth
               TextFormField(
                 controller: _dateOfBirthController,
@@ -348,6 +510,17 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
                   labelText: 'Address (optional)',
                   prefixIcon: Icon(Icons.home_outlined),
                   alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Visit Purpose
+              TextFormField(
+                controller: _visitPurposeController,
+                decoration: const InputDecoration(
+                  labelText: 'Visit Purpose',
+                  prefixIcon: Icon(Icons.business_center_outlined),
+                  hintText: 'e.g., Tourism, Business, Family Visit',
                 ),
               ),
               const SizedBox(height: 24),

@@ -59,7 +59,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
                       onPressed: () => context.pop(),
                     ),
                     const Text(
-                      '👥 All Guests',
+                      ' All Guests',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -205,12 +205,24 @@ class _GuestListScreenState extends State<GuestListScreen> {
           _filterStatus = value;
         });
       },
-      backgroundColor: Colors.white.withOpacity(0.2),
+      // ignore: deprecated_member_use
+      backgroundColor:
+          isSelected ? Colors.white : Colors.white.withOpacity(0.85),
       selectedColor: Colors.white,
       labelStyle: TextStyle(
-        color: isSelected ? AppTheme.primaryOrange : Colors.white,
+        color: isSelected
+            ? AppTheme.primaryOrange
+            : AppTheme.primaryOrange.withOpacity(0.9),
         fontWeight: FontWeight.bold,
+        fontSize: 13,
       ),
+      side: BorderSide(
+        color:
+            isSelected ? AppTheme.primaryOrange : Colors.white.withOpacity(0.8),
+        width: 2,
+      ),
+      elevation: isSelected ? 4 : 2,
+      shadowColor: Colors.black.withOpacity(0.3),
     );
   }
 

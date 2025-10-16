@@ -55,7 +55,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                     ),
                     const Expanded(
                       child: Text(
-                        '🚪 Check-Out',
+                        ' Check-Out',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,

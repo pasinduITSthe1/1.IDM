@@ -37,7 +37,7 @@ class HotelStaffApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GuestProvider()),
       ],
       child: MaterialApp.router(
-        title: 'ITSthe1 Hotel Staff',
+        title: '1.IDM',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         routerConfig: AppRoutes.router,

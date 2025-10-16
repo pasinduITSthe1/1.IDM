@@ -107,140 +107,295 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
 
   Future<String> _preprocessImage(String imagePath) async {
     try {
+      debugPrint('🖼️ Preprocessing image: $imagePath');
+
       // Read and decode image
       final imageBytes = await File(imagePath).readAsBytes();
       var image = img.decodeImage(imageBytes);
 
-      if (image == null) return imagePath;
+      if (image == null) {
+        debugPrint('❌ Failed to decode image');
+        return imagePath;
+      }
 
-      // Resize if too large (improves processing speed and quality)
-      if (image.width > 1920 || image.height > 1920) {
-        image = img.copyResize(image, width: 1920);
+      debugPrint('📐 Original size: ${image.width}x${image.height}');
+
+      // Resize to optimal dimensions for OCR (improves accuracy and speed)
+      // Higher resolution helps with MRZ zones which have small text
+      if (image.width > 2400 || image.height > 2400) {
+        image = img.copyResize(image, width: 2400);
+        debugPrint('📏 Resized to: ${image.width}x${image.height}');
+      } else if (image.width < 1200 && image.height < 1200) {
+        // Upscale if too small
+        image = img.copyResize(image, width: 1600);
+        debugPrint('📏 Upscaled to: ${image.width}x${image.height}');
       }
 
       // Convert to grayscale for better text recognition
       var enhanced = img.grayscale(image);
+      debugPrint('🎨 Converted to grayscale');
 
-      // Increase contrast significantly for better text separation
+      // Enhance contrast and brightness for better text separation
+      // Higher values work better for MRZ zones
       enhanced = img.adjustColor(
         enhanced,
-        contrast: 1.8,
-        brightness: 1.15,
+        contrast: 2.0, // Increased for sharper text
+        brightness: 1.2, // Slight brightness boost
       );
+      debugPrint('✨ Applied contrast and brightness enhancement');
 
-      // Apply sharpening to make text edges clearer
-      enhanced = img.adjustColor(
+      // Apply sharpening to make text edges more defined
+      enhanced = img.convolution(
         enhanced,
-        contrast: 1.2,
+        filter: [
+          -1,
+          -1,
+          -1,
+          -1,
+          9,
+          -1,
+          -1,
+          -1,
+          -1,
+        ],
+        div: 1,
       );
+      debugPrint('🔪 Applied sharpening filter');
 
-      // Optional: Apply threshold for very clear black/white text
-      // This helps with low contrast documents
+      // Apply adaptive threshold for crisp black/white text
+      // This is crucial for MRZ recognition
       enhanced = _applyAdaptiveThreshold(enhanced);
+      debugPrint('⚫ Applied adaptive thresholding');
 
-      // Save enhanced image
+      // Denoise to remove artifacts
+      enhanced = img.gaussianBlur(enhanced, radius: 1);
+      debugPrint('🧹 Applied denoising');
+
+      // Save enhanced image with high quality
       final enhancedPath = '${imagePath}_enhanced.jpg';
       await File(enhancedPath)
-          .writeAsBytes(img.encodeJpg(enhanced, quality: 95));
+          .writeAsBytes(img.encodeJpg(enhanced, quality: 98));
 
-      debugPrint('Image preprocessed: ${image.width}x${image.height}');
+      debugPrint('✅ Image preprocessing complete: $enhancedPath');
       return enhancedPath;
     } catch (e) {
-      debugPrint('Image preprocessing failed: $e');
+      debugPrint('❌ Image preprocessing failed: $e');
       return imagePath; // Return original on failure
     }
   }
 
   // Apply adaptive threshold to improve text clarity
+  // Uses Otsu's method approximation for better results
   img.Image _applyAdaptiveThreshold(img.Image image) {
-    final threshold = img.Image.from(image);
-    
-    for (int y = 0; y < threshold.height; y++) {
-      for (int x = 0; x < threshold.width; x++) {
-        final pixel = threshold.getPixel(x, y);
-        final luminance = pixel.r;
-        
-        // If pixel is darker than threshold, make it black; otherwise white
-        // This creates high contrast for text
-        final newValue = luminance < 128 ? 0 : 255;
-        threshold.setPixelRgba(x, y, newValue, newValue, newValue, 255);
+    debugPrint('📊 Calculating threshold...');
+
+    // Calculate histogram
+    final histogram = List<int>.filled(256, 0);
+    for (int y = 0; y < image.height; y++) {
+      for (int x = 0; x < image.width; x++) {
+        final pixel = image.getPixel(x, y);
+        histogram[pixel.r.toInt()]++;
       }
     }
-    
-    return threshold;
+
+    // Calculate optimal threshold using Otsu's method (simplified)
+    int totalPixels = image.width * image.height;
+    double sum = 0;
+    for (int i = 0; i < 256; i++) {
+      sum += i * histogram[i];
+    }
+
+    double sumB = 0;
+    int wB = 0;
+    int wF = 0;
+    double maxVariance = 0;
+    int threshold = 128; // Default
+
+    for (int i = 0; i < 256; i++) {
+      wB += histogram[i];
+      if (wB == 0) continue;
+
+      wF = totalPixels - wB;
+      if (wF == 0) break;
+
+      sumB += i * histogram[i];
+      double mB = sumB / wB;
+      double mF = (sum - sumB) / wF;
+      double variance = wB * wF * (mB - mF) * (mB - mF);
+
+      if (variance > maxVariance) {
+        maxVariance = variance;
+        threshold = i;
+      }
+    }
+
+    debugPrint('📈 Optimal threshold: $threshold');
+
+    // Apply threshold
+    final result = img.Image.from(image);
+    for (int y = 0; y < result.height; y++) {
+      for (int x = 0; x < result.width; x++) {
+        final pixel = result.getPixel(x, y);
+        final luminance = pixel.r.toInt();
+        final newValue = luminance < threshold ? 0 : 255;
+        result.setPixelRgba(x, y, newValue, newValue, newValue, 255);
+      }
+    }
+
+    return result;
   }
 
   Future<Map<String, dynamic>> _performOCR(String imagePath) async {
     try {
+      debugPrint('🔍 Starting OCR processing...');
+
       final inputImage = InputImage.fromFilePath(imagePath);
       final textRecognizer =
           TextRecognizer(script: TextRecognitionScript.latin);
 
       final RecognizedText recognizedText =
           await textRecognizer.processImage(inputImage);
-      
+
       // Get full text
       final String text = recognizedText.text;
-      
-      // Also get structured blocks for better analysis
-      final List<String> structuredText = [];
+
+      // Get structured text (preserves line breaks better for MRZ)
+      final List<String> structuredLines = [];
       for (var block in recognizedText.blocks) {
         for (var line in block.lines) {
-          structuredText.add(line.text);
+          structuredLines.add(line.text);
         }
       }
 
-      debugPrint('📝 OCR Text Result (${recognizedText.blocks.length} blocks):');
-      debugPrint(text);
-      debugPrint('\n📋 Structured Lines (${structuredText.length}):');
-      debugPrint(structuredText.join('\n'));
+      debugPrint('📝 OCR Results:');
+      debugPrint('  - Blocks: ${recognizedText.blocks.length}');
+      debugPrint('  - Lines: ${structuredLines.length}');
+      debugPrint('  - Total text length: ${text.length} characters');
+
+      // Print first few lines for debugging
+      debugPrint('\n📋 First 10 lines:');
+      for (int i = 0; i < structuredLines.length && i < 10; i++) {
+        debugPrint('  $i: ${structuredLines[i]}');
+      }
 
       // Close recognizer
       textRecognizer.close();
 
       Map<String, dynamic>? data;
 
-      // Try MRZ detection first (most reliable for passports/IDs)
+      // Strategy 1: Try MRZ extraction first (most accurate for passports/IDs)
+      debugPrint('\n🔍 Strategy 1: MRZ extraction from full text...');
       data = OCRHelper.extractMRZ(text);
-      
-      if (data != null && data.isNotEmpty) {
-        debugPrint('✅ Data extracted via MRZ');
-      } else {
-        // Try with structured text
-        final structuredFullText = structuredText.join('\n');
-        data = OCRHelper.extractMRZ(structuredFullText);
-        
-        if (data != null && data.isNotEmpty) {
-          debugPrint('✅ Data extracted via MRZ (structured)');
-        }
+
+      // Strategy 2: Try MRZ with structured lines (better line preservation)
+      if (data == null || data.length < 3) {
+        debugPrint('\n🔍 Strategy 2: MRZ extraction from structured lines...');
+        final structuredText = structuredLines.join('\n');
+        data = OCRHelper.extractMRZ(structuredText);
       }
 
-      // Fallback to general OCR patterns
-      if (data == null || data.isEmpty || data.length < 3) {
-        debugPrint('⚠️ MRZ extraction failed or incomplete, trying OCR patterns...');
+      // Strategy 3: Try MRZ with cleaned lines (remove noise)
+      if (data == null || data.length < 3) {
+        debugPrint('\n🔍 Strategy 3: MRZ extraction with cleaned lines...');
+        final cleanedLines = structuredLines
+            .map((l) => l.replaceAll(RegExp(r'[^A-Z0-9<\s]'), ''))
+            .where((l) => l.trim().isNotEmpty)
+            .join('\n');
+        data = OCRHelper.extractMRZ(cleanedLines);
+      }
+
+      // Strategy 4: Fallback to general OCR pattern matching
+      if (data == null || data.length < 3) {
+        debugPrint('\n🔍 Strategy 4: OCR pattern matching...');
         final ocrData = OCRHelper.extractDataFromOCR(text);
-        
+
         if (ocrData != null && ocrData.isNotEmpty) {
-          // Merge MRZ data with OCR data (OCR data fills in missing fields)
+          // Merge with existing data if any
           if (data != null && data.isNotEmpty) {
             ocrData.forEach((key, value) {
-              if (!data!.containsKey(key) || data[key] == null || data[key].toString().isEmpty) {
+              if (!data!.containsKey(key) ||
+                  data[key] == null ||
+                  data[key].toString().isEmpty) {
                 data[key] = value;
               }
             });
+            debugPrint('✅ Merged MRZ and OCR data');
           } else {
             data = ocrData;
+            debugPrint('✅ Used OCR data');
           }
-          debugPrint('✅ Data extracted/enhanced via OCR patterns');
         }
       }
 
-      debugPrint('✅ Final Extracted Data: $data');
+      // Strategy 5: Try OCR on structured lines separately
+      if (data == null || data.length < 2) {
+        debugPrint(
+            '\n🔍 Strategy 5: OCR pattern matching on structured lines...');
+        final structuredText = structuredLines.join('\n');
+        final ocrData = OCRHelper.extractDataFromOCR(structuredText);
+
+        if (ocrData != null && ocrData.length > (data?.length ?? 0)) {
+          data = ocrData;
+          debugPrint('✅ Better result from structured text');
+        }
+      }
+
+      // Validate and clean the data
+      if (data != null && data.isNotEmpty) {
+        data = _validateAndCleanData(data);
+        debugPrint('\n✅ Final Extracted Data (${data.length} fields):');
+        data.forEach((key, value) {
+          debugPrint('  $key: $value');
+        });
+      } else {
+        debugPrint('\n❌ No data could be extracted');
+      }
+
       return data ?? {};
     } catch (e) {
       debugPrint('❌ OCR processing error: $e');
       return {};
     }
+  }
+
+  // Validate and clean extracted data
+  Map<String, dynamic> _validateAndCleanData(Map<String, dynamic> data) {
+    final cleaned = <String, dynamic>{};
+
+    data.forEach((key, value) {
+      if (value == null || value.toString().trim().isEmpty) return;
+
+      var cleanValue = value.toString().trim();
+
+      // Clean up specific fields
+      if (key == 'documentNumber') {
+        // Remove any remaining special characters except hyphens
+        cleanValue = cleanValue.replaceAll(RegExp(r'[^\w\-]'), '');
+      }
+
+      if (key == 'firstName' || key == 'lastName') {
+        // Capitalize properly
+        cleanValue = cleanValue.split(' ').map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        }).join(' ');
+      }
+
+      if (key == 'sex') {
+        // Ensure only M or F
+        cleanValue = cleanValue.toUpperCase();
+        if (cleanValue != 'M' && cleanValue != 'F') return;
+      }
+
+      if (key == 'nationality' || key == 'issuedCountry') {
+        // Uppercase country codes
+        cleanValue = cleanValue.toUpperCase();
+      }
+
+      cleaned[key] = cleanValue;
+    });
+
+    return cleaned;
   }
 
   String _getErrorGuidance() {

@@ -63,7 +63,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     ),
                     const Expanded(
                       child: Text(
-                        '✅ Check-In',
+                        ' Check-In',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
