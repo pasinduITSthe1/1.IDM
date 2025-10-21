@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import '../screens/login_screen.dart';
 import '../screens/dashboard_screen.dart';
-import '../screens/scan_document_screen_v2.dart';
+import '../screens/mrz_scanner_screen.dart'; // FREE: ML Kit + Tesseract Scanner
 import '../screens/guest_registration_screen.dart';
 import '../screens/guest_list_screen.dart';
 import '../screens/check_in_screen.dart';
@@ -24,14 +24,14 @@ class AppRoutes {
       GoRoute(
         path: '/scan',
         name: 'scan',
-        builder: (context, state) => const ScanDocumentScreen(),
+        builder: (context, state) => const MRZScannerScreen(), // FREE: ML Kit + Tesseract
       ),
       GoRoute(
-        path: '/register',
-        name: 'register',
+        path: '/register-guest',
+        name: 'register-guest',
         builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          return GuestRegistrationScreen(scannedData: extra?['scannedData']);
+          final scannedData = state.extra as Map<String, String>?;
+          return GuestRegistrationScreen(scannedData: scannedData);
         },
       ),
       GoRoute(

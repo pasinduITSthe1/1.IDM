@@ -45,8 +45,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       Row(
                         children: [
-                          Image.asset('assets/images/logo.png',
-                              height: 48, width: 48, fit: BoxFit.contain),
+                          Image.asset('assets/images/logo_1.png',
+                              height: 40, width: 48, fit: BoxFit.contain),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -118,9 +118,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     Navigator.pop(context);
                                     await guestProvider.debugPrintStoredData();
                                     if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         const SnackBar(
-                                          content: Text('✅ Check console/debug output for database details'),
+                                          content: Text(
+                                              '✅ Check console/debug output for database details'),
                                           backgroundColor: Colors.blue,
                                           duration: Duration(seconds: 3),
                                         ),

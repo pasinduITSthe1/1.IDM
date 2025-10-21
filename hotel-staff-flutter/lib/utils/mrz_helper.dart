@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:mrz_parser/mrz_parser.dart';
+import 'dart:math';
 
 /// MRZ-Only Helper - Fast and Accurate Document Scanning
 /// Uses ONLY the Machine Readable Zone (MRZ) for data extraction
@@ -53,11 +54,12 @@ class MRZHelper {
         .toList();
   }
 
-  /// Clean OCR text for MRZ processing
+  /// Clean OCR text for MRZ processing (ENHANCED)
   static String _cleanMRZLine(String line) {
-    return line
+    String cleaned = line
         .trim()
-        // Fix common OCR character errors
+        .toUpperCase()
+        // Fix common OCR character errors - COMPREHENSIVE
         .replaceAll('«', '<')
         .replaceAll('»', '<')
         .replaceAll('‹', '<')
@@ -66,30 +68,59 @@ class MRZHelper {
         .replaceAll('〉', '<')
         .replaceAll('《', '<')
         .replaceAll('》', '<')
-        .replaceAll(RegExp(r'[Οο]'), '0') // Greek O -> 0
-        .replaceAll(RegExp(r'[lI\|]'), '1') // l/I/| -> 1 in numbers
-        // Keep only MRZ valid characters: A-Z, 0-9, <
-        .replaceAll(RegExp(r'[^A-Z0-9<]'), '')
-        .toUpperCase();
+        .replaceAll('＜', '<')
+        .replaceAll('﹤', '<')
+        .replaceAll('⟨', '<')
+        .replaceAll('⟩', '<')
+        // Fix letter/number confusions
+        .replaceAll(RegExp(r'[ΟοО]'), '0') // Greek O, Cyrillic O -> 0
+        .replaceAll(RegExp(r'[Qq]'), '0') // Q -> 0
+        .replaceAll(RegExp(r'[Ss\$]'), '5') // S/$ -> 5 in doc numbers
+        .replaceAll(RegExp(r'[Zz]'), '2') // Z -> 2 in numbers
+        .replaceAll(RegExp(r'[lI\|!1іІ]'), '1') // l/I/|/!/і -> 1
+        .replaceAll(RegExp(r'[Bb]'), '8') // B -> 8 in numbers
+        .replaceAll(RegExp(r'[Gg]'), '6') // G -> 6 in numbers
+        .replaceAll(RegExp(r'[Tt]'), '7') // T -> 7 in numbers
+        // Fix common spacing issues
+        .replaceAll(RegExp(r'\s+'), '');
+
+    // Smart correction: restore letters in name sections (before first digit)
+    if (cleaned.contains(RegExp(r'\d'))) {
+      final firstDigitIndex = cleaned.indexOf(RegExp(r'\d'));
+      final nameSection = line
+          .substring(0, min(firstDigitIndex, line.length))
+          .toUpperCase()
+          .replaceAll('«', '<')
+          .replaceAll('»', '<')
+          .replaceAll(RegExp(r'[^A-Z<]'), '');
+      final numberSection = cleaned.substring(firstDigitIndex);
+      cleaned = nameSection + numberSection;
+    }
+
+    // Keep only MRZ valid characters: A-Z, 0-9, <
+    return cleaned.replaceAll(RegExp(r'[^A-Z0-9<]'), '');
   }
 
-  /// Check if line looks like MRZ
+  /// Check if line looks like MRZ (ENHANCED DETECTION)
   static bool _isMRZLine(String line) {
-    // MRZ lines are 28-44 characters
-    if (line.length < 25 || line.length > 45) return false;
+    // MRZ lines are 28-44 characters (allow ±2 for OCR errors)
+    if (line.length < 23 || line.length > 47) return false;
 
-    // Must contain MRZ markers (< or start with document type)
-    if (!line.contains('<') &&
-        !line.startsWith('P') &&
-        !line.startsWith('I') &&
-        !line.startsWith('A') &&
-        !line.startsWith('C')) {
+    // Must contain MRZ markers or start with document type
+    final hasMRZMarker = line.contains('<') || line.contains('<<');
+    final startsWithDocType = line.startsWith(RegExp(r'^[PIAC][A-Z<]'));
+    final hasMultipleChevrons = line.split('<').length > 2;
+
+    if (!hasMRZMarker && !startsWithDocType && !hasMultipleChevrons) {
       return false;
     }
 
     // Must be mostly uppercase letters and numbers
     final validChars = line.replaceAll(RegExp(r'[A-Z0-9<]'), '').length;
-    return validChars == 0; // All characters must be valid MRZ chars
+    final validPercentage = (line.length - validChars) / line.length;
+
+    // At least 80% must be valid MRZ characters
+    return validPercentage >= 0.8;
   }
 
   /// Try parsing as passport (TD-3 format: 2 lines x 44 chars)
@@ -127,6 +158,7 @@ class MRZHelper {
 
   /// Try parsing as ID card (TD-1 format: 3 lines x 30 chars)
   static Map<String, dynamic>? _tryIDCardMRZ(List<String> lines) {
+    // Try standard 3-line ID card format
     for (int i = 0; i < lines.length - 2; i++) {
       final line1 = _padMRZLine(lines[i], 30);
       final line2 = _padMRZLine(lines[i + 1], 30);
@@ -140,7 +172,7 @@ class MRZHelper {
         continue;
       }
 
-      debugPrint('🎯 Trying ID card MRZ:');
+      debugPrint('🎯 Trying ID card MRZ (3 lines):');
       debugPrint('  L1: $line1');
       debugPrint('  L2: $line2');
       debugPrint('  L3: $line3');
@@ -161,6 +193,45 @@ class MRZHelper {
         return manual;
       }
     }
+
+    // Try 2-line incomplete ID card format (missing first line)
+    debugPrint('🔄 Trying 2-line incomplete ID card format...');
+    for (int i = 0; i < lines.length - 1; i++) {
+      final line1 = _padMRZLine(lines[i], 30);
+      final line2 = _padMRZLine(lines[i + 1], 30);
+
+      // Check if it looks like ID card MRZ (lines 2 and 3 of TD-1)
+      if (line1.length != 30 || line2.length != 30) continue;
+
+      // Enhanced detection patterns for 2-line ID card MRZ
+      // Line1 patterns: YYMMDDMSYYMMDDCCC or similar
+      // Line2 patterns: SURNAME<<GIVENNAMES
+
+      // Pattern 1: DOB + SEX + EXPIRY + COUNTRY (most common)
+      final datePattern1 = RegExp(r'^\d{6}[MF]\d{6}[A-Z]{3}');
+      // Pattern 2: Numbers + SEX + Numbers + COUNTRY
+      final datePattern2 = RegExp(r'^\d+[MF]\d+[A-Z]{3}');
+      // Pattern 3: Any format with M/F and country code
+      final datePattern3 = RegExp(r'.*[MF].*[A-Z]{3}');
+
+      final namePattern = RegExp(r'^[A-Z]+<<[A-Z<]+');
+
+      final hasDateInfo = datePattern1.hasMatch(line1) ||
+          datePattern2.hasMatch(line1) ||
+          datePattern3.hasMatch(line1);
+
+      if (hasDateInfo && namePattern.hasMatch(line2)) {
+        debugPrint('🎯 Found 2-line ID card MRZ:');
+        debugPrint('  L1 (dates): $line1');
+        debugPrint('  L2 (names): $line2');
+
+        final manual = _manual2LineIDCardParse(line1, line2);
+        if (manual != null && manual.isNotEmpty) {
+          return manual;
+        }
+      }
+    }
+
     return null;
   }
 
@@ -172,8 +243,7 @@ class MRZHelper {
   }
 
   /// Convert MRZ parser result to our format
-  static Map<String, dynamic> _convertToMap(
-      MRZResult result, String docType) {
+  static Map<String, dynamic> _convertToMap(MRZResult result, String docType) {
     final data = <String, dynamic>{
       'documentType': docType,
       'source': 'MRZ',
@@ -323,6 +393,118 @@ class MRZHelper {
       return data.length > 3 ? data : null;
     } catch (e) {
       debugPrint('❌ Manual ID card parse error: $e');
+      return null;
+    }
+  }
+
+  /// Manual 2-line ID card MRZ parsing (when first line is missing)
+  /// Line1: DOB + Sex + Expiry (YYMMDDMYYMMDD + country/personal)
+  /// Line2: SURNAME<<GIVENNAMES
+  static Map<String, dynamic>? _manual2LineIDCardParse(
+      String line1, String line2) {
+    try {
+      final data = <String, dynamic>{
+        'documentType': 'ID Card',
+        'source': 'MRZ (2-Line Manual)',
+      };
+
+      // Line 1: Parse date information
+      // Format examples:
+      // 8908098M2311045LKA<<<<<<<<<<<2 (your format)
+      // YYMMDDMYYMMDDLKA<<<<<<<<<<<2 (standard)
+
+      if (line1.length >= 16) {
+        // Try to find date patterns in the line
+        // Look for YYMMDD + M/F + YYMMDD pattern
+        final fullPattern = RegExp(r'(\d{6})([MF])(\d{6})([A-Z]{3})');
+        final match = fullPattern.firstMatch(line1);
+
+        if (match != null) {
+          // Standard format found
+          final dob = match.group(1)!;
+          final sex = match.group(2)!;
+          final expiry = match.group(3)!;
+          final country = match.group(4)!;
+
+          if (RegExp(r'^\d{6}$').hasMatch(dob)) {
+            data['dateOfBirth'] = _formatMRZDate(dob);
+          }
+
+          data['sex'] = sex;
+          data['gender'] = sex == 'M' ? 'Male' : 'Female';
+
+          if (RegExp(r'^\d{6}$').hasMatch(expiry)) {
+            data['expiryDate'] = _formatMRZDate(expiry);
+          }
+
+          data['nationalityCode'] = country;
+          data['nationality'] = _getCountryName(country);
+        } else {
+          // Try alternative parsing for non-standard formats
+          // Look for M/F position and extract around it
+          final sexPos = line1.indexOf(RegExp(r'[MF]'));
+          if (sexPos > 5 && sexPos < line1.length - 9) {
+            // Extract DOB (6 digits before M/F)
+            final dobStart = sexPos - 6;
+            final dob = line1.substring(dobStart, sexPos);
+            if (RegExp(r'^\d{6}$').hasMatch(dob)) {
+              data['dateOfBirth'] = _formatMRZDate(dob);
+            }
+
+            // Extract sex
+            final sex = line1.substring(sexPos, sexPos + 1);
+            data['sex'] = sex;
+            data['gender'] = sex == 'M' ? 'Male' : 'Female';
+
+            // Extract expiry (6 digits after M/F)
+            final expiryStart = sexPos + 1;
+            if (expiryStart + 6 <= line1.length) {
+              final expiry = line1.substring(expiryStart, expiryStart + 6);
+              if (RegExp(r'^\d{6}$').hasMatch(expiry)) {
+                data['expiryDate'] = _formatMRZDate(expiry);
+              }
+            }
+
+            // Extract country code (look for 3 consecutive letters)
+            final countryMatch = RegExp(r'[A-Z]{3}').firstMatch(line1);
+            if (countryMatch != null) {
+              final country = countryMatch.group(0)!;
+              data['nationalityCode'] = country;
+              data['nationality'] = _getCountryName(country);
+            }
+          }
+        }
+      }
+
+      // Line 2: Parse names
+      // Format: ALEXANDER<<JEREMY<DAN1EL<<<<<<
+      // Handle OCR errors: 1 → I, 0 → O
+      final cleanedLine2 = line2
+          .replaceAll('1', 'I') // Fix OCR error: 1 → I
+          .replaceAll('0', 'O'); // Fix OCR error: 0 → O
+
+      final namePattern = RegExp(r'^([A-Z<]+?)<<([A-Z<]+)');
+      final nameMatch = namePattern.firstMatch(cleanedLine2);
+      if (nameMatch != null) {
+        data['lastName'] = nameMatch.group(1)!.replaceAll('<', ' ').trim();
+        data['firstName'] = nameMatch.group(2)!.replaceAll('<', ' ').trim();
+      } else {
+        // Try alternative name parsing
+        final parts = cleanedLine2.split('<<');
+        if (parts.length >= 2) {
+          data['lastName'] = parts[0].replaceAll('<', ' ').trim();
+          data['firstName'] = parts[1].replaceAll('<', ' ').trim();
+        }
+      }
+
+      debugPrint('✅ 2-Line ID Card Data Extracted:');
+      data.forEach((key, value) {
+        debugPrint('  $key: $value');
+      });
+
+      return data.length > 3 ? data : null;
+    } catch (e) {
+      debugPrint('❌ Manual 2-line ID card parse error: $e');
       return null;
     }
   }

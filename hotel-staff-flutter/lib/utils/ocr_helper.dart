@@ -195,15 +195,17 @@ class OCRHelper {
       // Try format: P<LKA<<SURNAME<<GIVENNAMES
       var nameMatch =
           RegExp(r'P<([A-Z]{3})([A-Z<]+?)<<([A-Z<]+)').firstMatch(line1);
-      
+
       // Try alternate format: PBLKA<<SURNAME<<GIVENNAMES (Sri Lankan passport)
       if (nameMatch == null) {
-        nameMatch = RegExp(r'P[A-Z]([A-Z]{3})([A-Z<]+?)<<([A-Z<]+)').firstMatch(line1);
+        nameMatch =
+            RegExp(r'P[A-Z]([A-Z]{3})([A-Z<]+?)<<([A-Z<]+)').firstMatch(line1);
       }
-      
+
       // Try without country separator: PBLKASURNAME<<GIVENNAMES
       if (nameMatch == null) {
-        nameMatch = RegExp(r'P[A-Z]{1,3}([A-Z]+?)<<([A-Z<]+)').firstMatch(line1);
+        nameMatch =
+            RegExp(r'P[A-Z]{1,3}([A-Z]+?)<<([A-Z<]+)').firstMatch(line1);
         if (nameMatch != null) {
           data['lastName'] = nameMatch.group(1)!.replaceAll('<', ' ').trim();
           data['firstName'] = nameMatch.group(2)!.replaceAll('<', ' ').trim();
@@ -410,12 +412,13 @@ class OCRHelper {
         // Look for MRZ name pattern: SURNAME<<GIVENNAMES or ALEXANDER<<JEREMY<DANIEL
         // Also handle PBLKASURNAME<<GIVENNAMES format
         var mrzNameMatch = RegExp(r'([A-Z]{4,})<<([A-Z<]+)').firstMatch(line);
-        
+
         // Try removing P[A-Z]{1,3} prefix for passports
         if (mrzNameMatch == null) {
-          mrzNameMatch = RegExp(r'P[A-Z]{1,4}([A-Z]+?)<<([A-Z<]+)').firstMatch(line);
+          mrzNameMatch =
+              RegExp(r'P[A-Z]{1,4}([A-Z]+?)<<([A-Z<]+)').firstMatch(line);
         }
-        
+
         if (mrzNameMatch != null) {
           if (data['lastName'] == null) {
             data['lastName'] =

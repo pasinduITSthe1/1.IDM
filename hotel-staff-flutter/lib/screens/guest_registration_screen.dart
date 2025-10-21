@@ -45,6 +45,12 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
     if (widget.scannedData != null) {
       debugPrint('📥 Received scanned data: ${widget.scannedData}');
       debugPrint('📊 Scanned fields: ${widget.scannedData!.keys.join(", ")}');
+      debugPrint('📊 Data entries: ${widget.scannedData!.length}');
+
+      // Print each field individually for debugging
+      widget.scannedData!.forEach((key, value) {
+        debugPrint('  🔸 $key: $value (${value.runtimeType})');
+      });
 
       final data = widget.scannedData!;
 
@@ -100,6 +106,19 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
 
       debugPrint('✅ Auto-filled $populatedCount fields from scan');
 
+      // Also show the actual populated values for debugging
+      debugPrint('🎯 Populated field values:');
+      if (_firstNameController.text.isNotEmpty)
+        debugPrint('  First Name: ${_firstNameController.text}');
+      if (_lastNameController.text.isNotEmpty)
+        debugPrint('  Last Name: ${_lastNameController.text}');
+      if (_documentNumberController.text.isNotEmpty)
+        debugPrint('  Doc Number: ${_documentNumberController.text}');
+      if (_dateOfBirthController.text.isNotEmpty)
+        debugPrint('  DOB: ${_dateOfBirthController.text}');
+      if (_nationalityController.text.isNotEmpty)
+        debugPrint('  Nationality: ${_nationalityController.text}');
+
       // Show a snackbar with the results
       if (populatedCount > 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -113,6 +132,8 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
           );
         });
       }
+    } else {
+      debugPrint('⚠️ No scanned data received - widget.scannedData is null');
     }
   }
 
@@ -274,7 +295,14 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
         title: const Text('Guest Registration'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            // Navigate back to dashboard
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
         ),
       ),
       body: Form(
