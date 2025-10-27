@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -35,6 +36,11 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
   String _selectedDocumentType = 'passport';
   bool _isLoading = false;
 
+  // Photo paths from scanned data
+  String? _frontPhotoPath;
+  String? _backPhotoPath;
+  bool _isPassport = false;
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +59,19 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
       });
 
       final data = widget.scannedData!;
+
+      // Extract photo paths
+      _frontPhotoPath = data['frontPhotoPath'];
+      _backPhotoPath = data['backPhotoPath'];
+
+      // Extract passport flag
+      if (data['isPassport'] != null) {
+        _isPassport = data['isPassport'].toString().toLowerCase() == 'true';
+      }
+
+      debugPrint('📸 Front photo path: $_frontPhotoPath');
+      debugPrint('📸 Back photo path: $_backPhotoPath');
+      debugPrint('📖 Is passport: $_isPassport');
 
       // Populate text fields
       _firstNameController.text = data['firstName'] ?? '';
@@ -89,8 +108,8 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
             docType == 'id_card' ||
             docType == 'idcard') {
           _selectedDocumentType = 'id_card';
-        } else if (docType == 'driver_license' || docType == 'license') {
-          _selectedDocumentType = 'driver_license';
+        } else if (docType == 'visa') {
+          _selectedDocumentType = 'visa';
         } else {
           _selectedDocumentType = docType;
         }
@@ -232,6 +251,78 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
     }
   }
 
+  // Handle retaking photos
+  void _retakePhotos() {
+    if (widget.scannedData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('❌ No scan data available. Please scan document again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Navigate back to photo capture screen with MRZ data
+    // Convert to Map<String, String> as expected by IDPhotoCaptureScreen
+    final mrzData = <String, String>{};
+
+    widget.scannedData!.forEach((key, value) {
+      // Skip photo paths and convert all values to strings
+      if (key != 'frontPhotoPath' && key != 'backPhotoPath') {
+        mrzData[key] = value?.toString() ?? '';
+      }
+    });
+
+    // Ensure we have the essential data
+    if (mrzData.isEmpty || mrzData['documentNumber'] == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('❌ Invalid scan data. Please scan document again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    context.go('/capture-id-photos', extra: mrzData);
+  }
+
+  // Preview photo dialog
+  void _previewPhoto(String photoPath, String title) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppBar(
+              title: Text(title),
+              backgroundColor: AppTheme.primaryOrange,
+              foregroundColor: Colors.white,
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            Expanded(
+              child: InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Image.file(
+                  File(photoPath),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -339,6 +430,108 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 16),
+              ],
+
+              // Photo Preview Section
+              if (_frontPhotoPath != null || _backPhotoPath != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.photo_camera,
+                            color: AppTheme.primaryOrange,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Captured Photos',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          TextButton.icon(
+                            onPressed: _retakePhotos,
+                            icon: const Icon(Icons.refresh, size: 18),
+                            label: const Text('Retake'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppTheme.primaryOrange,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Photos Row
+                      Row(
+                        children: [
+                          // Front Photo
+                          if (_frontPhotoPath != null)
+                            Expanded(
+                              child: _PhotoCard(
+                                photoPath: _frontPhotoPath!,
+                                label: _isPassport
+                                    ? 'Passport Photo'
+                                    : 'Front Side',
+                                onTap: () => _previewPhoto(
+                                    _frontPhotoPath!,
+                                    _isPassport
+                                        ? 'Passport Photo'
+                                        : 'Front Side'),
+                              ),
+                            ),
+
+                          // Spacing between photos
+                          if (_frontPhotoPath != null && _backPhotoPath != null)
+                            const SizedBox(width: 12),
+
+                          // Back Photo (only for ID cards)
+                          if (_backPhotoPath != null && !_isPassport)
+                            Expanded(
+                              child: _PhotoCard(
+                                photoPath: _backPhotoPath!,
+                                label: 'Back Side',
+                                onTap: () =>
+                                    _previewPhoto(_backPhotoPath!, 'Back Side'),
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _isPassport
+                                ? 'Passport photo captured'
+                                : '${_backPhotoPath != null ? 'Both sides' : 'Front side'} captured',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 20),
               ],
 
@@ -370,8 +563,8 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _RadioOption(
-                      label: 'License',
-                      value: 'driver_license',
+                      label: 'Visa',
+                      value: 'visa',
                       groupValue: _selectedDocumentType,
                       onChanged: (val) =>
                           setState(() => _selectedDocumentType = val!),
@@ -627,6 +820,84 @@ class _RadioOption extends StatelessWidget {
             fontSize: 13,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PhotoCard extends StatelessWidget {
+  final String photoPath;
+  final String label;
+  final VoidCallback onTap;
+
+  const _PhotoCard({
+    required this.photoPath,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            height: 160,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // Photo
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.file(
+                    File(photoPath),
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+                // Edit overlay button
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.remove_red_eye,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+            ),
+          ),
+        ],
       ),
     );
   }

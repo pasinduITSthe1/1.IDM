@@ -79,21 +79,21 @@ class ProductionMRZScanner {
         .replaceAll('⟩', '<')
         // Fix number/letter confusions using context-aware regex
         .replaceAll(RegExp(r'[ΟοО]'), '0') // Greek/Cyrillic O -> 0
-        .replaceAll(RegExp(r'O(?=\d)'), '0')  // O followed by digit → 0
-        .replaceAll(RegExp(r'(?<=\d)O'), '0')  // O after digit → 0
-        .replaceAll(RegExp(r'I(?=\d)'), '1')  // I followed by digit → 1
-        .replaceAll(RegExp(r'(?<=\d)I'), '1')  // I after digit → 1
-        .replaceAll(RegExp(r'S(?=\d{2,})'), '5')  // S in number context → 5
-        .replaceAll(RegExp(r'Z(?=\d{2,})'), '2')  // Z in number context → 2
+        .replaceAll(RegExp(r'O(?=\d)'), '0') // O followed by digit → 0
+        .replaceAll(RegExp(r'(?<=\d)O'), '0') // O after digit → 0
+        .replaceAll(RegExp(r'I(?=\d)'), '1') // I followed by digit → 1
+        .replaceAll(RegExp(r'(?<=\d)I'), '1') // I after digit → 1
+        .replaceAll(RegExp(r'S(?=\d{2,})'), '5') // S in number context → 5
+        .replaceAll(RegExp(r'Z(?=\d{2,})'), '2') // Z in number context → 2
         // Remove non-MRZ characters
         .replaceAll(RegExp(r'[^A-Z0-9<\s\n]'), '')
         .trim();
-    
+
     // CRITICAL FIX: Remove spaces from lines that look like MRZ
     // ML Kit often adds spaces to MRZ lines
     final lines = cleaned.split('\n');
     final fixedLines = <String>[];
-    
+
     for (var line in lines) {
       // If line has multiple < symbols and letters/numbers, it's likely MRZ
       if (line.contains('<') && line.length > 20) {
@@ -103,7 +103,7 @@ class ProductionMRZScanner {
         fixedLines.add(line);
       }
     }
-    
+
     return fixedLines.join('\n');
   }
 
@@ -111,28 +111,29 @@ class ProductionMRZScanner {
   static List<String> _extractMRZLines(String cleanedText) {
     print('🔍 Extracting MRZ lines from cleaned text...');
     print('📄 Cleaned text length: ${cleanedText.length}');
-    
-    final allLines = cleanedText.split('\n').map((line) => line.trim()).toList();
+
+    final allLines =
+        cleanedText.split('\n').map((line) => line.trim()).toList();
     print('📋 Total lines: ${allLines.length}');
-    
+
     final mrzLines = <String>[];
     for (int i = 0; i < allLines.length; i++) {
       var line = allLines[i];
       if (line.isEmpty) continue;
-      
+
       // CRITICAL: Remove ALL spaces before validation
       line = line.replaceAll(' ', '');
-      
+
       final isMrz = _isMRZLine(line);
       print('  Line $i: "${line}" (${line.length} chars) - MRZ: $isMrz');
-      
+
       if (isMrz) {
         // Apply MRZ-specific OCR corrections
         line = _fixMRZOCRErrors(line);
         mrzLines.add(line);
       }
     }
-    
+
     print('✅ Found ${mrzLines.length} MRZ lines');
     return mrzLines;
   }
@@ -142,9 +143,9 @@ class ProductionMRZScanner {
   /// Names and country codes are usually letters
   static String _fixMRZOCRErrors(String line) {
     if (line.isEmpty) return line;
-    
+
     var fixed = line;
-    
+
     // Pattern 1: Fix document number patterns like "ILARE1188123"
     // If line starts with 1-2 letters followed by mix of I/1, assume I=1 in number portion
     if (RegExp(r'^[A-Z]{1,5}[I1]{2,}').hasMatch(fixed)) {
@@ -159,33 +160,27 @@ class ProductionMRZScanner {
         print('  🔧 Fixed doc number: $line → $fixed');
       }
     }
-    
+
     // Pattern 2: Fix date patterns like "8908098" where I might be 1
     // Dates are usually 6 digits: YYMMDD or YYYYMMDD
-    fixed = fixed.replaceAllMapped(
-      RegExp(r'\d{2}[I01]{2}[I01]{2}[I01]'),
-      (m) {
-        final date = m.group(0)!.replaceAll('I', '1').replaceAll('O', '0');
-        if (date != m.group(0)) {
-          print('  🔧 Fixed date pattern: ${m.group(0)} → $date');
-        }
-        return date;
+    fixed = fixed.replaceAllMapped(RegExp(r'\d{2}[I01]{2}[I01]{2}[I01]'), (m) {
+      final date = m.group(0)!.replaceAll('I', '1').replaceAll('O', '0');
+      if (date != m.group(0)) {
+        print('  🔧 Fixed date pattern: ${m.group(0)} → $date');
       }
-    );
-    
+      return date;
+    });
+
     // Pattern 3: Long number sequences with I/O should be corrected
     // Example: "789784I98947370577" → "78978419894737 0577"
-    fixed = fixed.replaceAllMapped(
-      RegExp(r'\d+[IO]\d+'),
-      (m) {
-        final num = m.group(0)!.replaceAll('I', '1').replaceAll('O', '0');
-        if (num != m.group(0)) {
-          print('  🔧 Fixed number sequence: ${m.group(0)} → $num');
-        }
-        return num;
+    fixed = fixed.replaceAllMapped(RegExp(r'\d+[IO]\d+'), (m) {
+      final num = m.group(0)!.replaceAll('I', '1').replaceAll('O', '0');
+      if (num != m.group(0)) {
+        print('  🔧 Fixed number sequence: ${m.group(0)} → $num');
       }
-    );
-    
+      return num;
+    });
+
     return fixed;
   }
 
@@ -196,22 +191,22 @@ class ProductionMRZScanner {
     // - Contain only A-Z, 0-9, and < characters
     // - Have a specific pattern of < characters
     if (line.length < 20) return false;
-    
+
     // Check if line contains only valid MRZ characters
     if (!RegExp(r'^[A-Z0-9<]+$').hasMatch(line)) return false;
-    
+
     // Allow some flexibility for OCR errors - check if mostly valid chars
-    final validChars = line.split('').where((c) => 
-        RegExp(r'[A-Z0-9<]').hasMatch(c)).length;
+    final validChars =
+        line.split('').where((c) => RegExp(r'[A-Z0-9<]').hasMatch(c)).length;
     final validRatio = validChars / line.length;
-    
+
     if (validRatio < 0.9) return false; // At least 90% valid MRZ characters
-    
+
     // Must contain some < characters (MRZ padding) OR be all caps with numbers
     final hasFillers = line.contains('<');
     final hasLetters = RegExp(r'[A-Z]').hasMatch(line);
     final hasNumbers = RegExp(r'[0-9]').hasMatch(line);
-    
+
     if (!hasFillers && !hasLetters && !hasNumbers) return false;
 
     // Should not be all < characters
@@ -278,7 +273,7 @@ class ProductionMRZScanner {
       } catch (e) {
         print('⚠️ Official TD-1 parse failed: $e');
         print('🔧 Trying lenient manual TD-1 parser...');
-        
+
         // Fallback: Manual lenient parsing for OCR errors
         final manualResult = _manualTD1Parse(line1, line2, line3);
         if (manualResult != null) {
@@ -303,24 +298,24 @@ class ProductionMRZScanner {
       final docType = line1.substring(0, 1);
       final country = line1.substring(1, 4).replaceAll('<', '');
       var docNumber = line1.substring(4, 13).replaceAll('<', '');
-      
+
       // Clean up document number from OCR errors
       docNumber = docNumber.replaceAll('I', '1').replaceAll('O', '0');
-      
+
       // Line 2: Birth date (6) + check (1) + Sex (1) + Expiry (6) + check (1) + Nationality (3) + Optional (11) + check (1)
-      var birthDate = line2.substring(0, 6).replaceAll('I', '1').replaceAll('O', '0');
+      var birthDate =
+          line2.substring(0, 6).replaceAll('I', '1').replaceAll('O', '0');
       final sex = line2.substring(7, 8);
-      var expiryDate = line2.substring(8, 14).replaceAll('I', '1').replaceAll('O', '0');
+      var expiryDate =
+          line2.substring(8, 14).replaceAll('I', '1').replaceAll('O', '0');
       final nationality = line2.substring(15, 18).replaceAll('<', '');
-      
+
       // Line 3: Names
       final nameParts = line3.split('<<');
-      final lastName = nameParts.isNotEmpty
-          ? nameParts[0].replaceAll('<', ' ').trim()
-          : '';
-      final firstName = nameParts.length > 1
-          ? nameParts[1].replaceAll('<', ' ').trim()
-          : '';
+      final lastName =
+          nameParts.isNotEmpty ? nameParts[0].replaceAll('<', ' ').trim() : '';
+      final firstName =
+          nameParts.length > 1 ? nameParts[1].replaceAll('<', ' ').trim() : '';
 
       // Format dates: YYMMDD to YYYY-MM-DD
       final formattedBirthDate = _formatMRZDate(birthDate);
@@ -363,15 +358,15 @@ class ProductionMRZScanner {
   /// Format MRZ date string YYMMDD to YYYY-MM-DD
   static String _formatMRZDate(String yymmdd) {
     if (yymmdd.length != 6) return yymmdd;
-    
+
     try {
       final yy = int.parse(yymmdd.substring(0, 2));
       final mm = yymmdd.substring(2, 4);
       final dd = yymmdd.substring(4, 6);
-      
+
       // Assume 00-30 = 2000-2030, 31-99 = 1931-1999
       final yyyy = yy <= 30 ? 2000 + yy : 1900 + yy;
-      
+
       return '$yyyy-$mm-$dd';
     } catch (e) {
       return yymmdd;

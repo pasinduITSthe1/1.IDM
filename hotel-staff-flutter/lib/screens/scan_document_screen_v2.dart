@@ -318,7 +318,8 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       final cropHeight = (originalHeight * cropPercentage).round();
       final cropY = originalHeight - cropHeight;
 
-      debugPrint('Cropping: bottom ${(cropPercentage * 100).toInt()}% (${cropHeight}px)');
+      debugPrint(
+          'Cropping: bottom ${(cropPercentage * 100).toInt()}% (${cropHeight}px)');
 
       // Crop the MRZ zone
       image = img.copyCrop(
@@ -547,7 +548,7 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
 
       // USE DUAL OCR ENGINE - Combines ML Kit + Tesseract for best results
       final ocrResult = await DualOCREngine.extractWithAnalytics(imagePath);
-      
+
       debugPrint('\n� Dual OCR Analytics:');
       debugPrint(ocrResult.toString());
 
@@ -574,24 +575,25 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
       if (data != null && data.isNotEmpty) {
         debugPrint('✅ Production MRZ extraction successful (merged text)');
       } else {
-        debugPrint(
-            '⚠️ Merged text failed, trying ML Kit text only...');
+        debugPrint('⚠️ Merged text failed, trying ML Kit text only...');
 
         // Fallback 1: Try ML Kit text only
         data = await ProductionMRZScanner.extractMRZData(ocrResult.mlKitText);
 
         if (data == null || data.isEmpty) {
           debugPrint('🔄 ML Kit failed, trying Tesseract text only...');
-          
+
           // Fallback 2: Try Tesseract text only
-          data = await ProductionMRZScanner.extractMRZData(ocrResult.tesseractText);
-          
+          data = await ProductionMRZScanner.extractMRZData(
+              ocrResult.tesseractText);
+
           if (data == null || data.isEmpty) {
             // Fallback 3: Try bottom portion of best text
             debugPrint('🔄 Trying bottom lines from best OCR result...');
-            final bestText = ocrResult.mlKitConfidence > ocrResult.tesseractConfidence 
-                ? ocrResult.mlKitText 
-                : ocrResult.tesseractText;
+            final bestText =
+                ocrResult.mlKitConfidence > ocrResult.tesseractConfidence
+                    ? ocrResult.mlKitText
+                    : ocrResult.tesseractText;
             final lines = bestText.split('\n');
             final bottomLines = lines.length >= 5
                 ? lines.sublist(lines.length - 5).join('\n')
@@ -612,13 +614,13 @@ class _ScanDocumentScreenState extends State<ScanDocumentScreen> {
         cleanedData.forEach((key, value) {
           debugPrint('  $key: $value');
         });
-        
+
         // Add OCR metadata
         cleanedData['ocrEngine'] = ocrResult.bestEngine;
-        cleanedData['ocrConfidence'] = ocrResult.bestEngine == 'ML Kit' 
-            ? ocrResult.mlKitConfidence 
+        cleanedData['ocrConfidence'] = ocrResult.bestEngine == 'ML Kit'
+            ? ocrResult.mlKitConfidence
             : ocrResult.tesseractConfidence;
-        
+
         return cleanedData;
       } else {
         debugPrint(
