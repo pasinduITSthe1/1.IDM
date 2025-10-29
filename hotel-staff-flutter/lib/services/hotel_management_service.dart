@@ -358,12 +358,49 @@ class HotelManagementService {
       debugPrint('🔍 Fetching status for customer: $customerId');
 
       final response = await _dio.get(
-        '/hotel/guests/$customerId/status',
+        '/guest-status.php?customer_id=$customerId',
       );
 
       return response.data as Map<String, dynamic>;
     } catch (e) {
       debugPrint('❌ Status error: $e');
+      return {};
+    }
+  }
+
+  /// Get all guests with their status
+  Future<List<Map<String, dynamic>>> getAllGuestsWithStatus() async {
+    try {
+      debugPrint('📊 Fetching all guests with status...');
+
+      final response = await _dio.get('/guest-status.php');
+
+      if (response.data['success'] == true) {
+        final guests = response.data['guests'] as List;
+        debugPrint('✅ Found ${guests.length} guests');
+        return guests.map((g) => g as Map<String, dynamic>).toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('❌ Get all guests error: $e');
+      return [];
+    }
+  }
+
+  /// Get dashboard statistics
+  Future<Map<String, dynamic>> getDashboardStats() async {
+    try {
+      debugPrint('📊 Fetching dashboard stats...');
+
+      final response = await _dio.get('/dashboard-stats.php');
+
+      if (response.data['success'] == true) {
+        debugPrint('✅ Dashboard stats loaded');
+        return response.data['stats'] as Map<String, dynamic>;
+      }
+      return {};
+    } catch (e) {
+      debugPrint('❌ Dashboard stats error: $e');
       return {};
     }
   }

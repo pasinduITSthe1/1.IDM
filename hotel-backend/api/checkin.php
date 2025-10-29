@@ -119,7 +119,11 @@ else if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['customer_id'])) {
  * GET /hotel-backend/api/checkin.php (all check-ins)
  */
 else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $sql = "SELECT c.*, cust.firstname, cust.lastname 
+    $sql = "SELECT 
+                c.*,
+                COALESCE(cust.firstname, '') as firstname,
+                COALESCE(cust.lastname, '') as lastname,
+                CONCAT(COALESCE(cust.firstname, ''), ' ', COALESCE(cust.lastname, '')) as full_name
             FROM guest_checkins c
             LEFT JOIN " . _DB_PREFIX_ . "customer cust ON c.id_customer = cust.id_customer
             ORDER BY c.created_at DESC";

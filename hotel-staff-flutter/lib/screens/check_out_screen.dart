@@ -19,7 +19,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   Widget build(BuildContext context) {
     final guestProvider = Provider.of<GuestProvider>(context);
     final checkedInGuests = guestProvider.guests
-        .where((g) => g.status == 'checked-in')
+        .where((g) => g.status == 'checked-in' || g.status == 'checked_in')
         .where((g) =>
             _searchQuery.isEmpty ||
             g.fullName.toLowerCase().contains(_searchQuery.toLowerCase()) ||

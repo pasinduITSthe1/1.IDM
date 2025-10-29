@@ -26,8 +26,9 @@ class GuestProvider with ChangeNotifier {
 
   // Get guest statistics
   Map<String, int> get statistics {
-    int checkedIn = _guests.where((g) => g.status == 'checked-in').length;
-    int checkedOut = _guests.where((g) => g.status == 'checked-out').length;
+    // Count by status - support both hyphen and underscore formats
+    int checkedIn = _guests.where((g) => g.status == 'checked_in' || g.status == 'checked-in').length;
+    int checkedOut = _guests.where((g) => g.status == 'checked_out' || g.status == 'checked-out').length;
     int pending = _guests.where((g) => g.status == 'pending').length;
 
     return {
@@ -184,10 +185,22 @@ class GuestProvider with ChangeNotifier {
 
         // ✅ IMPORTANT: Save check-out to hotel backend database using HotelManagementService
         try {
+          // First get the guest's current check-in record to get checkin_id
+          final guestStatus = await _hotelService.getGuestStatus(int.parse(id));
+          int checkinId = 1; // Default fallback
+          int roomId = 0;
+          
+          if (guestStatus.containsKey('checkin_id')) {
+            checkinId = int.tryParse(guestStatus['checkin_id']?.toString() ?? '1') ?? 1;
+          }
+          if (guestStatus.containsKey('id_room')) {
+            roomId = int.tryParse(guestStatus['id_room']?.toString() ?? '0') ?? 0;
+          }
+          
           final response = await _hotelService.checkOutGuest(
             customerId: int.parse(id),
-            checkinId: 1, // TODO: Get actual checkin ID from database
-            roomId: int.tryParse(_guests[index].roomNumber ?? '0') ?? 0,
+            checkinId: checkinId,
+            roomId: roomId,
             finalBill: totalAmount ?? 0.0,
             paymentStatus: paymentStatus ?? 'pending',
             checkedOutBy: 'app_user',
