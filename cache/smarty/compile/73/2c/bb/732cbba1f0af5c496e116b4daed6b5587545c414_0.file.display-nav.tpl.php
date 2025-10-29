@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 16:33:15
+/* Smarty version 4.5.5, created on 2025-10-29 12:32:30
   from 'C:\wamp64\www\1.IDM\modules\hotelreservationsystem\views\templates\hook\display-nav.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f3733bec14_35103628',
+  'unifunc' => 'content_6901bc06dab785_78106049',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_68e4f3733bec14_35103628 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901bc06dab785_78106049 (Smarty_Internal_Template $_smarty_tpl) {
 if ($_smarty_tpl->tpl_vars['email']->value != '') {?>
     <div class="contact-item">
         <i class="icon-envelope-o"></i>

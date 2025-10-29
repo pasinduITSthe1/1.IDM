@@ -17,6 +17,15 @@ class _GuestListScreenState extends State<GuestListScreen> {
   String _searchQuery = '';
 
   @override
+  void initState() {
+    super.initState();
+    // Load guests from QloApps when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<GuestProvider>(context, listen: false).loadGuests();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final guestProvider = Provider.of<GuestProvider>(context);
     final guests = guestProvider.guests;

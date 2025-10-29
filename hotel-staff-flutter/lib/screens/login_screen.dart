@@ -32,8 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.login(
-        _emailController.text,
-        _passwordController.text,
+        _emailController.text.trim(), // Remove whitespace
+        _passwordController.text.trim(), // Remove whitespace
         demoMode: _isDemoMode,
       );
 

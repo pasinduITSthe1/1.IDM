@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 16:33:11
+/* Smarty version 4.5.5, created on 2025-10-29 12:32:04
   from 'C:\wamp64\www\1.IDM\modules\blocklanguages\views\templates\hook\external-navigation-hook.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f36fcceb72_77851164',
+  'unifunc' => 'content_6901bbeccb3ec2_52185399',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_68e4f36fcceb72_77851164 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901bbeccb3ec2_52185399 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_checkPlugins(array(0=>array('file'=>'C:\\wamp64\\www\\1.IDM\\tools\\smarty\\plugins\\modifier.regex_replace.php','function'=>'smarty_modifier_regex_replace',),));
 ?>
 

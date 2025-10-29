@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 10:59:12
+/* Smarty version 4.5.5, created on 2025-10-29 12:32:28
   from 'C:\wamp64\www\1.IDM\themes\hotel-reservation-theme\modules\blocknewsletter\blocknewsletter.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f2802ed663_04486530',
+  'unifunc' => 'content_6901bc047c3070_55400092',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_68e4f2802ed663_04486530 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901bc047c3070_55400092 (Smarty_Internal_Template $_smarty_tpl) {
 ?>
 <!-- Block Newsletter module-->
 <div class="row">
@@ -61,18 +61,18 @@ function content_68e4f2802ed663_04486530 (Smarty_Internal_Template $_smarty_tpl)
     </section>
 </div>
 
-<?php $_block_plugin47 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin47, 'addJsDefL'))) {
+<?php $_block_plugin18 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin18, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'no_internet_txt'));
 $_block_repeat=true;
-echo $_block_plugin47->addJsDefL(array('name'=>'no_internet_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin18->addJsDefL(array('name'=>'no_internet_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'No internet. Please try later.','mod'=>'blocknewsletter','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin47->addJsDefL(array('name'=>'no_internet_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin18->addJsDefL(array('name'=>'no_internet_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
 

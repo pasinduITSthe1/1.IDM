@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 16:33:14
+/* Smarty version 4.5.5, created on 2025-10-29 12:32:28
   from 'C:\wamp64\www\1.IDM\modules\wkfooterpaymentblock\views\templates\hook\wkFooterPaymentBlock.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f372c471b3_13511006',
+  'unifunc' => 'content_6901bc044757a4_99986967',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_68e4f372c471b3_13511006 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901bc044757a4_99986967 (Smarty_Internal_Template $_smarty_tpl) {
 ?>
 <div class="row">
 	<section class="col-xs-12 col-sm-12">

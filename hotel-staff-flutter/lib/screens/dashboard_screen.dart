@@ -112,17 +112,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: ListTile(
                                   leading: const Icon(Icons.storage,
                                       size: 20, color: Colors.blue),
-                                  title: const Text('Verify Database'),
+                                  title:
+                                      const Text('Verify QloApps Connection'),
                                   contentPadding: EdgeInsets.zero,
                                   onTap: () async {
                                     Navigator.pop(context);
-                                    await guestProvider.debugPrintStoredData();
+                                    await guestProvider.debugPrintQloAppsData();
                                     if (mounted) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         const SnackBar(
                                           content: Text(
-                                              '✅ Check console/debug output for database details'),
+                                              '✅ Check console/debug output for QloApps connection details'),
                                           backgroundColor: Colors.blue,
                                           duration: Duration(seconds: 3),
                                         ),

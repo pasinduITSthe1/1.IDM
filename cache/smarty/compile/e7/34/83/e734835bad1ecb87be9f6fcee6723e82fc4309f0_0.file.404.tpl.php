@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 10:59:04
+/* Smarty version 4.5.5, created on 2025-10-29 14:24:55
   from 'C:\wamp64\www\1.IDM\themes\hotel-reservation-theme\404.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f278dac1c8_78902489',
+  'unifunc' => 'content_6901d65f205d45_43152450',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_68e4f278dac1c8_78902489 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901d65f205d45_43152450 (Smarty_Internal_Template $_smarty_tpl) {
 ?><div class="pagenotfound">
 	<img class="img-responsive" src="<?php echo $_smarty_tpl->tpl_vars['img_dir']->value;?>
 404.png">

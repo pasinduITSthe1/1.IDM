@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 10:59:11
+/* Smarty version 4.5.5, created on 2025-10-29 12:33:18
   from 'C:\wamp64\www\1.IDM\themes\hotel-reservation-theme\modules\blockcart\blockcart.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f27f622e09_58147136',
+  'unifunc' => 'content_6901bc366c9541_71699227',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -21,18 +21,18 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./cartrow.tpl' => 2,
   ),
 ),false)) {
-function content_68e4f27f622e09_58147136 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901bc366c9541_71699227 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_loadInheritance();
 $_smarty_tpl->inheritance->init($_smarty_tpl, false);
 ?>
 
 <?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_203588991168e4f27e9f81d9_29893353', 'blockcart');
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_4416177806901bc36337c29_93515364', 'blockcart');
 ?>
 
 <?php }
 /* {block 'blockcart_shopping_cart_products'} */
-class Block_169442976868e4f27eb35b49_31478394 extends Smarty_Internal_Block
+class Block_418429956901bc363e92d7_94451154 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -76,7 +76,7 @@ $_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl, 1);?>
 }
 /* {/block 'blockcart_shopping_cart_products'} */
 /* {block 'blockcart_shopping_cart_discounts'} */
-class Block_209024635068e4f27ebfa4a0_55187051 extends Smarty_Internal_Block
+class Block_7001590616901bc3644bda0_62094602 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_checkPlugins(array(0=>array('file'=>'C:\\wamp64\\www\\1.IDM\\tools\\smarty\\plugins\\modifier.count.php','function'=>'smarty_modifier_count',),));
@@ -128,7 +128,7 @@ $_smarty_tpl->smarty->ext->_foreach->restore($_smarty_tpl, 1);?>
 }
 /* {/block 'blockcart_shopping_cart_discounts'} */
 /* {block 'blockcart_shopping_cart_total_tax'} */
-class Block_195748134468e4f27ed9f166_19619107 extends Smarty_Internal_Block
+class Block_1542766846901bc364cd443_39902226 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -146,7 +146,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_shopping_cart_total_tax'} */
 /* {block 'blockcart_shopping_cart_total_convenience_fee'} */
-class Block_143466571568e4f27edb8504_24868075 extends Smarty_Internal_Block
+class Block_16130010816901bc364d8b52_92789538 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -164,7 +164,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_shopping_cart_total_convenience_fee'} */
 /* {block 'blockcart_shopping_cart_total'} */
-class Block_86545158568e4f27edde681_39924810 extends Smarty_Internal_Block
+class Block_2628085716901bc364e2f26_48584989 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -192,7 +192,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_shopping_cart_total'} */
 /* {block 'blockcart_shopping_cart_prices'} */
-class Block_99904293568e4f27eccbf41_84586297 extends Smarty_Internal_Block
+class Block_4099609636901bc3648d681_50882975 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -234,15 +234,15 @@ echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUG
 											</div>
 											<?php }?> --><!-- commented by webkul unnecessary data -->
 											<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_195748134468e4f27ed9f166_19619107', 'blockcart_shopping_cart_total_tax', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_1542766846901bc364cd443_39902226', 'blockcart_shopping_cart_total_tax', $this->tplIndex);
 ?>
 
 											<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_143466571568e4f27edb8504_24868075', 'blockcart_shopping_cart_total_convenience_fee', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_16130010816901bc364d8b52_92789538', 'blockcart_shopping_cart_total_convenience_fee', $this->tplIndex);
 ?>
 
 											<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_86545158568e4f27edde681_39924810', 'blockcart_shopping_cart_total', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_2628085716901bc364e2f26_48584989', 'blockcart_shopping_cart_total', $this->tplIndex);
 ?>
 
 										</div>
@@ -251,7 +251,7 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_86545158568e4f27ed
 }
 /* {/block 'blockcart_shopping_cart_prices'} */
 /* {block 'blockcart_shopping_cart_checkout_action'} */
-class Block_197224239068e4f27ee32ad5_22401314 extends Smarty_Internal_Block
+class Block_1242127476901bc364fa5c7_95638427 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -271,7 +271,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_shopping_cart_checkout_action'} */
 /* {block 'blockcart_shopping_cart_content'} */
-class Block_45719093168e4f27eafdb33_90649552 extends Smarty_Internal_Block
+class Block_11163326896901bc363d84a3_95436608 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -284,7 +284,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 if ((isset($_smarty_tpl->tpl_vars['colapseExpandStatus']->value)) && $_smarty_tpl->tpl_vars['colapseExpandStatus']->value == 'expanded' || !$_smarty_tpl->tpl_vars['ajax_allowed']->value || !(isset($_smarty_tpl->tpl_vars['colapseExpandStatus']->value))) {?> expanded<?php } else { ?> collapsed unvisible<?php }
 }?>">
 									<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_169442976868e4f27eb35b49_31478394', 'blockcart_shopping_cart_products', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_418429956901bc363e92d7_94451154', 'blockcart_shopping_cart_products', $this->tplIndex);
 ?>
 
 									<p class="cart_block_no_products<?php if ($_smarty_tpl->tpl_vars['products']->value) {?> unvisible<?php }?>">
@@ -292,15 +292,15 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_169442976868e4f27e
 
 									</p>
 									<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_209024635068e4f27ebfa4a0_55187051', 'blockcart_shopping_cart_discounts', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_7001590616901bc3644bda0_62094602', 'blockcart_shopping_cart_discounts', $this->tplIndex);
 ?>
 
 									<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_99904293568e4f27eccbf41_84586297', 'blockcart_shopping_cart_prices', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_4099609636901bc3648d681_50882975', 'blockcart_shopping_cart_prices', $this->tplIndex);
 ?>
 
 									<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_197224239068e4f27ee32ad5_22401314', 'blockcart_shopping_cart_checkout_action', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_1242127476901bc364fa5c7_95638427', 'blockcart_shopping_cart_checkout_action', $this->tplIndex);
 ?>
 
 								</div>
@@ -312,7 +312,7 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_197224239068e4f27e
 }
 /* {/block 'blockcart_shopping_cart_content'} */
 /* {block 'blockcart_shopping_cart'} */
-class Block_13785191368e4f27ea114f0_40648658 extends Smarty_Internal_Block
+class Block_15389219016901bc36354121_91441752 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -349,7 +349,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 					<?php }?>
 				</a>
 				<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_45719093168e4f27eafdb33_90649552', 'blockcart_shopping_cart_content', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_11163326896901bc363d84a3_95436608', 'blockcart_shopping_cart_content', $this->tplIndex);
 ?>
 
 			</div>
@@ -358,7 +358,7 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_45719093168e4f27ea
 }
 /* {/block 'blockcart_shopping_cart'} */
 /* {block 'blockcart_layer_cart_left_heading'} */
-class Block_68911863068e4f27f0e4c01_14330438 extends Smarty_Internal_Block
+class Block_12285738006901bc3652a2a2_04739871 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -376,7 +376,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_layer_cart_left_heading'} */
 /* {block 'blockcart_layer_cart_product_image'} */
-class Block_84290907568e4f27f0f8e40_88232944 extends Smarty_Internal_Block
+class Block_16550153866901bc365307e3_81165482 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -388,7 +388,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_layer_cart_product_image'} */
 /* {block 'blockcart_layer_cart_product_info'} */
-class Block_132579029468e4f27f10a0b8_99959964 extends Smarty_Internal_Block
+class Block_8619372226901bc36532ed7_32016076 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -434,7 +434,7 @@ echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUG
 }
 /* {/block 'blockcart_layer_cart_product_info'} */
 /* {block 'blockcart_layer_cart_left'} */
-class Block_181254512668e4f27f0d2bd6_28338856 extends Smarty_Internal_Block
+class Block_15508264786901bc36528964_19837334 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -443,15 +443,15 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 							<span class="cross" title="<?php echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Close window','mod'=>'blockcart'),$_smarty_tpl ) );?>
 "></span>
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_68911863068e4f27f0e4c01_14330438', 'blockcart_layer_cart_left_heading', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_12285738006901bc3652a2a2_04739871', 'blockcart_layer_cart_left_heading', $this->tplIndex);
 ?>
 
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_84290907568e4f27f0f8e40_88232944', 'blockcart_layer_cart_product_image', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_16550153866901bc365307e3_81165482', 'blockcart_layer_cart_product_image', $this->tplIndex);
 ?>
 
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_132579029468e4f27f10a0b8_99959964', 'blockcart_layer_cart_product_info', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_8619372226901bc36532ed7_32016076', 'blockcart_layer_cart_product_info', $this->tplIndex);
 ?>
 
 						</div>
@@ -460,7 +460,7 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_132579029468e4f27f
 }
 /* {/block 'blockcart_layer_cart_left'} */
 /* {block 'blockcart_layer_cart_right_heading'} */
-class Block_208251967568e4f27f15a071_16874714 extends Smarty_Internal_Block
+class Block_4831386836901bc3654aaf7_55525922 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -483,7 +483,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_layer_cart_right_heading'} */
 /* {block 'blockcart_layer_cart_room_total_price'} */
-class Block_178365154568e4f27f19dab1_79775172 extends Smarty_Internal_Block
+class Block_4775987386901bc365618e7_94896414 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -514,7 +514,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_layer_cart_room_total_price'} */
 /* {block 'blockcart_layer_cart_product_total_price'} */
-class Block_147478032068e4f27f1e4899_87502712 extends Smarty_Internal_Block
+class Block_19969314386901bc3657e278_75083295 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -545,7 +545,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_layer_cart_product_total_price'} */
 /* {block 'blockcart_layer_cart_total_convenience_fee'} */
-class Block_145952805068e4f27f330091_76631226 extends Smarty_Internal_Block
+class Block_781839906901bc365db3b8_58212370 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -574,7 +574,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_layer_cart_total_convenience_fee'} */
 /* {block 'blockcart_layer_cart_total_tax'} */
-class Block_69829024068e4f27f370b88_54913067 extends Smarty_Internal_Block
+class Block_16654415096901bc365ef2a6_50074373 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -592,7 +592,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_layer_cart_total_tax'} */
 /* {block 'blockcart_layer_cart_actions'} */
-class Block_73162621568e4f27f3ea5c2_09870113 extends Smarty_Internal_Block
+class Block_6375070086901bc36614511_90697365 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -619,7 +619,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 }
 /* {/block 'blockcart_layer_cart_actions'} */
 /* {block 'blockcart_layer_cart_total_price'} */
-class Block_38494668168e4f27f38ecb8_37634983 extends Smarty_Internal_Block
+class Block_12049458306901bc365f7ef5_02637796 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -651,7 +651,7 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 									</span>
 								</div>
 								<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_73162621568e4f27f3ea5c2_09870113', 'blockcart_layer_cart_actions', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_6375070086901bc36614511_90697365', 'blockcart_layer_cart_actions', $this->tplIndex);
 ?>
 
 							<?php
@@ -659,23 +659,23 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_73162621568e4f27f3
 }
 /* {/block 'blockcart_layer_cart_total_price'} */
 /* {block 'blockcart_layer_cart_right'} */
-class Block_206281146368e4f27f1572d9_75744966 extends Smarty_Internal_Block
+class Block_621415066901bc36549080_96547450 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
 
 						<div class="layer_cart_cart col-xs-12 col-md-6">
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_208251967568e4f27f15a071_16874714', 'blockcart_layer_cart_right_heading', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_4831386836901bc3654aaf7_55525922', 'blockcart_layer_cart_right_heading', $this->tplIndex);
 ?>
 
 
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_178365154568e4f27f19dab1_79775172', 'blockcart_layer_cart_room_total_price', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_4775987386901bc365618e7_94896414', 'blockcart_layer_cart_room_total_price', $this->tplIndex);
 ?>
 
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_147478032068e4f27f1e4899_87502712', 'blockcart_layer_cart_product_total_price', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_19969314386901bc3657e278_75083295', 'blockcart_layer_cart_product_total_price', $this->tplIndex);
 ?>
 
 
@@ -730,15 +730,15 @@ echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUG
 								</span>
 							</div> -->
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_145952805068e4f27f330091_76631226', 'blockcart_layer_cart_total_convenience_fee', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_781839906901bc365db3b8_58212370', 'blockcart_layer_cart_total_convenience_fee', $this->tplIndex);
 ?>
 
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_69829024068e4f27f370b88_54913067', 'blockcart_layer_cart_total_tax', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_16654415096901bc365ef2a6_50074373', 'blockcart_layer_cart_total_tax', $this->tplIndex);
 ?>
 
 							<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_38494668168e4f27f38ecb8_37634983', 'blockcart_layer_cart_total_price', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_12049458306901bc365f7ef5_02637796', 'blockcart_layer_cart_total_price', $this->tplIndex);
 ?>
 
 						</div>
@@ -747,7 +747,7 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_38494668168e4f27f3
 }
 /* {/block 'blockcart_layer_cart_right'} */
 /* {block 'blockcart_layer_cart'} */
-class Block_214697936068e4f27f0c2574_94998796 extends Smarty_Internal_Block
+class Block_16095280806901bc36523600_36120149 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
@@ -756,11 +756,11 @@ public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 			<div id="layer_cart">
 				<div class="clearfix">
 					<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_181254512668e4f27f0d2bd6_28338856', 'blockcart_layer_cart_left', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_15508264786901bc36528964_19837334', 'blockcart_layer_cart_left', $this->tplIndex);
 ?>
 
 					<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_206281146368e4f27f1572d9_75744966', 'blockcart_layer_cart_right', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_621415066901bc36549080_96547450', 'blockcart_layer_cart_right', $this->tplIndex);
 ?>
 
 				</div>
@@ -773,23 +773,23 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_206281146368e4f27f
 }
 /* {/block 'blockcart_layer_cart'} */
 /* {block 'blockcart_js_vars'} */
-class Block_135513892568e4f27f451534_58878636 extends Smarty_Internal_Block
+class Block_15054085916901bc36630b02_17442075 extends Smarty_Internal_Block
 {
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
 ?>
 
-		<?php $_block_plugin30 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin30, 'addJsDefL'))) {
+		<?php $_block_plugin1 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin1, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'someErrorCondition'));
 $_block_repeat=true;
-echo $_block_plugin30->addJsDefL(array('name'=>'someErrorCondition'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin1->addJsDefL(array('name'=>'someErrorCondition'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Some Error occured.Please try again.','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin30->addJsDefL(array('name'=>'someErrorCondition'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin1->addJsDefL(array('name'=>'someErrorCondition'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['addJsDef'][0], array( array('CUSTOMIZE_TEXTFIELD'=>$_smarty_tpl->tpl_vars['CUSTOMIZE_TEXTFIELD']->value),$_smarty_tpl ) );
@@ -801,88 +801,88 @@ echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUG
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['addJsDef'][0], array( array('SELLING_PREFERENCE_STANDALONE'=>Product::SELLING_PREFERENCE_STANDALONE),$_smarty_tpl ) );
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['addJsDef'][0], array( array('SELLING_PREFERENCE_HOTEL_STANDALONE'=>Product::SELLING_PREFERENCE_HOTEL_STANDALONE),$_smarty_tpl ) );
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['addJsDef'][0], array( array('SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE'=>Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE),$_smarty_tpl ) );
-$_block_plugin31 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin31, 'addJsDefL'))) {
+$_block_plugin2 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin2, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'customizationIdMessage'));
 $_block_repeat=true;
-echo $_block_plugin31->addJsDefL(array('name'=>'customizationIdMessage'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin2->addJsDefL(array('name'=>'customizationIdMessage'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Customization #','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin31->addJsDefL(array('name'=>'customizationIdMessage'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin2->addJsDefL(array('name'=>'customizationIdMessage'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);
-$_block_plugin32 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin32, 'addJsDefL'))) {
+$_block_plugin3 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin3, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'removingLinkText'));
 $_block_repeat=true;
-echo $_block_plugin32->addJsDefL(array('name'=>'removingLinkText'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin3->addJsDefL(array('name'=>'removingLinkText'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'remove this product from my cart','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin32->addJsDefL(array('name'=>'removingLinkText'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin3->addJsDefL(array('name'=>'removingLinkText'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);
-$_block_plugin33 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin33, 'addJsDefL'))) {
+$_block_plugin4 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin4, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'freeShippingTranslation'));
 $_block_repeat=true;
-echo $_block_plugin33->addJsDefL(array('name'=>'freeShippingTranslation'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin4->addJsDefL(array('name'=>'freeShippingTranslation'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Free shipping!','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin33->addJsDefL(array('name'=>'freeShippingTranslation'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin4->addJsDefL(array('name'=>'freeShippingTranslation'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);
-$_block_plugin34 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin34, 'addJsDefL'))) {
+$_block_plugin5 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin5, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'freeProductTranslation'));
 $_block_repeat=true;
-echo $_block_plugin34->addJsDefL(array('name'=>'freeProductTranslation'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin5->addJsDefL(array('name'=>'freeProductTranslation'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Free!','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin34->addJsDefL(array('name'=>'freeProductTranslation'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin5->addJsDefL(array('name'=>'freeProductTranslation'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);
-$_block_plugin35 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin35, 'addJsDefL'))) {
+$_block_plugin6 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin6, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'delete_txt'));
 $_block_repeat=true;
-echo $_block_plugin35->addJsDefL(array('name'=>'delete_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin6->addJsDefL(array('name'=>'delete_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Delete','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin35->addJsDefL(array('name'=>'delete_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin6->addJsDefL(array('name'=>'delete_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);
-$_block_plugin36 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin36, 'addJsDefL'))) {
+$_block_plugin7 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin7, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'toBeDetermined'));
 $_block_repeat=true;
-echo $_block_plugin36->addJsDefL(array('name'=>'toBeDetermined'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin7->addJsDefL(array('name'=>'toBeDetermined'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'To be determined','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin36->addJsDefL(array('name'=>'toBeDetermined'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin7->addJsDefL(array('name'=>'toBeDetermined'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
 				<?php echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['addJsDef'][0], array( array('module_dir'=>$_smarty_tpl->tpl_vars['module_dir']->value),$_smarty_tpl ) );?>
@@ -895,144 +895,144 @@ array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
 
 		<?php echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['addJsDef'][0], array( array('currency_blank'=>$_smarty_tpl->tpl_vars['currency']->value->blank),$_smarty_tpl ) );?>
 
-		<?php $_block_plugin37 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin37, 'addJsDefL'))) {
+		<?php $_block_plugin8 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin8, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'adults_txt'));
 $_block_repeat=true;
-echo $_block_plugin37->addJsDefL(array('name'=>'adults_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin8->addJsDefL(array('name'=>'adults_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Adults','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin37->addJsDefL(array('name'=>'adults_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin8->addJsDefL(array('name'=>'adults_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin38 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin38, 'addJsDefL'))) {
+		<?php $_block_plugin9 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin9, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'children_txt'));
 $_block_repeat=true;
-echo $_block_plugin38->addJsDefL(array('name'=>'children_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin9->addJsDefL(array('name'=>'children_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Children','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin38->addJsDefL(array('name'=>'children_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin9->addJsDefL(array('name'=>'children_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin39 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin39, 'addJsDefL'))) {
+		<?php $_block_plugin10 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin10, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'price_txt'));
 $_block_repeat=true;
-echo $_block_plugin39->addJsDefL(array('name'=>'price_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin10->addJsDefL(array('name'=>'price_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Price','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin39->addJsDefL(array('name'=>'price_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin10->addJsDefL(array('name'=>'price_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin40 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin40, 'addJsDefL'))) {
+		<?php $_block_plugin11 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin11, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'total_qty_txt'));
 $_block_repeat=true;
-echo $_block_plugin40->addJsDefL(array('name'=>'total_qty_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin11->addJsDefL(array('name'=>'total_qty_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Total Qty.','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin40->addJsDefL(array('name'=>'total_qty_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin11->addJsDefL(array('name'=>'total_qty_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin41 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin41, 'addJsDefL'))) {
+		<?php $_block_plugin12 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin12, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'variant_txt'));
 $_block_repeat=true;
-echo $_block_plugin41->addJsDefL(array('name'=>'variant_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin12->addJsDefL(array('name'=>'variant_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Variant','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin41->addJsDefL(array('name'=>'variant_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin12->addJsDefL(array('name'=>'variant_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin42 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin42, 'addJsDefL'))) {
+		<?php $_block_plugin13 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin13, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'qty_txt'));
 $_block_repeat=true;
-echo $_block_plugin42->addJsDefL(array('name'=>'qty_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin13->addJsDefL(array('name'=>'qty_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Qty','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin42->addJsDefL(array('name'=>'qty_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin13->addJsDefL(array('name'=>'qty_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin43 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin43, 'addJsDefL'))) {
+		<?php $_block_plugin14 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin14, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'duration_txt'));
 $_block_repeat=true;
-echo $_block_plugin43->addJsDefL(array('name'=>'duration_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin14->addJsDefL(array('name'=>'duration_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Duration','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin43->addJsDefL(array('name'=>'duration_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin14->addJsDefL(array('name'=>'duration_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin44 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin44, 'addJsDefL'))) {
+		<?php $_block_plugin15 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin15, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'capacity_txt'));
 $_block_repeat=true;
-echo $_block_plugin44->addJsDefL(array('name'=>'capacity_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin15->addJsDefL(array('name'=>'capacity_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Capacity','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin44->addJsDefL(array('name'=>'capacity_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin15->addJsDefL(array('name'=>'capacity_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin45 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin45, 'addJsDefL'))) {
+		<?php $_block_plugin16 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin16, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'remove_rm_title'));
 $_block_repeat=true;
-echo $_block_plugin45->addJsDefL(array('name'=>'remove_rm_title'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin16->addJsDefL(array('name'=>'remove_rm_title'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'Remove this room from my cart','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin45->addJsDefL(array('name'=>'remove_rm_title'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin16->addJsDefL(array('name'=>'remove_rm_title'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
-		<?php $_block_plugin46 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
-if (!is_callable(array($_block_plugin46, 'addJsDefL'))) {
+		<?php $_block_plugin17 = isset($_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0]) ? $_smarty_tpl->smarty->registered_plugins['block']['addJsDefL'][0][0] : null;
+if (!is_callable(array($_block_plugin17, 'addJsDefL'))) {
 throw new SmartyException('block tag \'addJsDefL\' not callable or registered');
 }
 $_smarty_tpl->smarty->_cache['_tag_stack'][] = array('addJsDefL', array('name'=>'no_internet_txt'));
 $_block_repeat=true;
-echo $_block_plugin46->addJsDefL(array('name'=>'no_internet_txt'), null, $_smarty_tpl, $_block_repeat);
+echo $_block_plugin17->addJsDefL(array('name'=>'no_internet_txt'), null, $_smarty_tpl, $_block_repeat);
 while ($_block_repeat) {
 ob_start();
 echo call_user_func_array( $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['l'][0], array( array('s'=>'No internet. Please check your internet connection.','mod'=>'blockcart','js'=>1),$_smarty_tpl ) );
 $_block_repeat=false;
-echo $_block_plugin46->addJsDefL(array('name'=>'no_internet_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
+echo $_block_plugin17->addJsDefL(array('name'=>'no_internet_txt'), ob_get_clean(), $_smarty_tpl, $_block_repeat);
 }
 array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
 
@@ -1046,104 +1046,104 @@ array_pop($_smarty_tpl->smarty->_cache['_tag_stack']);?>
 }
 /* {/block 'blockcart_js_vars'} */
 /* {block 'blockcart'} */
-class Block_203588991168e4f27e9f81d9_29893353 extends Smarty_Internal_Block
+class Block_4416177806901bc36337c29_93515364 extends Smarty_Internal_Block
 {
 public $subBlocks = array (
   'blockcart' => 
   array (
-    0 => 'Block_203588991168e4f27e9f81d9_29893353',
+    0 => 'Block_4416177806901bc36337c29_93515364',
   ),
   'blockcart_shopping_cart' => 
   array (
-    0 => 'Block_13785191368e4f27ea114f0_40648658',
+    0 => 'Block_15389219016901bc36354121_91441752',
   ),
   'blockcart_shopping_cart_content' => 
   array (
-    0 => 'Block_45719093168e4f27eafdb33_90649552',
+    0 => 'Block_11163326896901bc363d84a3_95436608',
   ),
   'blockcart_shopping_cart_products' => 
   array (
-    0 => 'Block_169442976868e4f27eb35b49_31478394',
+    0 => 'Block_418429956901bc363e92d7_94451154',
   ),
   'blockcart_shopping_cart_discounts' => 
   array (
-    0 => 'Block_209024635068e4f27ebfa4a0_55187051',
+    0 => 'Block_7001590616901bc3644bda0_62094602',
   ),
   'blockcart_shopping_cart_prices' => 
   array (
-    0 => 'Block_99904293568e4f27eccbf41_84586297',
+    0 => 'Block_4099609636901bc3648d681_50882975',
   ),
   'blockcart_shopping_cart_total_tax' => 
   array (
-    0 => 'Block_195748134468e4f27ed9f166_19619107',
+    0 => 'Block_1542766846901bc364cd443_39902226',
   ),
   'blockcart_shopping_cart_total_convenience_fee' => 
   array (
-    0 => 'Block_143466571568e4f27edb8504_24868075',
+    0 => 'Block_16130010816901bc364d8b52_92789538',
   ),
   'blockcart_shopping_cart_total' => 
   array (
-    0 => 'Block_86545158568e4f27edde681_39924810',
+    0 => 'Block_2628085716901bc364e2f26_48584989',
   ),
   'blockcart_shopping_cart_checkout_action' => 
   array (
-    0 => 'Block_197224239068e4f27ee32ad5_22401314',
+    0 => 'Block_1242127476901bc364fa5c7_95638427',
   ),
   'blockcart_layer_cart' => 
   array (
-    0 => 'Block_214697936068e4f27f0c2574_94998796',
+    0 => 'Block_16095280806901bc36523600_36120149',
   ),
   'blockcart_layer_cart_left' => 
   array (
-    0 => 'Block_181254512668e4f27f0d2bd6_28338856',
+    0 => 'Block_15508264786901bc36528964_19837334',
   ),
   'blockcart_layer_cart_left_heading' => 
   array (
-    0 => 'Block_68911863068e4f27f0e4c01_14330438',
+    0 => 'Block_12285738006901bc3652a2a2_04739871',
   ),
   'blockcart_layer_cart_product_image' => 
   array (
-    0 => 'Block_84290907568e4f27f0f8e40_88232944',
+    0 => 'Block_16550153866901bc365307e3_81165482',
   ),
   'blockcart_layer_cart_product_info' => 
   array (
-    0 => 'Block_132579029468e4f27f10a0b8_99959964',
+    0 => 'Block_8619372226901bc36532ed7_32016076',
   ),
   'blockcart_layer_cart_right' => 
   array (
-    0 => 'Block_206281146368e4f27f1572d9_75744966',
+    0 => 'Block_621415066901bc36549080_96547450',
   ),
   'blockcart_layer_cart_right_heading' => 
   array (
-    0 => 'Block_208251967568e4f27f15a071_16874714',
+    0 => 'Block_4831386836901bc3654aaf7_55525922',
   ),
   'blockcart_layer_cart_room_total_price' => 
   array (
-    0 => 'Block_178365154568e4f27f19dab1_79775172',
+    0 => 'Block_4775987386901bc365618e7_94896414',
   ),
   'blockcart_layer_cart_product_total_price' => 
   array (
-    0 => 'Block_147478032068e4f27f1e4899_87502712',
+    0 => 'Block_19969314386901bc3657e278_75083295',
   ),
   'blockcart_layer_cart_total_convenience_fee' => 
   array (
-    0 => 'Block_145952805068e4f27f330091_76631226',
+    0 => 'Block_781839906901bc365db3b8_58212370',
   ),
   'blockcart_layer_cart_total_tax' => 
   array (
-    0 => 'Block_69829024068e4f27f370b88_54913067',
+    0 => 'Block_16654415096901bc365ef2a6_50074373',
   ),
   'blockcart_layer_cart_total_price' => 
   array (
-    0 => 'Block_38494668168e4f27f38ecb8_37634983',
+    0 => 'Block_12049458306901bc365f7ef5_02637796',
   ),
   'blockcart_layer_cart_actions' => 
   array (
-    0 => 'Block_73162621568e4f27f3ea5c2_09870113',
+    0 => 'Block_6375070086901bc36614511_90697365',
   ),
   'blockcart_js_vars' => 
   array (
-    0 => 'Block_135513892568e4f27f451534_58878636',
+    0 => 'Block_15054085916901bc36630b02_17442075',
   ),
 );
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {
@@ -1155,7 +1155,7 @@ $_smarty_tpl->_checkPlugins(array(0=>array('file'=>'C:\\wamp64\\www\\1.IDM\\tool
 	<div class="header-top-item <?php if ($_smarty_tpl->tpl_vars['PS_CATALOG_MODE']->value) {?>header_user_catalog<?php }?>">
 	<?php }?>
 		<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_13785191368e4f27ea114f0_40648658', 'blockcart_shopping_cart', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_15389219016901bc36354121_91441752', 'blockcart_shopping_cart', $this->tplIndex);
 ?>
 
 	<?php if ((isset($_smarty_tpl->tpl_vars['blockcart_top']->value)) && $_smarty_tpl->tpl_vars['blockcart_top']->value) {?>
@@ -1164,11 +1164,11 @@ $_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_13785191368e4f27ea
 	<?php echo smarty_function_counter(array('name'=>'active_overlay','assign'=>'active_overlay'),$_smarty_tpl);?>
 
 	<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_214697936068e4f27f0c2574_94998796', 'blockcart_layer_cart', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_16095280806901bc36523600_36120149', 'blockcart_layer_cart', $this->tplIndex);
 ?>
 
 	<?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_135513892568e4f27f451534_58878636', 'blockcart_js_vars', $this->tplIndex);
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_15054085916901bc36630b02_17442075', 'blockcart_js_vars', $this->tplIndex);
 ?>
 
 	<?php

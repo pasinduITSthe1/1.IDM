@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 /// QloApps WebService API Service
@@ -14,12 +14,32 @@ class QloAppsApiService {
   // Singleton pattern
   static final QloAppsApiService _instance = QloAppsApiService._internal();
   factory QloAppsApiService() => _instance;
-  QloAppsApiService._internal();
+  
+  late final Dio _dio;
+  
+  QloAppsApiService._internal() {
+    // Initialize Dio with custom configuration
+    _dio = Dio(BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      headers: _getHeaders(),
+      validateStatus: (status) => status != null && status < 500,
+    ));
+    
+    // Add interceptor for debugging
+    _dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+      logPrint: (obj) => debugPrint(obj.toString()),
+    ));
+  }
 
   // ⚙️ CONFIGURATION - Update these values
-  static const String baseUrl = 'http://localhost/1.IDM/api';
+  static const String baseUrl =
+      'http://192.168.217.41/1.IDM/api'; // ✅ USB Tethering IP!
   static const String apiKey =
-      'YOUR_QLOAPPS_API_KEY_HERE'; // ⚠️ Replace with your key
+      '2WUGS9C92CRCSJ1IJME9ST1DFCFDD3C4'; // ✅ API Key configured!
 
   // Get authentication headers
   Map<String, String> _getHeaders({bool isXml = false}) {
@@ -45,16 +65,22 @@ class QloAppsApiService {
       };
 
       final endpoint = resourceId != null ? '$resource/$resourceId' : resource;
-      final uri = Uri.parse('$baseUrl/$endpoint').replace(
+      
+      debugPrint('📡 QloApps GET: $baseUrl/$endpoint');
+      debugPrint('📋 Params: $queryParams');
+
+      final response = await _dio.get(
+        '/$endpoint',
         queryParameters: queryParams,
       );
-
-      debugPrint('📡 QloApps GET: $uri');
-
-      final response = await http.get(uri, headers: _getHeaders());
+      
       return _handleResponse(response);
     } catch (e) {
       debugPrint('❌ QloApps GET error: $e');
+      if (e is DioException) {
+        debugPrint('   Type: ${e.type}');
+        debugPrint('   Message: ${e.message}');
+      }
       throw Exception('Network error: $e');
     }
   }
@@ -65,22 +91,26 @@ class QloAppsApiService {
     String xmlData,
   ) async {
     try {
-      final uri = Uri.parse('$baseUrl/$resource').replace(
+      debugPrint('📡 QloApps POST: $baseUrl/$resource');
+      debugPrint('📤 XML Data: ${xmlData.substring(0, xmlData.length > 200 ? 200 : xmlData.length)}...');
+
+      final response = await _dio.post(
+        '/$resource',
+        data: xmlData,
         queryParameters: {'output_format': 'JSON'},
-      );
-
-      debugPrint('📡 QloApps POST: $uri');
-      debugPrint('📤 XML Data: ${xmlData.substring(0, 200)}...');
-
-      final response = await http.post(
-        uri,
-        headers: _getHeaders(isXml: true),
-        body: xmlData,
+        options: Options(
+          headers: _getHeaders(isXml: true),
+          contentType: 'application/xml',
+        ),
       );
 
       return _handleResponse(response);
     } catch (e) {
       debugPrint('❌ QloApps POST error: $e');
+      if (e is DioException) {
+        debugPrint('   Type: ${e.type}');
+        debugPrint('   Message: ${e.message}');
+      }
       throw Exception('Network error: $e');
     }
   }
@@ -92,21 +122,25 @@ class QloAppsApiService {
     String xmlData,
   ) async {
     try {
-      final uri = Uri.parse('$baseUrl/$resource/$resourceId').replace(
+      debugPrint('📡 QloApps PUT: $baseUrl/$resource/$resourceId');
+
+      final response = await _dio.put(
+        '/$resource/$resourceId',
+        data: xmlData,
         queryParameters: {'output_format': 'JSON'},
-      );
-
-      debugPrint('📡 QloApps PUT: $uri');
-
-      final response = await http.put(
-        uri,
-        headers: _getHeaders(isXml: true),
-        body: xmlData,
+        options: Options(
+          headers: _getHeaders(isXml: true),
+          contentType: 'application/xml',
+        ),
       );
 
       return _handleResponse(response);
     } catch (e) {
       debugPrint('❌ QloApps PUT error: $e');
+      if (e is DioException) {
+        debugPrint('   Type: ${e.type}');
+        debugPrint('   Message: ${e.message}');
+      }
       throw Exception('Network error: $e');
     }
   }
@@ -117,16 +151,20 @@ class QloAppsApiService {
     String resourceId,
   ) async {
     try {
-      final uri = Uri.parse('$baseUrl/$resource/$resourceId').replace(
+      debugPrint('📡 QloApps DELETE: $baseUrl/$resource/$resourceId');
+
+      final response = await _dio.delete(
+        '/$resource/$resourceId',
         queryParameters: {'output_format': 'JSON'},
       );
 
-      debugPrint('📡 QloApps DELETE: $uri');
-
-      final response = await http.delete(uri, headers: _getHeaders());
       return _handleResponse(response);
     } catch (e) {
       debugPrint('❌ QloApps DELETE error: $e');
+      if (e is DioException) {
+        debugPrint('   Type: ${e.type}');
+        debugPrint('   Message: ${e.message}');
+      }
       throw Exception('Network error: $e');
     }
   }
@@ -193,9 +231,11 @@ class QloAppsApiService {
     final updated = {...existing, ...updates};
 
     final xml = _buildCustomerXml(
+      id: customerId,  // ✅ Include ID for update
       firstName: updated['firstname'],
       lastName: updated['lastname'],
       email: updated['email'],
+      password: updated['passwd'],  // ✅ Include existing encrypted password
       phone: updated['phone'],
     );
 
@@ -306,6 +346,7 @@ class QloAppsApiService {
 
   /// Build XML for customer creation/update
   String _buildCustomerXml({
+    int? id,  // ✅ Required for updates
     required String firstName,
     required String lastName,
     required String email,
@@ -313,14 +354,18 @@ class QloAppsApiService {
     String? phone,
     String? dateOfBirth,
   }) {
+    // ✅ QloApps requires phone - use default if not provided
+    final phoneNumber = phone ?? '0000000000';
+    
     return '''<?xml version="1.0" encoding="UTF-8"?>
 <prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
   <customer>
+    ${id != null ? '<id>$id</id>' : ''}
     <firstname><![CDATA[$firstName]]></firstname>
     <lastname><![CDATA[$lastName]]></lastname>
     <email><![CDATA[$email]]></email>
     ${password != null ? '<passwd><![CDATA[$password]]></passwd>' : ''}
-    ${phone != null ? '<phone><![CDATA[$phone]]></phone>' : ''}
+    <phone><![CDATA[$phoneNumber]]></phone>
     ${dateOfBirth != null ? '<birthday>$dateOfBirth</birthday>' : ''}
     <id_default_group>3</id_default_group>
     <active>1</active>
@@ -331,24 +376,33 @@ class QloAppsApiService {
   // ==================== RESPONSE HANDLER ====================
 
   /// Handle API response
-  Map<String, dynamic> _handleResponse(http.Response response) {
+  Map<String, dynamic> _handleResponse(Response response) {
     debugPrint('📥 Response status: ${response.statusCode}');
 
-    if (response.statusCode >= 200 && response.statusCode < 300) {
+    if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
       try {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        debugPrint('✅ Success');
-        return data;
+        // Dio already parses JSON automatically
+        if (response.data is Map) {
+          debugPrint('✅ Success');
+          return response.data as Map<String, dynamic>;
+        } else if (response.data is String) {
+          final data = jsonDecode(response.data) as Map<String, dynamic>;
+          debugPrint('✅ Success');
+          return data;
+        }
+        return {'success': true, 'data': response.data};
       } catch (e) {
         debugPrint('⚠️ JSON decode error: $e');
-        return {'success': true, 'raw': response.body};
+        return {'success': true, 'raw': response.data.toString()};
       }
     } else {
-      debugPrint('❌ Error: ${response.body}');
+      debugPrint('❌ Error: ${response.data}');
 
       // Try to parse error message
       try {
-        final error = jsonDecode(response.body);
+        final error = response.data is String 
+            ? jsonDecode(response.data) 
+            : response.data;
         final message = error['errors']?[0]?['message'] ?? 'Unknown error';
         throw Exception('QloApps API Error: $message');
       } catch (e) {
@@ -374,15 +428,121 @@ class QloAppsApiService {
   /// Get API schema (available resources)
   Future<Map<String, dynamic>> getApiSchema() async {
     try {
-      final uri = Uri.parse(baseUrl).replace(
+      final response = await _dio.get(
+        '',
         queryParameters: {'output_format': 'JSON'},
       );
-
-      final response = await http.get(uri, headers: _getHeaders());
       return _handleResponse(response);
     } catch (e) {
       debugPrint('❌ Schema error: $e');
       return {};
     }
   }
+
+  // ==================== HOTEL OPERATIONS (JSON API) ====================
+
+  /// Record guest check-in to hotel backend
+  Future<Map<String, dynamic>> checkInGuest({
+    required int customerId,
+    required int bookingId,
+    required int roomId,
+    required String roomNumber,
+    required String checkInTime,
+    required String checkInMethod,
+    required String checkedInBy,
+    required String notes,
+  }) async {
+    try {
+      debugPrint('📤 Recording check-in to hotel backend...');
+      debugPrint('   Customer ID: $customerId');
+      debugPrint('   Room: $roomNumber');
+
+      final response = await _dio.post(
+        '/hotel/checkins',
+        data: {
+          'id_customer': customerId,
+          'id_booking': bookingId,
+          'id_room': roomId,
+          'room_number': roomNumber,
+          'check_in_time': checkInTime,
+          'check_in_method': checkInMethod,
+          'checked_in_by': checkedInBy,
+          'notes': notes,
+        },
+        queryParameters: {'output_format': 'JSON'},
+      );
+
+      debugPrint('✅ Check-in recorded successfully');
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('❌ Check-in recording failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Record guest checkout to hotel backend
+  Future<Map<String, dynamic>> checkOutGuest({
+    required int customerId,
+    required String checkOutTime,
+    required double totalAmount,
+    required String paymentStatus,
+    required String paymentMethod,
+    required String notes,
+  }) async {
+    try {
+      debugPrint('📤 Recording check-out to hotel backend...');
+      debugPrint('   Customer ID: $customerId');
+      debugPrint('   Total: \$$totalAmount');
+
+      final response = await _dio.post(
+        '/hotel/checkouts',
+        data: {
+          'id_customer': customerId,
+          'check_out_time': checkOutTime,
+          'total_amount': totalAmount,
+          'payment_status': paymentStatus,
+          'payment_method': paymentMethod,
+          'notes': notes,
+        },
+        queryParameters: {'output_format': 'JSON'},
+      );
+
+      debugPrint('✅ Check-out recorded successfully');
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('❌ Check-out recording failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Record payment
+  Future<Map<String, dynamic>> recordPayment({
+    required int customerId,
+    required double amount,
+    required String paymentMethod,
+    required String notes,
+  }) async {
+    try {
+      debugPrint('📤 Recording payment...');
+      debugPrint('   Amount: \$$amount');
+
+      final response = await _dio.post(
+        '/hotel/payments',
+        data: {
+          'id_customer': customerId,
+          'amount': amount,
+          'payment_method': paymentMethod,
+          'notes': notes,
+        },
+        queryParameters: {'output_format': 'JSON'},
+      );
+
+      debugPrint('✅ Payment recorded successfully');
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('❌ Payment recording failed: $e');
+      rethrow;
+    }
+  }
 }
+

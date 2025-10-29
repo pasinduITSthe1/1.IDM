@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 16:33:15
+/* Smarty version 4.5.5, created on 2025-10-29 12:32:31
   from 'C:\wamp64\www\1.IDM\modules\blockcurrencies\views\templates\hook\blockcurrencies.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f3735b4518_50088090',
+  'unifunc' => 'content_6901bc0710c557_69430531',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,21 +20,21 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_68e4f3735b4518_50088090 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901bc0710c557_69430531 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_loadInheritance();
 $_smarty_tpl->inheritance->init($_smarty_tpl, false);
 ?>
 
 <?php 
-$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_45537549268e4f373576708_70748156', 'block_currencies');
+$_smarty_tpl->inheritance->instanceBlock($_smarty_tpl, 'Block_3546213026901bc070d5300_71452303', 'block_currencies');
 }
 /* {block 'block_currencies'} */
-class Block_45537549268e4f373576708_70748156 extends Smarty_Internal_Block
+class Block_3546213026901bc070d5300_71452303 extends Smarty_Internal_Block
 {
 public $subBlocks = array (
   'block_currencies' => 
   array (
-    0 => 'Block_45537549268e4f373576708_70748156',
+    0 => 'Block_3546213026901bc070d5300_71452303',
   ),
 );
 public function callBlock(Smarty_Internal_Template $_smarty_tpl) {

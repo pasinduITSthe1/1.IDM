@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 16:33:11
+/* Smarty version 4.5.5, created on 2025-10-29 12:32:04
   from 'C:\wamp64\www\1.IDM\modules\blockcurrencies\views\templates\hook\external-navigation-hook.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f36f8ee420_63980672',
+  'unifunc' => 'content_6901bbec642c09_24138365',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_68e4f36f8ee420_63980672 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901bbec642c09_24138365 (Smarty_Internal_Template $_smarty_tpl) {
 if (count($_smarty_tpl->tpl_vars['currencies']->value) > 1) {?>
     <ul class="nav nav-pills nav-stacked visible-xs wk-nav-style">
         <li>

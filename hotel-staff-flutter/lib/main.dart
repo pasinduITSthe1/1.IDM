@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/guest_provider.dart';
+import 'providers/checkout_provider.dart';
 import 'utils/app_theme.dart';
 import 'utils/app_routes.dart';
 
@@ -35,6 +36,7 @@ class HotelStaffApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => GuestProvider()),
+        ChangeNotifierProvider(create: (_) => CheckoutProvider()),
       ],
       child: MaterialApp.router(
         title: '1.IDM',

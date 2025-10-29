@@ -19,7 +19,7 @@
 class ApiConfig {
   // Change this based on your setup
   static const String baseUrl =
-      'http://10.0.1.24:3000/api'; // Physical device on WiFi
+      'http://192.168.217.41:3000/api'; // USB Tethering connection
   // static const String baseUrl = 'http://10.0.2.2:3000/api'; // Android Emulator
   // static const String baseUrl = 'http://localhost:3000/api'; // iOS Simulator
 

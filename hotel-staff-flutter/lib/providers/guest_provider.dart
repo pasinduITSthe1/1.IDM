@@ -1,15 +1,18 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/guest.dart';
 import '../services/guest_service.dart';
+import '../services/qloapps_api_service.dart';
+import '../services/hotel_management_service.dart';
 
 class GuestProvider with ChangeNotifier {
   final List<Guest> _guests = [];
   bool _isLoading = false;
-  static const String _storageKey = 'guests_data';
-  final GuestService _guestService = GuestService();
-  bool _useApi = true; // Set to true to use API, false for local storage only
+  final GuestService _guestService = GuestService(); // Legacy fallback only
+  final QloAppsApiService _qloAppsService = QloAppsApiService();
+  final HotelManagementService _hotelService = HotelManagementService(); // ✅ Hotel operations
+  bool _useApi = true; // Always true - QloApps is the single source of truth
+  bool _useQloAppsDirectly =
+      true; // Always true - direct QloApps database access
 
   List<Guest> get guests => _guests;
   bool get isLoading => _isLoading;
@@ -35,38 +38,48 @@ class GuestProvider with ChangeNotifier {
     };
   }
 
-  // Add new guest
+  // Add new guest - DIRECTLY TO QLOAPPS DATABASE
   Future<bool> addGuest(Guest guest) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      if (_useApi) {
-        // Save to API and database
-        final createdGuest = await _guestService.createGuest(guest);
-        _guests.add(createdGuest);
-        debugPrint('✅ Guest saved to database via API');
-      } else {
-        // Save to local storage only
-        _guests.add(guest);
-        debugPrint('ℹ️ Guest saved to local storage only');
-      }
+      // ✅ Save directly to QloApps database via API
+      debugPrint('📤 Creating customer in QloApps database...');
+      debugPrint('   Name: ${guest.firstName} ${guest.lastName}');
+      debugPrint('   Email: ${guest.email}');
 
-      // Also save to local storage as backup
-      await _saveToLocalStorage();
+      final response = await _qloAppsService.createCustomer(
+        firstName: guest.firstName,
+        lastName: guest.lastName,
+        email: guest.email ??
+            'guest${DateTime.now().millisecondsSinceEpoch}@hotel.com',
+        password: 'guest123', // Default password
+        phone: guest.phone,
+        dateOfBirth: guest.dateOfBirth,
+      );
+
+      // Extract customer ID from response
+      final customerId = response['customer']?['id']?.toString() ?? guest.id;
+
+      // Create Guest object with QloApps ID
+      final createdGuest = guest.copyWith(id: customerId);
+      _guests.add(createdGuest);
+
+      debugPrint('✅ Guest saved to QloApps database: Customer ID $customerId');
 
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('❌ Error adding guest: $e');
+      debugPrint('❌ Error adding guest to QloApps: $e');
       _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  // Update guest
+  // Update guest - DIRECTLY IN QLOAPPS DATABASE
   Future<bool> updateGuest(String id, Guest updatedGuest) async {
     try {
       _isLoading = true;
@@ -74,62 +87,72 @@ class GuestProvider with ChangeNotifier {
 
       final index = _guests.indexWhere((g) => g.id == id);
       if (index != -1) {
-        if (_useApi) {
-          // Update via API and database
-          final updated = await _guestService.updateGuest(id, updatedGuest);
-          _guests[index] = updated;
-          debugPrint('✅ Guest updated in database via API');
-        } else {
-          // Update local storage only
-          _guests[index] = updatedGuest;
-          debugPrint('ℹ️ Guest updated in local storage only');
-        }
-      }
+        // ✅ Update directly in QloApps database
+        debugPrint('📤 Updating customer in QloApps database...');
+        debugPrint('   Customer ID: $id');
+        debugPrint(
+            '   Name: ${updatedGuest.firstName} ${updatedGuest.lastName}');
 
-      // Save to local storage as backup
-      await _saveToLocalStorage();
+        await _qloAppsService.updateCustomer(
+          int.parse(id),
+          {
+            'firstname': updatedGuest.firstName,
+            'lastname': updatedGuest.lastName,
+            'email': updatedGuest.email,
+            'phone': updatedGuest.phone,
+          },
+        );
+
+        _guests[index] = updatedGuest;
+        debugPrint('✅ Guest updated in QloApps database: Customer ID $id');
+      }
 
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('❌ Error updating guest: $e');
+      debugPrint('❌ Error updating guest in QloApps: $e');
       _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  // Check-in guest
+  // Check-in guest - SAVE TO HOTEL BACKEND DATABASE
   Future<bool> checkInGuest(String id,
       {String? roomNumber, String? expectedCheckoutDate, String? notes}) async {
     try {
       final index = _guests.indexWhere((g) => g.id == id);
       if (index != -1) {
-        if (_useApi && roomNumber != null) {
-          // Check-in via API
-          final checkedInGuest = await _guestService.checkInGuest(
-            id,
-            roomNumber,
-            expectedCheckoutDate: expectedCheckoutDate,
-            notes: notes,
+        // ✅ Update status in local list immediately for UI responsiveness
+        _guests[index] = _guests[index].copyWith(
+          status: 'checked_in',
+          checkInDate: DateTime.now(),
+          roomNumber: roomNumber ?? _guests[index].roomNumber,
+        );
+        notifyListeners();
+
+        debugPrint('📤 Checking in guest in HOTEL BACKEND database...');
+        debugPrint('   Customer ID: $id');
+        debugPrint('   Room: $roomNumber');
+
+        // ✅ IMPORTANT: Save check-in to hotel backend database using HotelManagementService
+        try {
+          final response = await _hotelService.checkInGuest(
+            customerId: int.parse(id),
+            bookingId: 1, // Default booking ID (improve this later)
+            roomId: int.tryParse(roomNumber ?? '0') ?? 0,
+            roomNumber: roomNumber ?? '',
+            checkedInBy: 'app_user',
+            notes: notes ?? '',
           );
-          _guests[index] = checkedInGuest;
-          debugPrint('✅ Guest checked in via API');
-        } else {
-          // Update locally
-          _guests[index] = _guests[index].copyWith(
-            status: 'checked-in',
-            checkInDate: DateTime.now(),
-            roomNumber: roomNumber ?? _guests[index].roomNumber,
-          );
-          debugPrint('ℹ️ Guest checked in locally');
+          debugPrint('✅ Guest checked in - Saved to hotel backend database');
+          debugPrint('   Response: ${response.toString()}');
+        } catch (e) {
+          debugPrint('⚠️ Could not save to hotel backend: $e');
+          // Continue anyway - guest is checked in locally
         }
 
-        // Save to local storage
-        await _saveToLocalStorage();
-
-        notifyListeners();
         return true;
       }
       return false;
@@ -139,7 +162,7 @@ class GuestProvider with ChangeNotifier {
     }
   }
 
-  // Check-out guest
+  // Check-out guest - SAVE TO HOTEL BACKEND DATABASE
   Future<bool> checkOutGuest(String id,
       {double? totalAmount,
       String? paymentStatus,
@@ -148,30 +171,35 @@ class GuestProvider with ChangeNotifier {
     try {
       final index = _guests.indexWhere((g) => g.id == id);
       if (index != -1) {
-        if (_useApi) {
-          // Check-out via API
-          final checkedOutGuest = await _guestService.checkOutGuest(
-            id,
-            totalAmount: totalAmount,
-            paymentStatus: paymentStatus,
-            paymentMethod: paymentMethod,
-            notes: notes,
+        // ✅ Update status in local list immediately for UI responsiveness
+        _guests[index] = _guests[index].copyWith(
+          status: 'checked_out',
+          checkOutDate: DateTime.now(),
+        );
+        notifyListeners();
+
+        debugPrint('📤 Checking out guest in HOTEL BACKEND database...');
+        debugPrint('   Customer ID: $id');
+        debugPrint('   Total Amount: \$${totalAmount ?? 0}');
+
+        // ✅ IMPORTANT: Save check-out to hotel backend database using HotelManagementService
+        try {
+          final response = await _hotelService.checkOutGuest(
+            customerId: int.parse(id),
+            checkinId: 1, // TODO: Get actual checkin ID from database
+            roomId: int.tryParse(_guests[index].roomNumber ?? '0') ?? 0,
+            finalBill: totalAmount ?? 0.0,
+            paymentStatus: paymentStatus ?? 'pending',
+            checkedOutBy: 'app_user',
+            notes: notes ?? '',
           );
-          _guests[index] = checkedOutGuest;
-          debugPrint('✅ Guest checked out via API');
-        } else {
-          // Update locally
-          _guests[index] = _guests[index].copyWith(
-            status: 'checked-out',
-            checkOutDate: DateTime.now(),
-          );
-          debugPrint('ℹ️ Guest checked out locally');
+          debugPrint('✅ Guest checked out - Saved to hotel backend database');
+          debugPrint('   Response: ${response.toString()}');
+        } catch (e) {
+          debugPrint('⚠️ Could not save to hotel backend: $e');
+          // Continue anyway - guest is checked out locally
         }
 
-        // Save to local storage
-        await _saveToLocalStorage();
-
-        notifyListeners();
         return true;
       }
       return false;
@@ -189,22 +217,115 @@ class GuestProvider with ChangeNotifier {
 
       if (_useApi) {
         try {
-          // Try to load from API
-          final apiGuests = await _guestService.fetchGuests();
-          _guests.clear();
-          _guests.addAll(apiGuests);
-          debugPrint('✅ Loaded ${_guests.length} guests from API/database');
+          if (_useQloAppsDirectly) {
+            // Load directly from QloApps API
+            debugPrint('📡 Loading guests from QloApps API...');
+            final customersList = await _qloAppsService.getCustomers(
+              filters: {'display': 'full'}, // ✅ Request full customer data
+            );
 
-          // Save to local storage as backup
-          await _saveToLocalStorage();
+            if (customersList.isNotEmpty) {
+              _guests.clear();
+
+              for (var customerData in customersList) {
+                try {
+                  // Extract customer data
+                  final customer = customerData['customer'] ?? customerData;
+                  final customerId = customer['id']?.toString() ?? '';
+
+                  // ✅ NEW: Get actual guest status from hotel backend database
+                  String status = 'pending'; // Default status
+                  String? roomNumber;
+                  DateTime? checkInDate;
+                  DateTime? checkOutDate;
+
+                  try {
+                    // Get guest status from hotel backend
+                    final guestStatus = await _hotelService.getGuestStatus(int.parse(customerId));
+                    if (guestStatus.containsKey('status')) {
+                      status = guestStatus['status'] ?? 'pending';
+                      roomNumber = guestStatus['room_number']?.toString();
+                      if (guestStatus['check_in_time'] != null) {
+                        checkInDate = DateTime.parse(guestStatus['check_in_time']);
+                      }
+                      if (guestStatus['check_out_time'] != null) {
+                        checkOutDate = DateTime.parse(guestStatus['check_out_time']);
+                      }
+                    }
+                  } catch (e) {
+                    debugPrint('⚠️ Could not get guest status from hotel backend: $e');
+                    // Fall back to QloApps notes parsing
+                    final note = customer['note']?.toString() ?? '';
+                    if (note.contains('Checked in on')) {
+                      status = 'checked_in';
+                      final checkInMatch = RegExp(r'Checked in on ([\d\-T:\.]+)').firstMatch(note);
+                      if (checkInMatch != null) {
+                        try {
+                          checkInDate = DateTime.parse(checkInMatch.group(1)!);
+                        } catch (e) {
+                          checkInDate = DateTime.now();
+                        }
+                      }
+                      final roomMatch = RegExp(r'Room: (\w+)').firstMatch(note);
+                      if (roomMatch != null) {
+                        roomNumber = roomMatch.group(1);
+                      }
+                    } else if (note.contains('Checked out on')) {
+                      status = 'checked_out';
+                      final checkOutMatch = RegExp(r'Checked out on ([\d\-T:\.]+)').firstMatch(note);
+                      if (checkOutMatch != null) {
+                        try {
+                          checkOutDate = DateTime.parse(checkOutMatch.group(1)!);
+                        } catch (e) {
+                          checkOutDate = DateTime.now();
+                        }
+                      }
+                    }
+                  }
+
+                  // Create Guest object from QloApps customer data
+                  final guest = Guest(
+                    id: customer['id']?.toString() ?? '',
+                    firstName: customer['firstname']?.toString() ?? '',
+                    lastName: customer['lastname']?.toString() ?? '',
+                    email: customer['email']?.toString(),
+                    phone: customer['phone']?.toString() ??
+                        customer['phone_mobile']?.toString(),
+                    documentType:
+                        'passport', // Default, update if stored in notes
+                    documentNumber: customer['id_number']?.toString() ?? '',
+                    nationality: customer['country']?.toString() ?? '',
+                    dateOfBirth: customer['birthday']?.toString(),
+                    status: status,
+                    checkInDate: checkInDate ?? DateTime.now(),
+                    checkOutDate: checkOutDate,
+                    roomNumber: roomNumber,
+                  );
+
+                  _guests.add(guest);
+                } catch (e) {
+                  debugPrint('⚠️ Error parsing customer: $e');
+                }
+              }
+
+              debugPrint('✅ Loaded ${_guests.length} guests from QloApps');
+            } else {
+              debugPrint('⚠️ No customers found in QloApps');
+            }
+          } else {
+            // Try to load from Node.js backend API (fallback)
+            final apiGuests = await _guestService.fetchGuests();
+            _guests.clear();
+            _guests.addAll(apiGuests);
+            debugPrint('✅ Loaded ${_guests.length} guests from backend API');
+          }
         } catch (e) {
-          debugPrint('⚠️ API failed, falling back to local storage: $e');
-          // Fall back to local storage
-          await _loadFromLocalStorage();
+          debugPrint('⚠️ API failed: $e');
+          debugPrint(
+              '❌ Cannot load guests - QloApps API is the only data source');
         }
       } else {
-        // Load from local storage only
-        await _loadFromLocalStorage();
+        debugPrint('⚠️ API usage is disabled');
       }
 
       _isLoading = false;
@@ -216,79 +337,81 @@ class GuestProvider with ChangeNotifier {
     }
   }
 
-  // Save guests to local storage
-  Future<void> _saveToLocalStorage() async {
+  // Delete guest - FROM QLOAPPS DATABASE
+  Future<bool> deleteGuest(String id) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final guestsJson = _guests.map((guest) => guest.toJson()).toList();
-      final jsonString = jsonEncode(guestsJson);
-      await prefs.setString(_storageKey, jsonString);
-      debugPrint('✅ Saved ${_guests.length} guests to local storage');
-      debugPrint('📊 Data size: ${jsonString.length} characters');
-    } catch (e) {
-      debugPrint('❌ Error saving guests to local storage: $e');
-    }
-  }
+      _isLoading = true;
+      notifyListeners();
 
-  // Load guests from local storage
-  Future<void> _loadFromLocalStorage() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString(_storageKey);
+      debugPrint('📤 Deleting customer from QloApps database...');
+      debugPrint('   Customer ID: $id');
 
-      if (jsonString != null) {
-        final List<dynamic> guestsJson = jsonDecode(jsonString);
-        _guests.clear();
-        _guests.addAll(guestsJson
-            .map((json) => Guest.fromJson(json as Map<String, dynamic>)));
-        debugPrint('✅ Loaded ${_guests.length} guests from local storage');
-        debugPrint('📊 Data size: ${jsonString.length} characters');
-        // Log first guest as sample
-        if (_guests.isNotEmpty) {
-          debugPrint(
-              '📝 Sample: ${_guests.first.fullName} - Status: ${_guests.first.status}');
-        }
-      } else {
-        debugPrint(
-            'ℹ️ No guests found in local storage (first run or data cleared)');
+      // Delete from QloApps database
+      // Note: QloApps API typically doesn't allow hard delete of customers
+      // Instead, we deactivate them
+      try {
+        await _qloAppsService.updateCustomer(
+          int.parse(id),
+          {
+            'active': '0', // Deactivate customer
+            'note':
+                'Deleted from Flutter app on ${DateTime.now().toIso8601String()}',
+          },
+        );
+        debugPrint('✅ Customer deactivated in QloApps database');
+      } catch (e) {
+        debugPrint('⚠️ Could not deactivate customer in QloApps: $e');
       }
+
+      // Remove from local list
+      _guests.removeWhere((g) => g.id == id);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
     } catch (e) {
-      debugPrint('❌ Error loading guests from local storage: $e');
+      debugPrint('❌ Error deleting guest: $e');
+      _isLoading = false;
+      notifyListeners();
+      return false;
     }
   }
 
-  // Debug method: Print all saved data (for testing/verification)
-  Future<void> debugPrintStoredData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString(_storageKey);
+  // ⚠️ LOCAL STORAGE METHODS REMOVED
+  // All data is now managed directly in QloApps database
+  // No local backup/cache is maintained
 
-      debugPrint('🔍 ===== DATABASE VERIFICATION =====');
-      if (jsonString != null) {
-        debugPrint('📦 Raw data exists: YES');
-        debugPrint('📊 Data size: ${jsonString.length} characters');
-        debugPrint('👥 Number of guests in storage: ${_guests.length}');
+  // Debug: Verify QloApps connection and data
+  Future<void> debugPrintQloAppsData() async {
+    try {
+      debugPrint('🔍 ===== QLOAPPS CONNECTION VERIFICATION =====');
+
+      final isConnected = await _qloAppsService.testConnection();
+      debugPrint(
+          '📡 Connection Status: ${isConnected ? "✅ Connected" : "❌ Disconnected"}');
+
+      if (isConnected && _guests.isNotEmpty) {
+        debugPrint('👥 Number of guests loaded: ${_guests.length}');
         debugPrint('');
-        debugPrint('📋 Guest List:');
-        for (var i = 0; i < _guests.length; i++) {
+        debugPrint('📋 Guest List (from QloApps database):');
+        for (var i = 0; i < _guests.length && i < 5; i++) {
           final guest = _guests[i];
           debugPrint('  ${i + 1}. ${guest.fullName}');
+          debugPrint('     Customer ID: ${guest.id}');
           debugPrint('     Status: ${guest.status}');
-          debugPrint('     Room: ${guest.roomNumber ?? "Not assigned"}');
-          debugPrint(
-              '     Check-in: ${guest.checkInDate?.toString() ?? "Not checked in"}');
           debugPrint('     Email: ${guest.email ?? "N/A"}');
           debugPrint('');
         }
-        debugPrint('✅ Data is being saved to database!');
+        if (_guests.length > 5) {
+          debugPrint('  ... and ${_guests.length - 5} more guests');
+        }
+        debugPrint('✅ Data is loaded from QloApps database!');
       } else {
-        debugPrint('📦 Raw data exists: NO');
-        debugPrint(
-            '⚠️ No data found in database - either first run or data was cleared');
+        debugPrint('⚠️ No guests loaded or connection failed');
       }
       debugPrint('🔍 ===== END VERIFICATION =====');
     } catch (e) {
-      debugPrint('❌ Error reading stored data: $e');
+      debugPrint('❌ Error verifying QloApps data: $e');
     }
   }
 }

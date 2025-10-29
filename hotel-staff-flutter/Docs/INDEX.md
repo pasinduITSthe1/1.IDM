@@ -47,6 +47,13 @@ Welcome to the Hotel Staff App documentation! All project documentation is organ
 
 ## 🏨 QloApps Integration
 
+### 🎯 START HERE - Complete Setup Guides
+- [QLOAPPS_INTEGRATION_SUMMARY.md](QLOAPPS_INTEGRATION_SUMMARY.md) - **📊 EXECUTIVE SUMMARY** - Quick overview (5 min read)
+- [QLOAPPS_API_PERMISSIONS_GUIDE.md](QLOAPPS_API_PERMISSIONS_GUIDE.md) - **📖 DETAILED GUIDE** - Complete explanation (15 min read)
+- [QLOAPPS_PERMISSIONS_CHECKLIST.md](QLOAPPS_PERMISSIONS_CHECKLIST.md) - **📋 PRINT THIS** - Checkbox list to follow
+- [QLOAPPS_SETUP_VISUAL_GUIDE.md](QLOAPPS_SETUP_VISUAL_GUIDE.md) - **🎨 VISUAL GUIDE** - Step-by-step with screenshots
+
+### 📚 Additional References
 - [QLOAPPS_API_COMPLETE_PACKAGE.md](QLOAPPS_API_COMPLETE_PACKAGE.md) - All-in-one integration guide
 - [QLOAPPS_API_QUICK_REFERENCE.md](QLOAPPS_API_QUICK_REFERENCE.md) - API quick reference
 

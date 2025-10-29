@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-07 16:33:18
+/* Smarty version 4.5.5, created on 2025-10-29 12:32:34
   from 'C:\wamp64\www\1.IDM\modules\hotelreservationsystem\views\templates\hook\copyRight.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_68e4f37619fcd5_77406790',
+  'unifunc' => 'content_6901bc0a830226_48607740',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_68e4f37619fcd5_77406790 (Smarty_Internal_Template $_smarty_tpl) {
+function content_6901bc0a830226_48607740 (Smarty_Internal_Template $_smarty_tpl) {
 ?><div class="copyRightWrapper">
 	<p class="copyRight">
 		&copy;<?php if ((isset($_smarty_tpl->tpl_vars['WK_HTL_ESTABLISHMENT_YEAR']->value)) && $_smarty_tpl->tpl_vars['WK_HTL_ESTABLISHMENT_YEAR']->value) {?> <?php echo $_smarty_tpl->tpl_vars['WK_HTL_ESTABLISHMENT_YEAR']->value;?>
