@@ -28,7 +28,6 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
   String _statusMessage = 'Position MRZ in frame';
   bool _isFlashOn = false;
   bool _autoCapture = false; // Disabled by default for faster scanning
-  Map<String, String>? _previewData;
   Map<String, double>? _confidenceScores;
 
   // Multi-frame analysis
@@ -316,7 +315,6 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
   // FEATURE 1: Data Preview Dialog
   void _showDataPreview(Map<String, String> data) {
     setState(() {
-      _previewData = data;
       _isProcessing = false;
     });
 
@@ -358,7 +356,6 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
               Navigator.pop(context);
               setState(() {
                 _scanResults.clear();
-                _previewData = null;
               });
             },
             child: const Text('Rescan'),

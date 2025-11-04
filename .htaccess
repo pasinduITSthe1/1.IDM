@@ -13,7 +13,7 @@ RewriteRule . - [E=HTTP_AUTHORIZATION:%1]
 
 
 
-#Domain: localhost
+#Domain: 192.168.217.41
 RewriteRule . - [E=REWRITEBASE:/1.IDM/]
 RewriteRule ^api$ api/ [L]
 

@@ -14,9 +14,9 @@ class QloAppsApiService {
   // Singleton pattern
   static final QloAppsApiService _instance = QloAppsApiService._internal();
   factory QloAppsApiService() => _instance;
-  
+
   late final Dio _dio;
-  
+
   QloAppsApiService._internal() {
     // Initialize Dio with custom configuration
     _dio = Dio(BaseOptions(
@@ -26,7 +26,7 @@ class QloAppsApiService {
       headers: _getHeaders(),
       validateStatus: (status) => status != null && status < 500,
     ));
-    
+
     // Add interceptor for debugging
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
@@ -37,7 +37,7 @@ class QloAppsApiService {
 
   // ⚙️ CONFIGURATION - Update these values
   static const String baseUrl =
-      'http://192.168.217.41/1.IDM/api'; // ✅ USB Tethering IP!
+      'http://localhost:8080/1.IDM'; // Using ADB port forwarding (80->8080)
   static const String apiKey =
       '2WUGS9C92CRCSJ1IJME9ST1DFCFDD3C4'; // ✅ API Key configured!
 
@@ -65,7 +65,7 @@ class QloAppsApiService {
       };
 
       final endpoint = resourceId != null ? '$resource/$resourceId' : resource;
-      
+
       debugPrint('📡 QloApps GET: $baseUrl/$endpoint');
       debugPrint('📋 Params: $queryParams');
 
@@ -73,7 +73,7 @@ class QloAppsApiService {
         '/$endpoint',
         queryParameters: queryParams,
       );
-      
+
       return _handleResponse(response);
     } catch (e) {
       debugPrint('❌ QloApps GET error: $e');
@@ -92,7 +92,8 @@ class QloAppsApiService {
   ) async {
     try {
       debugPrint('📡 QloApps POST: $baseUrl/$resource');
-      debugPrint('📤 XML Data: ${xmlData.substring(0, xmlData.length > 200 ? 200 : xmlData.length)}...');
+      debugPrint(
+          '📤 XML Data: ${xmlData.substring(0, xmlData.length > 200 ? 200 : xmlData.length)}...');
 
       final response = await _dio.post(
         '/$resource',
@@ -231,11 +232,11 @@ class QloAppsApiService {
     final updated = {...existing, ...updates};
 
     final xml = _buildCustomerXml(
-      id: customerId,  // ✅ Include ID for update
+      id: customerId, // ✅ Include ID for update
       firstName: updated['firstname'],
       lastName: updated['lastname'],
       email: updated['email'],
-      password: updated['passwd'],  // ✅ Include existing encrypted password
+      password: updated['passwd'], // ✅ Include existing encrypted password
       phone: updated['phone'],
     );
 
@@ -346,7 +347,7 @@ class QloAppsApiService {
 
   /// Build XML for customer creation/update
   String _buildCustomerXml({
-    int? id,  // ✅ Required for updates
+    int? id, // ✅ Required for updates
     required String firstName,
     required String lastName,
     required String email,
@@ -356,7 +357,7 @@ class QloAppsApiService {
   }) {
     // ✅ QloApps requires phone - use default if not provided
     final phoneNumber = phone ?? '0000000000';
-    
+
     return '''<?xml version="1.0" encoding="UTF-8"?>
 <prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
   <customer>
@@ -379,7 +380,9 @@ class QloAppsApiService {
   Map<String, dynamic> _handleResponse(Response response) {
     debugPrint('📥 Response status: ${response.statusCode}');
 
-    if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+    if (response.statusCode != null &&
+        response.statusCode! >= 200 &&
+        response.statusCode! < 300) {
       try {
         // Dio already parses JSON automatically
         if (response.data is Map) {
@@ -400,9 +403,8 @@ class QloAppsApiService {
 
       // Try to parse error message
       try {
-        final error = response.data is String 
-            ? jsonDecode(response.data) 
-            : response.data;
+        final error =
+            response.data is String ? jsonDecode(response.data) : response.data;
         final message = error['errors']?[0]?['message'] ?? 'Unknown error';
         throw Exception('QloApps API Error: $message');
       } catch (e) {
@@ -545,4 +547,3 @@ class QloAppsApiService {
     }
   }
 }
-

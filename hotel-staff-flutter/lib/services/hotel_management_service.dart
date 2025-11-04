@@ -5,17 +5,19 @@ import 'package:flutter/foundation.dart';
 /// Handles check-in, check-out, payments, services, and audit logs
 class HotelManagementService {
   final Dio _dio;
-  static const String _baseUrl = 'http://192.168.217.41/1.IDM/hotel-backend/api';
+  static const String _baseUrl =
+      'http://localhost:8080/1.IDM/hotel-backend/api';
 
   HotelManagementService({Dio? dio})
-      : _dio = dio ?? Dio(BaseOptions(
-        baseUrl: _baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      )) {
+      : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: _baseUrl,
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            )) {
     // Add logging interceptor
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
@@ -37,7 +39,8 @@ class HotelManagementService {
     String? notes,
   }) async {
     try {
-      debugPrint('📥 Recording check-in for customer: $customerId, room: $roomNumber');
+      debugPrint(
+          '📥 Recording check-in for customer: $customerId, room: $roomNumber');
 
       final payload = {
         'id_customer': customerId,
@@ -173,7 +176,8 @@ class HotelManagementService {
     String? notes,
   }) async {
     try {
-      debugPrint('💳 Recording payment: \$${amount.toStringAsFixed(2)} for customer $customerId');
+      debugPrint(
+          '💳 Recording payment: \$${amount.toStringAsFixed(2)} for customer $customerId');
 
       final payload = {
         'id_customer': customerId,
@@ -280,7 +284,8 @@ class HotelManagementService {
     String? attachmentPath,
   }) async {
     try {
-      debugPrint('📄 Recording document: $documentType for customer $customerId');
+      debugPrint(
+          '📄 Recording document: $documentType for customer $customerId');
 
       final payload = {
         'id_customer': customerId,
@@ -311,7 +316,8 @@ class HotelManagementService {
     required String filePath,
   }) async {
     try {
-      debugPrint('🖼️  Adding attachment: $attachmentType for customer $customerId');
+      debugPrint(
+          '🖼️  Adding attachment: $attachmentType for customer $customerId');
 
       final payload = {
         'id_customer': customerId,

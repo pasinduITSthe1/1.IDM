@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 4.5.5, created on 2025-10-28 17:20:49
+/* Smarty version 4.5.5, created on 2025-11-03 11:48:25
   from 'C:\wamp64\www\1.IDM\admin134miqa0b\themes\default\template\alerts.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '4.5.5',
-  'unifunc' => 'content_6900ae19c18592_25268510',
+  'unifunc' => 'content_690849313b6838_63980234',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_6900ae19c18592_25268510 (Smarty_Internal_Template $_smarty_tpl) {
+function content_690849313b6838_63980234 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_checkPlugins(array(0=>array('file'=>'C:\\wamp64\\www\\1.IDM\\tools\\smarty\\plugins\\modifier.count.php','function'=>'smarty_modifier_count',),));
 ?>
 

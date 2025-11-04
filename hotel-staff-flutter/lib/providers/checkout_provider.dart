@@ -3,7 +3,7 @@ import '../services/hotel_management_service.dart';
 
 class CheckoutProvider with ChangeNotifier {
   final HotelManagementService _hotelService = HotelManagementService();
-  
+
   bool _isProcessing = false;
   String? _errorMessage;
   Map<String, dynamic>? _currentBill;
@@ -20,12 +20,12 @@ class CheckoutProvider with ChangeNotifier {
       notifyListeners();
 
       _currentBill = await _hotelService.getGuestBill(checkinId);
-      
+
       debugPrint('✅ Bill retrieved: ${_currentBill?['balance_due']}');
-      
+
       _isProcessing = false;
       notifyListeners();
-      
+
       return _currentBill ?? {};
     } catch (e) {
       _errorMessage = 'Failed to retrieve bill: $e';
@@ -57,13 +57,13 @@ class CheckoutProvider with ChangeNotifier {
       );
 
       debugPrint('✅ Payment recorded: \$${amount.toStringAsFixed(2)}');
-      
+
       // Refresh bill
       await getBill(checkinId);
-      
+
       _isProcessing = false;
       notifyListeners();
-      
+
       return true;
     } catch (e) {
       _errorMessage = 'Failed to record payment: $e';
@@ -97,10 +97,10 @@ class CheckoutProvider with ChangeNotifier {
       );
 
       debugPrint('✅ Check-out completed');
-      
+
       _isProcessing = false;
       notifyListeners();
-      
+
       return true;
     } catch (e) {
       _errorMessage = 'Failed to check out guest: $e';
@@ -132,15 +132,16 @@ class CheckoutProvider with ChangeNotifier {
         notes: notes,
       );
 
-      debugPrint('✅ Service added: $serviceType - \$${charge.toStringAsFixed(2)}');
-      
+      debugPrint(
+          '✅ Service added: $serviceType - \$${charge.toStringAsFixed(2)}');
+
       // Refresh bill
       final checkinData = await _hotelService.getGuestBill(checkinId);
       _currentBill = checkinData;
-      
+
       _isProcessing = false;
       notifyListeners();
-      
+
       return true;
     } catch (e) {
       _errorMessage = 'Failed to add service: $e';

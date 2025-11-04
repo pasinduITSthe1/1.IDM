@@ -150,9 +150,10 @@ class Guest {
   // Create from API JSON (API format - snake_case)
   factory Guest.fromApiJson(Map<String, dynamic> json) {
     return Guest(
-      id: json['id'] as String,
-      firstName: json['first_name'] as String,
-      lastName: json['last_name'] as String,
+      id: (json['id_customer'] ?? json['id'])
+          .toString(), // Use id_customer from qlo_customer table
+      firstName: json['first_name'] ?? json['firstname'] ?? '',
+      lastName: json['last_name'] ?? json['lastname'] ?? '',
       documentNumber: json['document_number'] as String?,
       dateOfBirth: json['date_of_birth'] as String?,
       nationality: json['nationality'] as String?,

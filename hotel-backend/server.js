@@ -21,6 +21,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/guests', require('./routes/guests'));
 app.use('/api/rooms', require('./routes/rooms'));
+app.use('/api', require('./routes/escorts')); // Escorts API
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -84,6 +85,8 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`  - GET  /api/guests`);
   console.log(`  - POST /api/guests`);
   console.log(`  - GET  /api/rooms`);
+  console.log(`  - POST /api/escorts`);
+  console.log(`  - GET  /api/escorts/guest/:guestId`);
   console.log('');
 });
 

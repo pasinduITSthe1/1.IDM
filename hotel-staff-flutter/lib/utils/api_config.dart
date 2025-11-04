@@ -19,9 +19,11 @@
 class ApiConfig {
   // Change this based on your setup
   static const String baseUrl =
-      'http://192.168.217.41:3000/api'; // USB Tethering connection
+      'http://localhost:3000/api'; // Using ADB port forwarding
   // static const String baseUrl = 'http://10.0.2.2:3000/api'; // Android Emulator
   // static const String baseUrl = 'http://localhost:3000/api'; // iOS Simulator
+  // static const String baseUrl = 'http://10.0.1.24:3000/api'; // Network IP from server startup
+  // static const String baseUrl = 'http://192.168.217.41:3000/api'; // USB Tethering connection
 
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);

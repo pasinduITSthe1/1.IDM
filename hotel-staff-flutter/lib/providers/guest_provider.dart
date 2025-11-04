@@ -1,15 +1,21 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import '../models/guest.dart';
 import '../services/guest_service.dart';
 import '../services/qloapps_api_service.dart';
 import '../services/hotel_management_service.dart';
+import '../services/direct_customer_service.dart';
 
 class GuestProvider with ChangeNotifier {
   final List<Guest> _guests = [];
   bool _isLoading = false;
   final GuestService _guestService = GuestService(); // Legacy fallback only
   final QloAppsApiService _qloAppsService = QloAppsApiService();
-  final HotelManagementService _hotelService = HotelManagementService(); // ✅ Hotel operations
+  final HotelManagementService _hotelService =
+      HotelManagementService(); // ✅ Hotel operations
+  final DirectCustomerService _directCustomerService =
+      DirectCustomerService(); // ✅ Direct DB access
   bool _useApi = true; // Always true - QloApps is the single source of truth
   bool _useQloAppsDirectly =
       true; // Always true - direct QloApps database access
@@ -27,8 +33,12 @@ class GuestProvider with ChangeNotifier {
   // Get guest statistics
   Map<String, int> get statistics {
     // Count by status - support both hyphen and underscore formats
-    int checkedIn = _guests.where((g) => g.status == 'checked_in' || g.status == 'checked-in').length;
-    int checkedOut = _guests.where((g) => g.status == 'checked_out' || g.status == 'checked-out').length;
+    int checkedIn = _guests
+        .where((g) => g.status == 'checked_in' || g.status == 'checked-in')
+        .length;
+    int checkedOut = _guests
+        .where((g) => g.status == 'checked_out' || g.status == 'checked-out')
+        .length;
     int pending = _guests.where((g) => g.status == 'pending').length;
 
     return {
@@ -39,23 +49,21 @@ class GuestProvider with ChangeNotifier {
     };
   }
 
-  // Add new guest - DIRECTLY TO QLOAPPS DATABASE
+  // Add new guest - DIRECTLY TO DATABASE VIA NEW API
   Future<bool> addGuest(Guest guest) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      // ✅ Save directly to QloApps database via API
-      debugPrint('📤 Creating customer in QloApps database...');
+      // ✅ Save directly to database via new add-customer-api.php
+      debugPrint('📤 Creating customer in database via direct API...');
       debugPrint('   Name: ${guest.firstName} ${guest.lastName}');
       debugPrint('   Email: ${guest.email}');
 
-      final response = await _qloAppsService.createCustomer(
+      final response = await _directCustomerService.createCustomer(
         firstName: guest.firstName,
         lastName: guest.lastName,
-        email: guest.email ??
-            'guest${DateTime.now().millisecondsSinceEpoch}@hotel.com',
-        password: 'guest123', // Default password
+        email: guest.email,
         phone: guest.phone,
         dateOfBirth: guest.dateOfBirth,
       );
@@ -63,20 +71,50 @@ class GuestProvider with ChangeNotifier {
       // Extract customer ID from response
       final customerId = response['customer']?['id']?.toString() ?? guest.id;
 
-      // Create Guest object with QloApps ID
+      // Create Guest object with database ID
       final createdGuest = guest.copyWith(id: customerId);
       _guests.add(createdGuest);
 
-      debugPrint('✅ Guest saved to QloApps database: Customer ID $customerId');
+      debugPrint('✅ Guest saved to database: Customer ID $customerId');
 
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('❌ Error adding guest to QloApps: $e');
-      _isLoading = false;
-      notifyListeners();
-      return false;
+      debugPrint('❌ Error adding guest to database: $e');
+
+      // Fallback to QloApps API if direct API fails
+      debugPrint('🔄 Attempting fallback to QloApps API...');
+      try {
+        final response = await _qloAppsService.createCustomer(
+          firstName: guest.firstName,
+          lastName: guest.lastName,
+          email: guest.email ??
+              'guest${DateTime.now().millisecondsSinceEpoch}@hotel.com',
+          password: 'guest123', // Default password
+          phone: guest.phone,
+          dateOfBirth: guest.dateOfBirth,
+        );
+
+        // Extract customer ID from response
+        final customerId = response['customer']?['id']?.toString() ?? guest.id;
+
+        // Create Guest object with QloApps ID
+        final createdGuest = guest.copyWith(id: customerId);
+        _guests.add(createdGuest);
+
+        debugPrint(
+            '✅ Guest saved via QloApps fallback: Customer ID $customerId');
+
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } catch (fallbackError) {
+        debugPrint('❌ QloApps fallback also failed: $fallbackError');
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
     }
   }
 
@@ -189,14 +227,16 @@ class GuestProvider with ChangeNotifier {
           final guestStatus = await _hotelService.getGuestStatus(int.parse(id));
           int checkinId = 1; // Default fallback
           int roomId = 0;
-          
+
           if (guestStatus.containsKey('checkin_id')) {
-            checkinId = int.tryParse(guestStatus['checkin_id']?.toString() ?? '1') ?? 1;
+            checkinId =
+                int.tryParse(guestStatus['checkin_id']?.toString() ?? '1') ?? 1;
           }
           if (guestStatus.containsKey('id_room')) {
-            roomId = int.tryParse(guestStatus['id_room']?.toString() ?? '0') ?? 0;
+            roomId =
+                int.tryParse(guestStatus['id_room']?.toString() ?? '0') ?? 0;
           }
-          
+
           final response = await _hotelService.checkOutGuest(
             customerId: int.parse(id),
             checkinId: checkinId,
@@ -231,84 +271,60 @@ class GuestProvider with ChangeNotifier {
       if (_useApi) {
         try {
           if (_useQloAppsDirectly) {
-            // Load directly from QloApps API
-            debugPrint('📡 Loading guests from QloApps API...');
-            final customersList = await _qloAppsService.getCustomers(
-              filters: {'display': 'full'}, // ✅ Request full customer data
+            // Load directly from custom API endpoint
+            debugPrint('📡 Loading guests from custom API endpoint...');
+            final response = await http.get(
+              Uri.parse('http://localhost:8080/1.IDM/customers-api.php'),
+              headers: {'Content-Type': 'application/json'},
             );
 
-            if (customersList.isNotEmpty) {
+            if (response.statusCode == 200) {
+              final data = json.decode(response.body);
+              final customersList = data['customers'] ?? [];
+
               _guests.clear();
 
-              for (var customerData in customersList) {
+              for (var customer in customersList) {
                 try {
-                  // Extract customer data
-                  final customer = customerData['customer'] ?? customerData;
                   final customerId = customer['id']?.toString() ?? '';
 
-                  // ✅ NEW: Get actual guest status from hotel backend database
-                  String status = 'pending'; // Default status
+                  // Get guest status from hotel backend
+                  String status = 'pending';
                   String? roomNumber;
                   DateTime? checkInDate;
                   DateTime? checkOutDate;
 
                   try {
-                    // Get guest status from hotel backend
-                    final guestStatus = await _hotelService.getGuestStatus(int.parse(customerId));
+                    final guestStatus = await _hotelService
+                        .getGuestStatus(int.parse(customerId));
                     if (guestStatus.containsKey('status')) {
                       status = guestStatus['status'] ?? 'pending';
                       roomNumber = guestStatus['room_number']?.toString();
                       if (guestStatus['check_in_time'] != null) {
-                        checkInDate = DateTime.parse(guestStatus['check_in_time']);
+                        checkInDate =
+                            DateTime.parse(guestStatus['check_in_time']);
                       }
                       if (guestStatus['check_out_time'] != null) {
-                        checkOutDate = DateTime.parse(guestStatus['check_out_time']);
+                        checkOutDate =
+                            DateTime.parse(guestStatus['check_out_time']);
                       }
                     }
                   } catch (e) {
-                    debugPrint('⚠️ Could not get guest status from hotel backend: $e');
-                    // Fall back to QloApps notes parsing
-                    final note = customer['note']?.toString() ?? '';
-                    if (note.contains('Checked in on')) {
-                      status = 'checked_in';
-                      final checkInMatch = RegExp(r'Checked in on ([\d\-T:\.]+)').firstMatch(note);
-                      if (checkInMatch != null) {
-                        try {
-                          checkInDate = DateTime.parse(checkInMatch.group(1)!);
-                        } catch (e) {
-                          checkInDate = DateTime.now();
-                        }
-                      }
-                      final roomMatch = RegExp(r'Room: (\w+)').firstMatch(note);
-                      if (roomMatch != null) {
-                        roomNumber = roomMatch.group(1);
-                      }
-                    } else if (note.contains('Checked out on')) {
-                      status = 'checked_out';
-                      final checkOutMatch = RegExp(r'Checked out on ([\d\-T:\.]+)').firstMatch(note);
-                      if (checkOutMatch != null) {
-                        try {
-                          checkOutDate = DateTime.parse(checkOutMatch.group(1)!);
-                        } catch (e) {
-                          checkOutDate = DateTime.now();
-                        }
-                      }
-                    }
+                    debugPrint(
+                        '⚠️ Could not get guest status from hotel backend: $e');
                   }
 
-                  // Create Guest object from QloApps customer data
+                  // Create Guest object from custom API data
                   final guest = Guest(
                     id: customer['id']?.toString() ?? '',
                     firstName: customer['firstname']?.toString() ?? '',
                     lastName: customer['lastname']?.toString() ?? '',
                     email: customer['email']?.toString(),
-                    phone: customer['phone']?.toString() ??
-                        customer['phone_mobile']?.toString(),
-                    documentType:
-                        'passport', // Default, update if stored in notes
-                    documentNumber: customer['id_number']?.toString() ?? '',
-                    nationality: customer['country']?.toString() ?? '',
-                    dateOfBirth: customer['birthday']?.toString(),
+                    phone: '',
+                    documentType: 'passport',
+                    documentNumber: '',
+                    nationality: '',
+                    dateOfBirth: customer['date_add']?.toString(),
                     status: status,
                     checkInDate: checkInDate ?? DateTime.now(),
                     checkOutDate: checkOutDate,
@@ -321,9 +337,10 @@ class GuestProvider with ChangeNotifier {
                 }
               }
 
-              debugPrint('✅ Loaded ${_guests.length} guests from QloApps');
+              debugPrint('✅ Loaded ${_guests.length} guests from custom API');
             } else {
-              debugPrint('⚠️ No customers found in QloApps');
+              throw Exception(
+                  'Custom API returned status: ${response.statusCode}');
             }
           } else {
             // Try to load from Node.js backend API (fallback)

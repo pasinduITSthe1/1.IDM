@@ -32,8 +32,20 @@ class _GuestListScreenState extends State<GuestListScreen> {
 
     // Filter guests based on status and search
     final filteredGuests = guests.where((guest) {
-      final matchesStatus =
-          _filterStatus == 'all' || guest.status == _filterStatus;
+      // Support both 'checked_in' and 'checked-in' formats
+      bool matchesStatus = _filterStatus == 'all';
+      if (!matchesStatus) {
+        if (_filterStatus == 'checked-in') {
+          matchesStatus =
+              guest.status == 'checked-in' || guest.status == 'checked_in';
+        } else if (_filterStatus == 'checked-out') {
+          matchesStatus =
+              guest.status == 'checked-out' || guest.status == 'checked_out';
+        } else {
+          matchesStatus = guest.status == _filterStatus;
+        }
+      }
+
       final matchesSearch = _searchQuery.isEmpty ||
           guest.fullName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           (guest.email?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
@@ -133,13 +145,21 @@ class _GuestListScreenState extends State<GuestListScreen> {
                     _buildFilterChip(
                       'Checked In',
                       'checked-in',
-                      guests.where((g) => g.status == 'checked-in').length,
+                      guests
+                          .where((g) =>
+                              g.status == 'checked-in' ||
+                              g.status == 'checked_in')
+                          .length,
                     ),
                     const SizedBox(width: 8),
                     _buildFilterChip(
                       'Checked Out',
                       'checked-out',
-                      guests.where((g) => g.status == 'checked-out').length,
+                      guests
+                          .where((g) =>
+                              g.status == 'checked-out' ||
+                              g.status == 'checked_out')
+                          .length,
                     ),
                     const SizedBox(width: 8),
                     _buildFilterChip(
@@ -432,14 +452,36 @@ class _GuestListScreenState extends State<GuestListScreen> {
       ),
       child: Column(
         children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
+          // Handle bar with Edit button
+          SizedBox(
+            height: 50,
+            child: Stack(
+              children: [
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 8,
+                  child: IconButton(
+                    icon: const Icon(Icons.edit,
+                        color: AppTheme.primaryOrange, size: 24),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showEditGuestDialog(context, guest, provider);
+                    },
+                    tooltip: 'Edit Guest',
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -555,6 +597,31 @@ class _GuestListScreenState extends State<GuestListScreen> {
                     ]),
 
                   const SizedBox(height: 32),
+
+                  // Manage Escorts Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        context.push('/guest/${guest.id}/escorts',
+                            extra: guest);
+                      },
+                      icon: const Icon(Icons.people_outline),
+                      label: const Text('Manage Escorts & Companions'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryOrange,
+                        side: const BorderSide(
+                            color: AppTheme.primaryOrange, width: 2),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
 
                   // Action Buttons
                   if (guest.status == 'pending')
@@ -741,6 +808,191 @@ class _GuestListScreenState extends State<GuestListScreen> {
               foregroundColor: Colors.white,
             ),
             child: const Text('Check Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditGuestDialog(
+      BuildContext context, Guest guest, GuestProvider provider) {
+    final firstNameController = TextEditingController(text: guest.firstName);
+    final lastNameController = TextEditingController(text: guest.lastName);
+    final emailController = TextEditingController(text: guest.email);
+    final phoneController = TextEditingController(text: guest.phone);
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.edit, color: AppTheme.primaryOrange),
+            SizedBox(width: 8),
+            Text('Edit Guest Information'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: firstNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'First Name',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'First name is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: lastNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Last Name',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Last name is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email is required';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: phoneController,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.phone),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Phone is required';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                // Save the scaffold messenger for later use
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+                // Create updated guest object
+                final updatedGuest = Guest(
+                  id: guest.id,
+                  firstName: firstNameController.text,
+                  lastName: lastNameController.text,
+                  email: emailController.text,
+                  phone: phoneController.text,
+                  address: guest.address,
+                  documentType: guest.documentType,
+                  documentNumber: guest.documentNumber,
+                  nationality: guest.nationality,
+                  dateOfBirth: guest.dateOfBirth,
+                  roomNumber: guest.roomNumber,
+                  status: guest.status,
+                  checkInDate: guest.checkInDate,
+                  checkOutDate: guest.checkOutDate,
+                );
+
+                // Close the edit dialog first
+                Navigator.of(context).pop();
+
+                // Show loading dialog and keep reference to close it
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext loadingContext) {
+                    // Update guest in the background
+                    provider
+                        .updateGuest(guest.id, updatedGuest)
+                        .then((success) {
+                      // Close loading dialog using its own context
+                      Navigator.of(loadingContext).pop();
+
+                      // Show result message
+                      if (success) {
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                '${updatedGuest.fullName} updated successfully!'),
+                            backgroundColor: Colors.green,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } else {
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Failed to update guest information'),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                    });
+
+                    return const AlertDialog(
+                      content: Row(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(width: 20),
+                          Expanded(
+                            child: Text('Updating guest information...'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryOrange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save Changes'),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/mrz_scanner_screen.dart'; // FREE: ML Kit + Tesseract Scanner
@@ -7,6 +8,9 @@ import '../screens/guest_registration_screen.dart';
 import '../screens/guest_list_screen.dart';
 import '../screens/check_in_screen.dart';
 import '../screens/check_out_screen.dart';
+import '../screens/guest_escorts_screen.dart';
+import '../screens/escort_registration_screen.dart';
+import '../models/guest.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -14,6 +18,11 @@ class AppRoutes {
     routes: [
       GoRoute(
         path: '/',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
       ),
@@ -25,8 +34,9 @@ class AppRoutes {
       GoRoute(
         path: '/scan',
         name: 'scan',
-        builder: (context, state) =>
-            const MRZScannerScreen(), // FREE: ML Kit + Tesseract
+        builder: (context, state) {
+          return const MRZScannerScreen(); // FREE: ML Kit + Tesseract
+        },
       ),
       GoRoute(
         path: '/capture-id-photos',
@@ -58,6 +68,26 @@ class AppRoutes {
         path: '/check-out',
         name: 'check-out',
         builder: (context, state) => const CheckOutScreen(),
+      ),
+      GoRoute(
+        path: '/guest/:guestId/escorts',
+        name: 'guest-escorts',
+        builder: (context, state) {
+          final guest = state.extra as Guest;
+          return GuestEscortsScreen(guest: guest);
+        },
+      ),
+      GoRoute(
+        path: '/guest/:guestId/escorts/add',
+        name: 'add-escort',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return EscortRegistrationScreen(
+            guestId: extra['guestId'] as String,
+            guestName: extra['guestName'] as String,
+            scannedData: extra['scannedData'] as Map<String, dynamic>?,
+          );
+        },
       ),
     ],
   );

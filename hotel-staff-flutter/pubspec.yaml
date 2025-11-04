@@ -16,10 +16,10 @@ dependencies:
   flutter_svg: ^2.0.16
   
   # Camera & Image Processing
-  camera: ^0.11.2
+  camera: ^0.11.2+1  # Latest compatible with current Flutter SDK
   image_picker: ^1.1.3
   image: ^4.3.0
-  image_cropper: ^8.0.2
+  image_cropper: ^8.1.0  # v11 requires newer Flutter SDK
   
   # OCR & Document Scanning (FREE LIBRARIES ONLY)
   google_mlkit_text_recognition: ^0.15.0  # FREE Google ML Kit
@@ -28,7 +28,7 @@ dependencies:
   
   # State Management & Navigation
   provider: ^6.1.2
-  go_router: ^14.6.2
+  go_router: ^14.8.1  # v16 requires newer Flutter SDK
   
   # HTTP & API
   http: ^1.2.2
@@ -47,7 +47,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^5.0.0  # v6 requires newer Flutter SDK
   flutter_launcher_icons: ^0.14.2
 
 flutter:
