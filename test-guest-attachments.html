@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Guest Attachments API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left-color: #f44336;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Guest Attachments API Test</h1>
+
+    <div class="test-section">
+        <h2>Test 1: Save Attachment</h2>
+        <p>Save a test attachment to the database</p>
+        <button onclick="testSaveAttachment()">💾 Test Save</button>
+        <div id="save-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Get Attachments</h2>
+        <p>Retrieve attachments for a customer</p>
+        <input type="number" id="customer-id" placeholder="Customer ID" value="1" style="padding: 8px; margin: 5px;">
+        <button onclick="testGetAttachments()">📥 Get Attachments</button>
+        <div id="get-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Database Check</h2>
+        <p>Check if guest_attachments table exists</p>
+        <button onclick="checkDatabase()">🔍 Check Table</button>
+        <div id="db-result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost/1.IDM/src/api/upload-guest-attachments-api.php';
+
+        async function testSaveAttachment() {
+            const resultDiv = document.getElementById('save-result');
+            resultDiv.innerHTML = '<p>⏳ Testing...</p>';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_customer: 1,
+                        attachment_type: 'id_front',
+                        file_path: '/storage/emulated/0/IDM/test123/front.jpg'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>✅ Success!</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testGetAttachments() {
+            const customerId = document.getElementById('customer-id').value;
+            const resultDiv = document.getElementById('get-result');
+            resultDiv.innerHTML = '<p>⏳ Fetching...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}?id_customer=${customerId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>✅ Found ${data.count} attachment(s)</h3>
+                            <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function checkDatabase() {
+            const resultDiv = document.getElementById('db-result');
+            resultDiv.innerHTML = '<p>⏳ Checking...</p>';
+
+            try {
+                // Try to get attachments for customer 0 (won't exist, but will verify table exists)
+                const response = await fetch(`${API_URL}?id_customer=0`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>✅ Table exists!</h3>
+                            <p>The guest_attachments table is accessible.</p>
+                            <p>Found ${data.count} attachment(s) for test customer.</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Table check failed</h3>
+                            <p>${data.message || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Connection Error</h3>
+                        <p>${error.message}</p>
+                        <p>Make sure WAMP is running and the API file exists.</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

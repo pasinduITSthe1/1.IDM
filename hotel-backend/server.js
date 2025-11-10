@@ -65,8 +65,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server - Listen on all network interfaces for physical device access
-app.listen(PORT, '0.0.0.0', () => {
+// Start server - Listen on configured port (binding host removed to avoid EACCES on some Windows setups)
+// Default binding will listen on all interfaces when permitted. If you need to restrict to localhost, set the host explicitly.
+app.listen(PORT, () => {
   console.log('╔════════════════════════════════════════════════════════╗');
   console.log('║                                                        ║');
   console.log('║        🏨 Hotel Staff Management API Server           ║');

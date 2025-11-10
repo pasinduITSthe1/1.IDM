@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/guest_provider.dart';
 import '../models/guest.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class CheckOutScreen extends StatefulWidget {
   const CheckOutScreen({super.key});
@@ -324,74 +325,33 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  void _checkOutGuest(
-      BuildContext context, Guest guest, GuestProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Check-Out'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Check out ${guest.fullName}?'),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Room: ${guest.roomNumber}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  if (guest.checkInDate != null) ...[
-                    const SizedBox(height: 4),
-                    Text('Check-in: ${_formatDate(guest.checkInDate!)}'),
-                    const SizedBox(height: 4),
-                    Text('Check-out: ${_formatDate(DateTime.now())}'),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Total: ${DateTime.now().difference(guest.checkInDate!).inDays} night(s)',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await provider.checkOutGuest(guest.id);
-              if (context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        '${guest.fullName} checked out from Room ${guest.roomNumber}!'),
-                    backgroundColor: Colors.blue,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Confirm Check-Out'),
-          ),
-        ],
-      ),
+  Future<void> _checkOutGuest(
+      BuildContext context, Guest guest, GuestProvider provider) async {
+    
+    String detailsMessage = 'Check out ${guest.fullName} from Room ${guest.roomNumber}?';
+    
+    if (guest.checkInDate != null) {
+      final nights = DateTime.now().difference(guest.checkInDate!).inDays;
+      detailsMessage += '\n\nStay Duration: $nights night(s)';
+    }
+
+    final bool? confirmed = await EnhancedPopups.showEnhancedConfirmDialog(
+      context,
+      title: 'Confirm Check-Out',
+      message: detailsMessage,
+      confirmText: 'Check Out',
+      type: PopupType.info,
     );
+
+    if (confirmed == true) {
+      await provider.checkOutGuest(guest.id);
+      if (context.mounted) {
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: '${guest.fullName} checked out from Room ${guest.roomNumber}!',
+          type: PopupType.success,
+        );
+      }
+    }
   }
 }

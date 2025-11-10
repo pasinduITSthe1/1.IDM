@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../providers/guest_provider.dart';
 import '../models/guest.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class GuestRegistrationScreen extends StatefulWidget {
   final Map<String, dynamic>? scannedData;
@@ -49,14 +50,6 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
 
   void _populateScannedData() {
     if (widget.scannedData != null) {
-      debugPrint('📥 Received scanned data: ${widget.scannedData}');
-      debugPrint('📊 Scanned fields: ${widget.scannedData!.keys.join(", ")}');
-      debugPrint('📊 Data entries: ${widget.scannedData!.length}');
-
-      // Print each field individually for debugging
-      widget.scannedData!.forEach((key, value) {
-        debugPrint('  🔸 $key: $value (${value.runtimeType})');
-      });
 
       final data = widget.scannedData!;
 
@@ -69,9 +62,7 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
         _isPassport = data['isPassport'].toString().toLowerCase() == 'true';
       }
 
-      debugPrint('📸 Front photo path: $_frontPhotoPath');
-      debugPrint('📸 Back photo path: $_backPhotoPath');
-      debugPrint('📖 Is passport: $_isPassport');
+
 
       // Populate text fields
       _firstNameController.text = data['firstName'] ?? '';
@@ -123,36 +114,17 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
       if (_dateOfBirthController.text.isNotEmpty) populatedCount++;
       if (_nationalityController.text.isNotEmpty) populatedCount++;
 
-      debugPrint('✅ Auto-filled $populatedCount fields from scan');
-
-      // Also show the actual populated values for debugging
-      debugPrint('🎯 Populated field values:');
-      if (_firstNameController.text.isNotEmpty)
-        debugPrint('  First Name: ${_firstNameController.text}');
-      if (_lastNameController.text.isNotEmpty)
-        debugPrint('  Last Name: ${_lastNameController.text}');
-      if (_documentNumberController.text.isNotEmpty)
-        debugPrint('  Doc Number: ${_documentNumberController.text}');
-      if (_dateOfBirthController.text.isNotEmpty)
-        debugPrint('  DOB: ${_dateOfBirthController.text}');
-      if (_nationalityController.text.isNotEmpty)
-        debugPrint('  Nationality: ${_nationalityController.text}');
-
       // Show a snackbar with the results
       if (populatedCount > 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  '✅ Auto-filled $populatedCount fields. Please verify and complete the form.'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 4),
-            ),
+          EnhancedPopups.showEnhancedSnackBar(
+            context,
+            message: 'Auto-filled $populatedCount fields. Please verify and complete the form.',
+            type: PopupType.success,
+            duration: const Duration(seconds: 4),
           );
         });
       }
-    } else {
-      debugPrint('⚠️ No scanned data received - widget.scannedData is null');
     }
   }
 
@@ -254,12 +226,10 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
   // Handle retaking photos
   void _retakePhotos() {
     if (widget.scannedData == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('❌ No scan data available. Please scan document again.'),
-          backgroundColor: Colors.red,
-        ),
+      EnhancedPopups.showEnhancedSnackBar(
+        context,
+        message: 'No scan data available. Please scan document again.',
+        type: PopupType.error,
       );
       return;
     }
@@ -277,11 +247,10 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
 
     // Ensure we have the essential data
     if (mrzData.isEmpty || mrzData['documentNumber'] == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('❌ Invalid scan data. Please scan document again.'),
-          backgroundColor: Colors.red,
-        ),
+      EnhancedPopups.showEnhancedSnackBar(
+        context,
+        message: 'Invalid scan data. Please scan document again.',
+        type: PopupType.error,
       );
       return;
     }
@@ -356,24 +325,29 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
       );
 
       final guestProvider = Provider.of<GuestProvider>(context, listen: false);
-      final success = await guestProvider.addGuest(guest);
+
+      // ✅ Pass photo paths to save them to database
+      final success = await guestProvider.addGuest(
+        guest,
+        frontPhotoPath: _frontPhotoPath,
+        backPhotoPath: _backPhotoPath,
+        passportPhotoPath: _isPassport ? _frontPhotoPath : null,
+      );
 
       setState(() => _isLoading = false);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Guest registered successfully!'),
-            backgroundColor: Colors.green,
-          ),
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: 'Guest registered successfully!',
+          type: PopupType.success,
         );
         context.go('/dashboard');
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Failed to register guest'),
-            backgroundColor: Colors.red,
-          ),
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: 'Failed to register guest',
+          type: PopupType.error,
         );
       }
     }

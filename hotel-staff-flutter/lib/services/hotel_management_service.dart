@@ -1,12 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../utils/network_config.dart';
 
 /// Extended QloApps API Service for integrated hotel management
 /// Handles check-in, check-out, payments, services, and audit logs
 class HotelManagementService {
   final Dio _dio;
-  static const String _baseUrl =
-      'http://localhost:8080/1.IDM/hotel-backend/api';
+  // Using centralized network configuration
+  static String get _baseUrl => NetworkConfig.hotelBackendUrl;
 
   HotelManagementService({Dio? dio})
       : _dio = dio ??

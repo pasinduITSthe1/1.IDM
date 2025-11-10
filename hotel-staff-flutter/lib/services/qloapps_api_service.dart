@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../utils/network_config.dart';
 
 /// QloApps WebService API Service
 /// Direct integration with QloApps built-in API (no Node.js middleware)
@@ -35,9 +36,9 @@ class QloAppsApiService {
     ));
   }
 
-  // ⚙️ CONFIGURATION - Update these values
-  static const String baseUrl =
-      'http://localhost:8080/1.IDM'; // Using ADB port forwarding (80->8080)
+  // ⚙️ CONFIGURATION - Update IP in network_config.dart
+  static String get baseUrl => NetworkConfig.qloAppsBaseUrl;
+
   static const String apiKey =
       '2WUGS9C92CRCSJ1IJME9ST1DFCFDD3C4'; // ✅ API Key configured!
 

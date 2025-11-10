@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../utils/network_config.dart';
 
 class DirectCustomerService {
-  static const String _baseUrl = 'http://localhost:8080/1.IDM';
+  // Using centralized network configuration
+  static String get _baseUrl => NetworkConfig.wampBaseUrl;
 
   /// Create a new customer directly in the database
   Future<Map<String, dynamic>> createCustomer({
@@ -18,7 +20,7 @@ class DirectCustomerService {
     String? company,
   }) async {
     try {
-      final url = Uri.parse('$_baseUrl/add-customer-api.php');
+      final url = Uri.parse('$_baseUrl/src/api/add-customer-api.php');
 
       final Map<String, dynamic> customerData = {
         'firstName': firstName,
@@ -71,7 +73,8 @@ class DirectCustomerService {
   /// Get customer by ID
   Future<Map<String, dynamic>?> getCustomer(int customerId) async {
     try {
-      final url = Uri.parse('$_baseUrl/customers-api.php?id=$customerId');
+      final url =
+          Uri.parse('$_baseUrl/src/api/customers-api.php?id=$customerId');
 
       final response = await http.get(url);
 

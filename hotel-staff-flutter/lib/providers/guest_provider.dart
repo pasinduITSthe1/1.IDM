@@ -6,6 +6,8 @@ import '../services/guest_service.dart';
 import '../services/qloapps_api_service.dart';
 import '../services/hotel_management_service.dart';
 import '../services/direct_customer_service.dart';
+import '../services/guest_attachment_service.dart';
+import '../utils/network_config.dart';
 
 class GuestProvider with ChangeNotifier {
   final List<Guest> _guests = [];
@@ -16,6 +18,8 @@ class GuestProvider with ChangeNotifier {
       HotelManagementService(); // ✅ Hotel operations
   final DirectCustomerService _directCustomerService =
       DirectCustomerService(); // ✅ Direct DB access
+  final GuestAttachmentService _attachmentService =
+      GuestAttachmentService(); // ✅ Attachment management
   bool _useApi = true; // Always true - QloApps is the single source of truth
   bool _useQloAppsDirectly =
       true; // Always true - direct QloApps database access
@@ -50,7 +54,12 @@ class GuestProvider with ChangeNotifier {
   }
 
   // Add new guest - DIRECTLY TO DATABASE VIA NEW API
-  Future<bool> addGuest(Guest guest) async {
+  Future<bool> addGuest(
+    Guest guest, {
+    String? frontPhotoPath,
+    String? backPhotoPath,
+    String? passportPhotoPath,
+  }) async {
     try {
       _isLoading = true;
       notifyListeners();
@@ -70,12 +79,33 @@ class GuestProvider with ChangeNotifier {
 
       // Extract customer ID from response
       final customerId = response['customer']?['id']?.toString() ?? guest.id;
+      final customerIdInt = int.tryParse(customerId) ?? 0;
 
       // Create Guest object with database ID
       final createdGuest = guest.copyWith(id: customerId);
       _guests.add(createdGuest);
 
       debugPrint('✅ Guest saved to database: Customer ID $customerId');
+
+      // ✅ Save photo attachments to database if provided
+      if (frontPhotoPath != null ||
+          backPhotoPath != null ||
+          passportPhotoPath != null) {
+        debugPrint('📸 Saving photo attachments to database...');
+        try {
+          await _attachmentService.saveMultipleAttachments(
+            customerId: customerIdInt,
+            frontPhotoPath: frontPhotoPath,
+            backPhotoPath: backPhotoPath,
+            passportPhotoPath: passportPhotoPath,
+          );
+          debugPrint('✅ Photo attachments saved to database');
+        } catch (attachmentError) {
+          debugPrint(
+              '⚠️  Warning: Failed to save attachments: $attachmentError');
+          // Continue even if attachment save fails - guest is already created
+        }
+      }
 
       _isLoading = false;
       notifyListeners();
@@ -98,6 +128,7 @@ class GuestProvider with ChangeNotifier {
 
         // Extract customer ID from response
         final customerId = response['customer']?['id']?.toString() ?? guest.id;
+        final customerIdInt = int.tryParse(customerId) ?? 0;
 
         // Create Guest object with QloApps ID
         final createdGuest = guest.copyWith(id: customerId);
@@ -105,6 +136,24 @@ class GuestProvider with ChangeNotifier {
 
         debugPrint(
             '✅ Guest saved via QloApps fallback: Customer ID $customerId');
+
+        // ✅ Save photo attachments even with fallback
+        if (frontPhotoPath != null ||
+            backPhotoPath != null ||
+            passportPhotoPath != null) {
+          try {
+            await _attachmentService.saveMultipleAttachments(
+              customerId: customerIdInt,
+              frontPhotoPath: frontPhotoPath,
+              backPhotoPath: backPhotoPath,
+              passportPhotoPath: passportPhotoPath,
+            );
+            debugPrint('✅ Photo attachments saved to database (fallback)');
+          } catch (attachmentError) {
+            debugPrint(
+                '⚠️  Warning: Failed to save attachments: $attachmentError');
+          }
+        }
 
         _isLoading = false;
         notifyListeners();
@@ -274,7 +323,8 @@ class GuestProvider with ChangeNotifier {
             // Load directly from custom API endpoint
             debugPrint('📡 Loading guests from custom API endpoint...');
             final response = await http.get(
-              Uri.parse('http://localhost:8080/1.IDM/customers-api.php'),
+              Uri.parse(
+                  NetworkConfig.customersApiUrl), // Using centralized config
               headers: {'Content-Type': 'application/json'},
             );
 

@@ -13,10 +13,13 @@ RewriteRule . - [E=HTTP_AUTHORIZATION:%1]
 
 
 
-#Domain: 192.168.217.41
+#Domain: localhost
 RewriteRule . - [E=REWRITEBASE:/1.IDM/]
 RewriteRule ^api$ api/ [L]
 
+# Exclude our custom APIs from PrestaShop routing
+RewriteCond %{REQUEST_URI} !^/1\.IDM/custom-apis/
+RewriteCond %{REQUEST_URI} !^/1\.IDM/src/api/
 RewriteRule ^api/(.*)$ %{ENV:REWRITEBASE}webservice/dispatcher.php?url=$1 [QSA,L]
 
 # Images

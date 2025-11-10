@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../providers/escort_provider.dart';
 import '../models/escort.dart';
+import '../services/escort_attachment_service.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class EscortRegistrationScreen extends StatefulWidget {
   final String guestId; // The main guest ID
@@ -119,13 +121,11 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
 
       if (populatedCount > 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  '✅ Auto-filled $populatedCount fields. Please verify and complete the form.'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 4),
-            ),
+          EnhancedPopups.showEnhancedSnackBar(
+            context,
+            message: 'Auto-filled $populatedCount fields. Please verify and complete the form.',
+            type: PopupType.success,
+            duration: const Duration(seconds: 4),
           );
         });
       }
@@ -285,13 +285,11 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
       });
 
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              '✅ Document scanned! Form auto-filled. Please review and complete.'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
-        ),
+      EnhancedPopups.showEnhancedSnackBar(
+        context,
+        message: 'Document scanned! Form auto-filled. Please review and complete.',
+        type: PopupType.success,
+        duration: const Duration(seconds: 3),
       );
     }
   }
@@ -361,26 +359,56 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
 
       final escortProvider =
           Provider.of<EscortProvider>(context, listen: false);
-      final success = await escortProvider.addEscort(escort);
+      final escortId = await escortProvider.addEscort(escort);
+
+      // 📸 Save photo attachments to database if escort creation was successful
+      if (escortId != null && (_frontPhotoPath != null || _backPhotoPath != null)) {
+        await _savePhotoAttachmentsToDatabase(escortId);
+      }
 
       setState(() => _isLoading = false);
 
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Escort registered successfully!'),
-            backgroundColor: Colors.green,
-          ),
+      if (escortId != null && mounted) {
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: 'Escort registered successfully!',
+          type: PopupType.success,
         );
         context.pop(true); // Return true to indicate success
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Failed to register escort'),
-            backgroundColor: Colors.red,
-          ),
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: 'Failed to register escort',
+          type: PopupType.error,
         );
       }
+    }
+  }
+
+  /// Save photo attachments to database
+  Future<void> _savePhotoAttachmentsToDatabase(String escortId) async {
+    try {
+      debugPrint('📸 Saving escort photo attachments to database...');
+      
+      final attachmentService = EscortAttachmentService();
+      
+      // Convert escort ID to integer (needed for database)
+      final escortIdInt = int.tryParse(escortId) ?? 0;
+      
+      if (escortIdInt > 0) {
+        await attachmentService.saveMultipleAttachments(
+          escortId: escortIdInt,
+          frontPhotoPath: _frontPhotoPath,
+          backPhotoPath: _backPhotoPath,
+        );
+        
+        debugPrint('✅ Escort photo attachments saved to database');
+      } else {
+        debugPrint('❌ Invalid escort ID for attachment saving: $escortId');
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to save escort photo attachments: $e');
+      // Don't throw error - escort is already created, attachments are optional
     }
   }
 

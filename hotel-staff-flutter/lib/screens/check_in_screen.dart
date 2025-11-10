@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/guest_provider.dart';
 import '../models/guest.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class CheckInScreen extends StatefulWidget {
   const CheckInScreen({super.key});
@@ -309,54 +310,36 @@ class _CheckInScreenState extends State<CheckInScreen> {
     );
   }
 
-  void _checkInGuest(
-      BuildContext context, Guest guest, GuestProvider provider) {
+  Future<void> _checkInGuest(
+      BuildContext context, Guest guest, GuestProvider provider) async {
     final roomNumber = _roomControllers[guest.id]?.text ?? '';
 
     if (roomNumber.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a room number'),
-          backgroundColor: Colors.red,
-        ),
+      EnhancedPopups.showEnhancedSnackBar(
+        context,
+        message: 'Please enter a room number',
+        type: PopupType.error,
       );
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Check-In'),
-        content: Text(
-          'Check in ${guest.fullName} to Room $roomNumber?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await provider.checkInGuest(guest.id, roomNumber: roomNumber);
-              if (context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        '${guest.fullName} checked in to Room $roomNumber!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
+    final bool? confirmed = await EnhancedPopups.showEnhancedConfirmDialog(
+      context,
+      title: 'Confirm Check-In',
+      message: 'Check in ${guest.fullName} to Room $roomNumber?',
+      confirmText: 'Check In',
+      type: PopupType.info,
     );
+
+    if (confirmed == true) {
+      await provider.checkInGuest(guest.id, roomNumber: roomNumber);
+      if (context.mounted) {
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: '${guest.fullName} checked in to Room $roomNumber!',
+          type: PopupType.success,
+        );
+      }
+    }
   }
 }

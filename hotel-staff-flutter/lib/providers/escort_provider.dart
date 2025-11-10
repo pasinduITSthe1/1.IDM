@@ -20,8 +20,8 @@ class EscortProvider with ChangeNotifier {
     return _escortsByGuest[guestId]?.length ?? 0;
   }
 
-  // Add new escort
-  Future<bool> addEscort(Escort escort) async {
+  // Add new escort and return the database ID
+  Future<String?> addEscort(Escort escort) async {
     try {
       _isLoading = true;
       notifyListeners();
@@ -48,12 +48,12 @@ class EscortProvider with ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
-      return true;
+      return escortId; // Return the database ID
     } catch (e) {
       debugPrint('❌ Error adding escort: $e');
       _isLoading = false;
       notifyListeners();
-      return false;
+      return null; // Return null on error
     }
   }
 

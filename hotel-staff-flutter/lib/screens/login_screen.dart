@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,11 +43,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success && mounted) {
         context.go('/dashboard');
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid credentials. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: 'Invalid credentials. Please try again.',
+          type: PopupType.error,
         );
       }
     }

@@ -1,32 +1,20 @@
 // API Configuration
 //
-// Update the [baseUrl] to match your backend server location:
+// ⚠️ DEPRECATED: This file is kept for backward compatibility only.
 //
-// For Android Emulator:
-//   - Use: 'http://10.0.2.2:3000/api'
+// 👉 Please use NetworkConfig (network_config.dart) instead!
+//    Change IP address in ONE PLACE: lib/utils/network_config.dart
 //
-// For Physical Device (same WiFi network):
-//   - Find your computer's IP address:
-//     - Windows: Run `ipconfig` in Command Prompt, look for IPv4 Address
-//     - Mac/Linux: Run `ifconfig` or `ip addr`, look for inet address
-//   - Use: 'http://YOUR_IP_ADDRESS:3000/api'
-//   - Example: 'http://192.168.1.100:3000/api'
-//
-// For Production:
-//   - Use your actual server URL
-//   - Example: 'https://api.yourhotel.com/api'
+// NetworkConfig automatically switches between WiFi and USB tethering modes.
+
+import 'network_config.dart';
 
 class ApiConfig {
-  // Change this based on your setup
-  static const String baseUrl =
-      'http://localhost:3000/api'; // Using ADB port forwarding
-  // static const String baseUrl = 'http://10.0.2.2:3000/api'; // Android Emulator
-  // static const String baseUrl = 'http://localhost:3000/api'; // iOS Simulator
-  // static const String baseUrl = 'http://10.0.1.24:3000/api'; // Network IP from server startup
-  // static const String baseUrl = 'http://192.168.217.41:3000/api'; // USB Tethering connection
+  // Using centralized network configuration
+  static String get baseUrl => NetworkConfig.nodeBackendUrl;
 
-  static const Duration connectionTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
+  static const Duration connectionTimeout = NetworkConfig.connectionTimeout;
+  static const Duration receiveTimeout = NetworkConfig.receiveTimeout;
 
   // API Endpoints
   static const String authLogin = '/auth/login';

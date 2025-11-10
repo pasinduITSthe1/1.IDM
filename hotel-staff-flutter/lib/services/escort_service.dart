@@ -2,10 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/escort.dart';
+import '../utils/network_config.dart';
 
 class EscortService {
-  // Backend API base URL - Using ADB port forwarding for physical device
-  static const String baseUrl = 'http://localhost:3000/api';
+  // Using centralized network configuration
+  static String get baseUrl => NetworkConfig.escortsApiUrl;
 
   // Add escort to the database
   Future<Map<String, dynamic>> addEscort(Escort escort) async {

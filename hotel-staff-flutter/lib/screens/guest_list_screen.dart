@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/guest_provider.dart';
 import '../models/guest.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class GuestListScreen extends StatefulWidget {
   const GuestListScreen({super.key});
@@ -758,12 +759,10 @@ class _GuestListScreenState extends State<GuestListScreen> {
                     roomNumber: roomController.text);
                 Navigator.pop(context);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        '${guest.fullName} checked in to Room ${roomController.text}!'),
-                    backgroundColor: Colors.green,
-                  ),
+                EnhancedPopups.showEnhancedSnackBar(
+                  context,
+                  message: '${guest.fullName} checked in to Room ${roomController.text}!',
+                  type: PopupType.success,
                 );
               }
             },
@@ -796,11 +795,10 @@ class _GuestListScreenState extends State<GuestListScreen> {
               provider.checkOutGuest(guest.id);
               Navigator.pop(context);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${guest.fullName} checked out successfully!'),
-                  backgroundColor: Colors.blue,
-                ),
+              EnhancedPopups.showEnhancedSnackBar(
+                context,
+                message: '${guest.fullName} checked out successfully!',
+                type: PopupType.success,
               );
             },
             style: ElevatedButton.styleFrom(
@@ -916,9 +914,6 @@ class _GuestListScreenState extends State<GuestListScreen> {
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
-                // Save the scaffold messenger for later use
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
-
                 // Create updated guest object
                 final updatedGuest = Guest(
                   id: guest.id,
@@ -954,21 +949,18 @@ class _GuestListScreenState extends State<GuestListScreen> {
 
                       // Show result message
                       if (success) {
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                '${updatedGuest.fullName} updated successfully!'),
-                            backgroundColor: Colors.green,
-                            duration: const Duration(seconds: 2),
-                          ),
+                        EnhancedPopups.showEnhancedSnackBar(
+                          context,
+                          message: '${updatedGuest.fullName} updated successfully!',
+                          type: PopupType.success,
+                          duration: const Duration(seconds: 2),
                         );
                       } else {
-                        scaffoldMessenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Failed to update guest information'),
-                            backgroundColor: Colors.red,
-                            duration: const Duration(seconds: 3),
-                          ),
+                        EnhancedPopups.showEnhancedSnackBar(
+                          context,
+                          message: 'Failed to update guest information',
+                          type: PopupType.error,
+                          duration: const Duration(seconds: 3),
                         );
                       }
                     });

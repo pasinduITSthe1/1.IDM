@@ -7,6 +7,7 @@ import 'package:mrz_parser/mrz_parser.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../utils/enhanced_popups.dart';
 
 /// Enhanced MRZ Scanner - Uses Google ML Kit + Tesseract OCR (FREE)
 /// Features: Auto-capture, Flash control, Image preprocessing, Gallery upload,
@@ -441,12 +442,11 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
 
     // Show errors if any
     if (errors.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Warnings: ${errors.join(", ")}'),
-          duration: const Duration(seconds: 3),
-          backgroundColor: Colors.orange,
-        ),
+      EnhancedPopups.showEnhancedSnackBar(
+        context,
+        message: 'Warnings: ${errors.join(", ")}',
+        type: PopupType.warning,
+        duration: const Duration(seconds: 3),
       );
     }
 

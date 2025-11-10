@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/guest_provider.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -119,14 +120,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     Navigator.pop(context);
                                     await guestProvider.debugPrintQloAppsData();
                                     if (mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                              '✅ Check console/debug output for QloApps connection details'),
-                                          backgroundColor: Colors.blue,
-                                          duration: Duration(seconds: 3),
-                                        ),
+                                      EnhancedPopups.showEnhancedSnackBar(
+                                        context,
+                                        message: 'Check console/debug output for QloApps connection details',
+                                        type: PopupType.info,
+                                        duration: const Duration(seconds: 3),
                                       );
                                     }
                                   },
