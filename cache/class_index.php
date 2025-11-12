@@ -515,42 +515,6 @@
     'type' => 'class',
     'override' => false,
   ),
-  'AdminHotelCheckinsController' => 
-  array (
-    'path' => 'controllers/admin/AdminHotelCheckinsController.php',
-    'type' => 'class',
-    'override' => false,
-  ),
-  'AdminHotelCheckoutsController' => 
-  array (
-    'path' => 'controllers/admin/AdminHotelCheckoutsController.php',
-    'type' => 'class',
-    'override' => false,
-  ),
-  'AdminHotelLogsController' => 
-  array (
-    'path' => 'controllers/admin/AdminHotelLogsController.php',
-    'type' => 'class',
-    'override' => false,
-  ),
-  'AdminHotelPaymentsController' => 
-  array (
-    'path' => 'controllers/admin/AdminHotelPaymentsController.php',
-    'type' => 'class',
-    'override' => false,
-  ),
-  'AdminHotelRoomsController' => 
-  array (
-    'path' => 'controllers/admin/AdminHotelRoomsController.php',
-    'type' => 'class',
-    'override' => false,
-  ),
-  'AdminHotelServicesController' => 
-  array (
-    'path' => 'controllers/admin/AdminHotelServicesController.php',
-    'type' => 'class',
-    'override' => false,
-  ),
   'AdminImagesController' => 
   array (
     'path' => '',
