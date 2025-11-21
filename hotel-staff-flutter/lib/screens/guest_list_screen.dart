@@ -73,17 +73,21 @@ class _GuestListScreenState extends State<GuestListScreen> {
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back,
+                          color: Colors.white, size: 24),
                       onPressed: () => context.pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
+                    const SizedBox(width: 12),
                     const Text(
-                      ' All Guests',
+                      'All Guests',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -91,16 +95,17 @@ class _GuestListScreenState extends State<GuestListScreen> {
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         '${filteredGuests.length} Guests',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -111,32 +116,54 @@ class _GuestListScreenState extends State<GuestListScreen> {
               // Search Bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Search by name, email, phone, or room...',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                    prefixIcon: const Icon(Icons.search, color: Colors.white),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.2),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                    style: const TextStyle(
+                      color: Color(0xFF1F2937),
+                      fontSize: 14,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Search by name, email, phone, ...',
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 13,
+                      ),
+                      prefixIcon:
+                          Icon(Icons.search, color: Colors.grey[400], size: 20),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Filter Chips
               SizedBox(
-                height: 50,
+                height: 40,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -172,16 +199,16 @@ class _GuestListScreenState extends State<GuestListScreen> {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Guest List
               Expanded(
                 child: Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
                     ),
                   ),
                   child: filteredGuests.isEmpty
@@ -227,69 +254,107 @@ class _GuestListScreenState extends State<GuestListScreen> {
 
   Widget _buildFilterChip(String label, String value, int count) {
     final isSelected = _filterStatus == value;
-    return FilterChip(
-      label: Text('$label ($count)'),
-      selected: isSelected,
-      onSelected: (selected) {
+    return GestureDetector(
+      onTap: () {
         setState(() {
           _filterStatus = value;
         });
       },
-      // ignore: deprecated_member_use
-      backgroundColor:
-          isSelected ? Colors.white : Colors.white.withOpacity(0.85),
-      selectedColor: Colors.white,
-      labelStyle: TextStyle(
-        color: isSelected
-            ? AppTheme.primaryOrange
-            : AppTheme.primaryOrange.withOpacity(0.9),
-        fontWeight: FontWeight.bold,
-        fontSize: 13,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.25),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.4),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelected)
+              Container(
+                margin: const EdgeInsets.only(right: 6),
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: AppTheme.primaryOrange,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: Colors.white, size: 10),
+              ),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppTheme.primaryOrange : Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppTheme.primaryOrange.withOpacity(0.15)
+                    : Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                count.toString(),
+                style: TextStyle(
+                  color: isSelected ? AppTheme.primaryOrange : Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      side: BorderSide(
-        color:
-            isSelected ? AppTheme.primaryOrange : Colors.white.withOpacity(0.8),
-        width: 2,
-      ),
-      elevation: isSelected ? 4 : 2,
-      shadowColor: Colors.black.withOpacity(0.3),
     );
   }
 
   Widget _buildGuestCard(
       BuildContext context, Guest guest, GuestProvider provider) {
     final statusColor = _getStatusColor(guest.status);
-    final statusIcon = _getStatusIcon(guest.status);
+    final hasEmail = guest.email != null && guest.email!.isNotEmpty;
+    final hasPhone = guest.phone != null && guest.phone!.isNotEmpty;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
+      ),
       child: InkWell(
         onTap: () => _showGuestDetails(context, guest, provider),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header Section
               Row(
                 children: [
+                  // Avatar with Initial
                   CircleAvatar(
-                    radius: 30,
-                    backgroundColor: AppTheme.primaryOrange.withOpacity(0.1),
+                    radius: 22,
+                    backgroundColor: statusColor,
                     child: Text(
                       guest.fullName.isNotEmpty
                           ? guest.fullName[0].toUpperCase()
                           : '?',
                       style: const TextStyle(
-                        fontSize: 24,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryOrange,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
+                  // Name and Status
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,21 +362,30 @@ class _GuestListScreenState extends State<GuestListScreen> {
                         Text(
                           guest.fullName,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
+                            color: Color(0xFF1F2937),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(statusIcon, size: 16, color: statusColor),
-                            const SizedBox(width: 4),
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
                             Text(
                               guest.status.toUpperCase(),
                               style: TextStyle(
-                                color: statusColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[600],
+                                letterSpacing: 0.3,
                               ),
                             ),
                           ],
@@ -319,82 +393,124 @@ class _GuestListScreenState extends State<GuestListScreen> {
                       ],
                     ),
                   ),
+                  // Room Badge
                   if (guest.roomNumber != null)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryOrange,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         'Room ${guest.roomNumber}',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
                           fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                 ],
               ),
-              const Divider(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child:
-                        _buildInfoItem(Icons.email, guest.email ?? 'No email'),
+
+              // Contact Info Section - only show if data exists
+              if (hasEmail ||
+                  hasPhone ||
+                  guest.checkInDate != null ||
+                  guest.checkOutDate != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  Expanded(
-                    child:
-                        _buildInfoItem(Icons.phone, guest.phone ?? 'No phone'),
+                  child: Column(
+                    children: [
+                      if (hasEmail)
+                        Row(
+                          children: [
+                            Icon(Icons.email_outlined,
+                                size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                guest.email!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (hasEmail && hasPhone) const SizedBox(height: 8),
+                      if (hasPhone)
+                        Row(
+                          children: [
+                            Icon(Icons.phone_outlined,
+                                size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Text(
+                              guest.phone!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      if ((hasEmail || hasPhone) &&
+                          (guest.checkInDate != null ||
+                              guest.checkOutDate != null))
+                        const SizedBox(height: 8),
+                      if (guest.checkInDate != null)
+                        Row(
+                          children: [
+                            Icon(Icons.login_rounded,
+                                size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'In: ${_formatDate(guest.checkInDate!)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (guest.checkInDate != null &&
+                          guest.checkOutDate != null)
+                        const SizedBox(height: 8),
+                      if (guest.checkOutDate != null)
+                        Row(
+                          children: [
+                            Icon(Icons.logout_rounded,
+                                size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Out: ${_formatDate(guest.checkOutDate!)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
-                ],
-              ),
-              if (guest.checkInDate != null || guest.checkOutDate != null) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    if (guest.checkInDate != null)
-                      Expanded(
-                        child: _buildInfoItem(
-                          Icons.login,
-                          'In: ${_formatDate(guest.checkInDate!)}',
-                        ),
-                      ),
-                    if (guest.checkOutDate != null)
-                      Expanded(
-                        child: _buildInfoItem(
-                          Icons.logout,
-                          'Out: ${_formatDate(guest.checkOutDate!)}',
-                        ),
-                      ),
-                  ],
                 ),
               ],
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildInfoItem(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey[600]),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     );
   }
 
@@ -408,19 +524,6 @@ class _GuestListScreenState extends State<GuestListScreen> {
         return Colors.orange;
       default:
         return Colors.grey;
-    }
-  }
-
-  IconData _getStatusIcon(String status) {
-    switch (status) {
-      case 'checked-in':
-        return Icons.check_circle;
-      case 'checked-out':
-        return Icons.exit_to_app;
-      case 'pending':
-        return Icons.schedule;
-      default:
-        return Icons.help;
     }
   }
 
@@ -441,46 +544,53 @@ class _GuestListScreenState extends State<GuestListScreen> {
   Widget _buildGuestDetailsSheet(
       BuildContext context, Guest guest, GuestProvider provider) {
     final roomController = TextEditingController(text: guest.roomNumber ?? '');
+    final statusColor = _getStatusColor(guest.status);
+    final hasEmail = guest.email != null && guest.email!.isNotEmpty;
+    final hasPhone = guest.phone != null && guest.phone!.isNotEmpty;
+    final hasAddress = guest.address != null && guest.address!.isNotEmpty;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.of(context).size.height * 0.8,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
       ),
       child: Column(
         children: [
           // Handle bar with Edit button
-          SizedBox(
-            height: 50,
-            child: Stack(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            child: Row(
               children: [
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 12),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                Positioned(
-                  top: 4,
-                  right: 8,
-                  child: IconButton(
-                    icon: const Icon(Icons.edit,
-                        color: AppTheme.primaryOrange, size: 24),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _showEditGuestDialog(context, guest, provider);
-                    },
-                    tooltip: 'Edit Guest',
-                  ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined,
+                      color: AppTheme.primaryOrange, size: 20),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showEditGuestDialog(context, guest, provider);
+                  },
+                  tooltip: 'Edit Guest',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
@@ -488,7 +598,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
 
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -497,150 +607,215 @@ class _GuestListScreenState extends State<GuestListScreen> {
                     child: Column(
                       children: [
                         CircleAvatar(
-                          radius: 50,
-                          backgroundColor:
-                              AppTheme.primaryOrange.withOpacity(0.1),
+                          radius: 40,
+                          backgroundColor: statusColor,
                           child: Text(
                             guest.fullName.isNotEmpty
                                 ? guest.fullName[0].toUpperCase()
                                 : '?',
                             style: const TextStyle(
-                              fontSize: 40,
+                              fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryOrange,
+                              color: Colors.white,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
                         Text(
                           guest.fullName,
                           style: const TextStyle(
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
+                            color: Color(0xFF1F2937),
                           ),
+                          textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color:
-                                _getStatusColor(guest.status).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: _getStatusColor(guest.status)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(_getStatusIcon(guest.status),
-                                  size: 16,
-                                  color: _getStatusColor(guest.status)),
-                              const SizedBox(width: 4),
-                              Text(
-                                guest.status.toUpperCase(),
-                                style: TextStyle(
-                                  color: _getStatusColor(guest.status),
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                shape: BoxShape.circle,
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              guest.status.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[600],
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   // Contact Information
-                  _buildDetailSection('Contact Information', [
-                    _buildDetailRow(
-                        Icons.email, 'Email', guest.email ?? 'Not provided'),
-                    _buildDetailRow(
-                        Icons.phone, 'Phone', guest.phone ?? 'Not provided'),
-                    _buildDetailRow(Icons.location_city, 'Address',
-                        guest.address ?? 'Not provided'),
-                  ]),
-
-                  const SizedBox(height: 24),
+                  if (hasEmail || hasPhone || hasAddress) ...[
+                    _buildSectionTitle('Contact Information'),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          if (hasEmail)
+                            _buildInfoRow(
+                                Icons.email_outlined, 'Email', guest.email!),
+                          if (hasEmail && hasPhone) const SizedBox(height: 12),
+                          if (hasPhone)
+                            _buildInfoRow(
+                                Icons.phone_outlined, 'Phone', guest.phone!),
+                          if ((hasEmail || hasPhone) && hasAddress)
+                            const SizedBox(height: 12),
+                          if (hasAddress)
+                            _buildInfoRow(Icons.location_on_outlined, 'Address',
+                                guest.address!),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
 
                   // Document Information
-                  _buildDetailSection('Document Information', [
-                    _buildDetailRow(Icons.badge, 'Document Type',
-                        guest.documentType ?? 'Not provided'),
-                    _buildDetailRow(Icons.numbers, 'Document Number',
-                        guest.documentNumber ?? 'Not provided'),
-                    if (guest.nationality != null)
-                      _buildDetailRow(
-                          Icons.flag, 'Nationality', guest.nationality!),
-                    if (guest.dateOfBirth != null)
-                      _buildDetailRow(
-                          Icons.cake, 'Date of Birth', guest.dateOfBirth!),
-                  ]),
-
-                  const SizedBox(height: 24),
+                  if (guest.documentType != null ||
+                      guest.documentNumber != null ||
+                      guest.nationality != null ||
+                      guest.dateOfBirth != null) ...[
+                    _buildSectionTitle('Document Information'),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          if (guest.documentType != null)
+                            _buildInfoRow(Icons.badge_outlined, 'Document Type',
+                                guest.documentType!),
+                          if (guest.documentType != null &&
+                              guest.documentNumber != null)
+                            const SizedBox(height: 12),
+                          if (guest.documentNumber != null)
+                            _buildInfoRow(Icons.numbers_outlined,
+                                'Document Number', guest.documentNumber!),
+                          if ((guest.documentType != null ||
+                                  guest.documentNumber != null) &&
+                              guest.nationality != null)
+                            const SizedBox(height: 12),
+                          if (guest.nationality != null)
+                            _buildInfoRow(Icons.flag_outlined, 'Nationality',
+                                guest.nationality!),
+                          if ((guest.documentType != null ||
+                                  guest.documentNumber != null ||
+                                  guest.nationality != null) &&
+                              guest.dateOfBirth != null)
+                            const SizedBox(height: 12),
+                          if (guest.dateOfBirth != null)
+                            _buildInfoRow(Icons.cake_outlined, 'Date of Birth',
+                                guest.dateOfBirth!),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
 
                   // Stay Information
                   if (guest.roomNumber != null ||
                       guest.checkInDate != null ||
-                      guest.checkOutDate != null)
-                    _buildDetailSection('Stay Information', [
-                      if (guest.roomNumber != null)
-                        _buildDetailRow(
-                            Icons.hotel, 'Room Number', guest.roomNumber!),
-                      if (guest.checkInDate != null)
-                        _buildDetailRow(Icons.login, 'Check-in Date',
-                            _formatDate(guest.checkInDate!)),
-                      if (guest.checkOutDate != null)
-                        _buildDetailRow(Icons.logout, 'Check-out Date',
-                            _formatDate(guest.checkOutDate!)),
-                    ]),
-
-                  const SizedBox(height: 32),
+                      guest.checkOutDate != null) ...[
+                    _buildSectionTitle('Stay Information'),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          if (guest.roomNumber != null)
+                            _buildInfoRow(Icons.hotel_outlined, 'Room Number',
+                                guest.roomNumber!),
+                          if (guest.roomNumber != null &&
+                              guest.checkInDate != null)
+                            const SizedBox(height: 12),
+                          if (guest.checkInDate != null)
+                            _buildInfoRow(Icons.login_rounded, 'Check-in Date',
+                                _formatDate(guest.checkInDate!)),
+                          if ((guest.roomNumber != null ||
+                                  guest.checkInDate != null) &&
+                              guest.checkOutDate != null)
+                            const SizedBox(height: 12),
+                          if (guest.checkOutDate != null)
+                            _buildInfoRow(
+                                Icons.logout_rounded,
+                                'Check-out Date',
+                                _formatDate(guest.checkOutDate!)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
 
                   // Manage Escorts Button
                   SizedBox(
                     width: double.infinity,
+                    height: 44,
                     child: OutlinedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
                         context.push('/guest/${guest.id}/escorts',
                             extra: guest);
                       },
-                      icon: const Icon(Icons.people_outline),
+                      icon: const Icon(Icons.people_outline, size: 18),
                       label: const Text('Manage Escorts & Companions'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.primaryOrange,
                         side: const BorderSide(
-                            color: AppTheme.primaryOrange, width: 2),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                            color: AppTheme.primaryOrange, width: 1.5),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
                   // Action Buttons
                   if (guest.status == 'pending')
                     SizedBox(
                       width: double.infinity,
+                      height: 44,
                       child: ElevatedButton.icon(
                         onPressed: () {
                           _checkInGuest(
                               context, guest, provider, roomController);
                         },
-                        icon: const Icon(Icons.login),
+                        icon: const Icon(Icons.login_rounded, size: 18),
                         label: const Text('Check In'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor: const Color(0xFF10B981),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),
@@ -648,18 +823,19 @@ class _GuestListScreenState extends State<GuestListScreen> {
                   if (guest.status == 'checked-in')
                     SizedBox(
                       width: double.infinity,
+                      height: 44,
                       child: ElevatedButton.icon(
                         onPressed: () {
                           _checkOutGuest(context, guest, provider);
                         },
-                        icon: const Icon(Icons.logout),
+                        icon: const Icon(Icons.logout_rounded, size: 18),
                         label: const Text('Check Out'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: const Color(0xFF2563EB),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),
@@ -673,56 +849,49 @@ class _GuestListScreenState extends State<GuestListScreen> {
     );
   }
 
-  Widget _buildDetailSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.primaryOrange,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...children,
-      ],
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.bold,
+        color: AppTheme.primaryOrange,
+        letterSpacing: 0.3,
+      ),
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: Colors.grey[600]),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1F2937),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -761,7 +930,8 @@ class _GuestListScreenState extends State<GuestListScreen> {
                 Navigator.pop(context);
                 EnhancedPopups.showEnhancedSnackBar(
                   context,
-                  message: '${guest.fullName} checked in to Room ${roomController.text}!',
+                  message:
+                      '${guest.fullName} checked in to Room ${roomController.text}!',
                   type: PopupType.success,
                 );
               }
@@ -951,7 +1121,8 @@ class _GuestListScreenState extends State<GuestListScreen> {
                       if (success) {
                         EnhancedPopups.showEnhancedSnackBar(
                           context,
-                          message: '${updatedGuest.fullName} updated successfully!',
+                          message:
+                              '${updatedGuest.fullName} updated successfully!',
                           type: PopupType.success,
                           duration: const Duration(seconds: 2),
                         );

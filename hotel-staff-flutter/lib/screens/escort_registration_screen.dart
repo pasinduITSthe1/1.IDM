@@ -123,7 +123,8 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           EnhancedPopups.showEnhancedSnackBar(
             context,
-            message: 'Auto-filled $populatedCount fields. Please verify and complete the form.',
+            message:
+                'Auto-filled $populatedCount fields. Please verify and complete the form.',
             type: PopupType.success,
             duration: const Duration(seconds: 4),
           );
@@ -287,7 +288,8 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
       // Show success message
       EnhancedPopups.showEnhancedSnackBar(
         context,
-        message: 'Document scanned! Form auto-filled. Please review and complete.',
+        message:
+            'Document scanned! Form auto-filled. Please review and complete.',
         type: PopupType.success,
         duration: const Duration(seconds: 3),
       );
@@ -362,7 +364,8 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
       final escortId = await escortProvider.addEscort(escort);
 
       // 📸 Save photo attachments to database if escort creation was successful
-      if (escortId != null && (_frontPhotoPath != null || _backPhotoPath != null)) {
+      if (escortId != null &&
+          (_frontPhotoPath != null || _backPhotoPath != null)) {
         await _savePhotoAttachmentsToDatabase(escortId);
       }
 
@@ -389,19 +392,19 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
   Future<void> _savePhotoAttachmentsToDatabase(String escortId) async {
     try {
       debugPrint('📸 Saving escort photo attachments to database...');
-      
+
       final attachmentService = EscortAttachmentService();
-      
+
       // Convert escort ID to integer (needed for database)
       final escortIdInt = int.tryParse(escortId) ?? 0;
-      
+
       if (escortIdInt > 0) {
         await attachmentService.saveMultipleAttachments(
           escortId: escortIdInt,
           frontPhotoPath: _frontPhotoPath,
           backPhotoPath: _backPhotoPath,
         );
-        
+
         debugPrint('✅ Escort photo attachments saved to database');
       } else {
         debugPrint('❌ Invalid escort ID for attachment saving: $escortId');

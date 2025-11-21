@@ -13,7 +13,7 @@ class EnhancedPopups {
     VoidCallback? onAction,
   }) {
     final colorScheme = _getColorScheme(type);
-    
+
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -159,9 +159,8 @@ class EnhancedPopups {
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDestructive
-                    ? Colors.red
-                    : _getColorScheme(type).primary,
+                backgroundColor:
+                    isDestructive ? Colors.red : _getColorScheme(type).primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

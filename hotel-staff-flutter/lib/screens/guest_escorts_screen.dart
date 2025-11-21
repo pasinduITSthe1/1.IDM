@@ -145,41 +145,27 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
         children: [
           // Guest Info Card
           Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.primaryOrange,
-                  AppTheme.secondaryOrange,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryOrange.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              color: AppTheme.primaryOrange,
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               children: [
                 CircleAvatar(
-                  radius: 30,
+                  radius: 24,
                   backgroundColor: Colors.white,
                   child: Text(
                     widget.guest.firstName[0].toUpperCase(),
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryOrange,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +173,7 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
                       Text(
                         widget.guest.fullName,
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -197,29 +183,28 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
                         widget.guest.roomNumber != null
                             ? 'Room ${widget.guest.roomNumber}'
                             : 'No room assigned',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${escorts.length} ${escorts.length == 1 ? 'Escort' : 'Escorts'}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
                         ),
                       ),
                     ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${escorts.length} ${escorts.length == 1 ? 'Escort' : 'Escorts'}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -340,28 +325,34 @@ class _EscortCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    final hasInfo = escort.documentNumber != null ||
+        escort.nationality != null ||
+        escort.phone != null ||
+        escort.email != null;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppTheme.primaryOrange.withOpacity(0.1),
+                  radius: 22,
+                  backgroundColor: AppTheme.primaryOrange,
                   child: Text(
                     escort.firstName[0].toUpperCase(),
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryOrange,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -373,8 +364,9 @@ class _EscortCard extends StatelessWidget {
                       Text(
                         escort.fullName,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -382,15 +374,16 @@ class _EscortCard extends StatelessWidget {
                         children: [
                           Icon(
                             _getRelationshipIcon(escort.relationshipToGuest),
-                            size: 14,
-                            color: Colors.grey.shade600,
+                            size: 12,
+                            color: Colors.grey[600],
                           ),
                           const SizedBox(width: 4),
                           Text(
                             _getRelationshipLabel(escort.relationshipToGuest),
                             style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade600,
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -398,41 +391,57 @@ class _EscortCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  onPressed: onDelete,
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.delete_outline,
+                        color: Colors.red[700], size: 18),
+                    onPressed: onDelete,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
                 ),
               ],
             ),
-            if (escort.documentNumber != null ||
-                escort.nationality != null ||
-                escort.phone != null) ...[
-              const Divider(height: 24),
-              Wrap(
-                spacing: 16,
-                runSpacing: 8,
-                children: [
-                  if (escort.documentNumber != null)
-                    _InfoChip(
-                      icon: Icons.badge_outlined,
-                      label: escort.documentNumber!,
-                    ),
-                  if (escort.nationality != null)
-                    _InfoChip(
-                      icon: Icons.flag_outlined,
-                      label: escort.nationality!,
-                    ),
-                  if (escort.phone != null)
-                    _InfoChip(
-                      icon: Icons.phone_outlined,
-                      label: escort.phone!,
-                    ),
-                  if (escort.email != null)
-                    _InfoChip(
-                      icon: Icons.email_outlined,
-                      label: escort.email!,
-                    ),
-                ],
+            if (hasInfo) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (escort.documentNumber != null)
+                      _InfoChip(
+                        icon: Icons.badge_outlined,
+                        label: escort.documentNumber!,
+                      ),
+                    if (escort.nationality != null)
+                      _InfoChip(
+                        icon: Icons.flag_outlined,
+                        label: escort.nationality!,
+                      ),
+                    if (escort.phone != null)
+                      _InfoChip(
+                        icon: Icons.phone_outlined,
+                        label: escort.phone!,
+                      ),
+                    if (escort.email != null)
+                      _InfoChip(
+                        icon: Icons.email_outlined,
+                        label: escort.email!,
+                      ),
+                  ],
+                ),
               ),
             ],
           ],
@@ -454,21 +463,23 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.grey.shade700),
+          Icon(icon, size: 12, color: Colors.grey[600]),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade700,
+              fontSize: 11,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

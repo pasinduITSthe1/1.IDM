@@ -48,14 +48,13 @@ try {
             exit;
         }
         
-        // Generate email if not provided
-        if (empty($email)) {
-            $email = strtolower($firstName . '.' . $lastName . '.' . time() . '@hotel.com');
-        }
+        // Store original email for response (might be empty/null)
+        $originalEmail = $email;
         
-        // Generate phone if not provided
-        if (empty($phone)) {
-            $phone = '0000000000';
+        // QloApps requires email to be unique, so generate temp one only for DB
+        if (empty($email)) {
+            // Use a temp email format that's clearly temporary
+            $email = 'noemail_' . time() . '_' . rand(1000, 9999) . '@temp.local';
         }
         
         $timestamp = date('Y-m-d H:i:s');
@@ -68,7 +67,7 @@ try {
             $result = $stmt->execute([
                 $firstName,
                 $lastName,
-                $email,
+                $email, // Use generated temp email for DB
                 $timestamp,
                 $timestamp
             ]);
@@ -88,7 +87,7 @@ try {
                         $data['address2'] ?? '',
                         $data['city'] ?? '',
                         $data['postcode'] ?? '',
-                        $phone,
+                        !empty($phone) ? $phone : '',
                         'Main Address',
                         $data['company'] ?? '',
                         $timestamp,
@@ -96,6 +95,14 @@ try {
                     ]);
                 }
                 
+                // Include notification helper
+                include_once '../custom-api/create-notification.php';
+                
+                // Create notification for new guest registration
+                $guestName = trim($firstName . ' ' . $lastName);
+                createGuestRegistrationNotification($pdo, $guestName, $customerId);
+                
+                // Return null for email/phone if they were empty originally
                 echo json_encode([
                     'success' => true,
                     'message' => 'Customer created successfully',
@@ -103,8 +110,8 @@ try {
                         'id' => $customerId,
                         'firstname' => $firstName,
                         'lastname' => $lastName,
-                        'email' => $email,
-                        'phone' => $phone,
+                        'email' => !empty($originalEmail) ? $originalEmail : null,
+                        'phone' => !empty($phone) ? $phone : null,
                         'date_add' => $timestamp
                     ]
                 ]);

@@ -205,15 +205,19 @@ class QloAppsApiService {
   Future<Map<String, dynamic>> createCustomer({
     required String firstName,
     required String lastName,
-    required String email,
+    String? email,
     required String password,
     String? phone,
     String? dateOfBirth,
   }) async {
+    // Generate a temporary email if not provided (required by QloApps)
+    final customerEmail =
+        email ?? 'guest${DateTime.now().millisecondsSinceEpoch}@temp.local';
+
     final xml = _buildCustomerXml(
       firstName: firstName,
       lastName: lastName,
-      email: email,
+      email: customerEmail,
       password: password,
       phone: phone,
       dateOfBirth: dateOfBirth,

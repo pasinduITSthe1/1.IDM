@@ -73,6 +73,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $updateSql = "UPDATE " . _DB_PREFIX_ . "customer SET note = '$note' WHERE id_customer = $id_customer";
         $conn->query($updateSql);
 
+        // Get guest name for notification
+        $guestSql = "SELECT CONCAT(firstname, ' ', lastname) as full_name FROM " . _DB_PREFIX_ . "customer WHERE id_customer = $id_customer";
+        $guestResult = $conn->query($guestSql);
+        $guestName = $guestResult->num_rows > 0 ? $guestResult->fetch_assoc()['full_name'] : 'Guest';
+        
+        // Create check-in notification
+        include_once '../../custom-api/create-notification.php';
+        
+        // Create PDO connection for notification helper
+        $pdo = new PDO("mysql:host=" . _DB_SERVER_ . ";dbname=" . _DB_NAME_ . ";charset=utf8", _DB_USER_, _DB_PASSWD_);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        
+        createCheckInNotification($pdo, $guestName, $room_number, $id_customer);
+
         http_response_code(201);
         echo json_encode([
             'success' => true,

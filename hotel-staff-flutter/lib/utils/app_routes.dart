@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
-import '../screens/dashboard_screen.dart';
+import '../screens/main_navigation_screen.dart';
 import '../screens/mrz_scanner_screen.dart'; // FREE: ML Kit + Tesseract Scanner
 import '../screens/id_photo_capture_screen.dart'; // ID Photo Capture
 import '../screens/guest_registration_screen.dart';
@@ -10,7 +10,11 @@ import '../screens/check_in_screen.dart';
 import '../screens/check_out_screen.dart';
 import '../screens/guest_escorts_screen.dart';
 import '../screens/escort_registration_screen.dart';
+import '../screens/rooms/room_dashboard_screen.dart';
+import '../screens/rooms/room_details_screen.dart';
+import '../screens/rooms/today_activity_screen.dart';
 import '../models/guest.dart';
+import '../models/room.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -29,7 +33,7 @@ class AppRoutes {
       GoRoute(
         path: '/dashboard',
         name: 'dashboard',
-        builder: (context, state) => const DashboardScreen(),
+        builder: (context, state) => const MainNavigationScreen(),
       ),
       GoRoute(
         path: '/scan',
@@ -88,6 +92,24 @@ class AppRoutes {
             scannedData: extra['scannedData'] as Map<String, dynamic>?,
           );
         },
+      ),
+      GoRoute(
+        path: '/rooms',
+        name: 'rooms',
+        builder: (context, state) => const RoomDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/rooms/details',
+        name: 'room-details',
+        builder: (context, state) {
+          final room = state.extra as Room;
+          return RoomDetailsScreen(room: room);
+        },
+      ),
+      GoRoute(
+        path: '/rooms/today-activity',
+        name: 'today-activity',
+        builder: (context, state) => const TodayActivityScreen(),
       ),
     ],
   );

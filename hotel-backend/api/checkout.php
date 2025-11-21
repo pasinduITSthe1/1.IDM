@@ -78,6 +78,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $updateCustomer = "UPDATE " . _DB_PREFIX_ . "customer SET note = '$note' WHERE id_customer = $id_customer";
         $conn->query($updateCustomer);
 
+        // Get guest name and room number for notification
+        $guestSql = "SELECT 
+                        CONCAT(c.firstname, ' ', c.lastname) as full_name,
+                        gc.room_number 
+                     FROM " . _DB_PREFIX_ . "customer c 
+                     LEFT JOIN guest_checkins gc ON gc.id_customer = c.id_customer 
+                     WHERE c.id_customer = $id_customer AND gc.id = $id_checkin";
+        $guestResult = $conn->query($guestSql);
+        
+        if ($guestResult->num_rows > 0) {
+            $guest = $guestResult->fetch_assoc();
+            $guestName = $guest['full_name'] ?: 'Guest';
+            $roomNumber = $guest['room_number'] ?: 'Unknown';
+            
+            // Create check-out notification
+            include_once '../../custom-api/create-notification.php';
+            
+            // Create PDO connection for notification helper
+            $pdo = new PDO("mysql:host=" . _DB_SERVER_ . ";dbname=" . _DB_NAME_ . ";charset=utf8", _DB_USER_, _DB_PASSWD_);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            createCheckOutNotification($pdo, $guestName, $roomNumber, $id_customer);
+        }
+
         http_response_code(201);
         echo json_encode([
             'success' => true,

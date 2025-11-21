@@ -116,12 +116,26 @@ class GuestProvider with ChangeNotifier {
       // Fallback to QloApps API if direct API fails
       debugPrint('🔄 Attempting fallback to QloApps API...');
       try {
+        // Only include email if it's actually provided
+        final customerData = {
+          'firstName': guest.firstName,
+          'lastName': guest.lastName,
+          'password': 'guest123', // Default password
+          if (guest.phone != null && guest.phone!.isNotEmpty)
+            'phone': guest.phone,
+          'dateOfBirth': guest.dateOfBirth,
+        };
+
+        // Add email only if provided
+        if (guest.email != null && guest.email!.isNotEmpty) {
+          customerData['email'] = guest.email!;
+        }
+
         final response = await _qloAppsService.createCustomer(
           firstName: guest.firstName,
           lastName: guest.lastName,
-          email: guest.email ??
-              'guest${DateTime.now().millisecondsSinceEpoch}@hotel.com',
-          password: 'guest123', // Default password
+          email: guest.email, // Pass null if not provided
+          password: 'guest123',
           phone: guest.phone,
           dateOfBirth: guest.dateOfBirth,
         );
@@ -370,7 +384,7 @@ class GuestProvider with ChangeNotifier {
                     firstName: customer['firstname']?.toString() ?? '',
                     lastName: customer['lastname']?.toString() ?? '',
                     email: customer['email']?.toString(),
-                    phone: '',
+                    phone: customer['phone']?.toString(),
                     documentType: 'passport',
                     documentNumber: '',
                     nationality: '',

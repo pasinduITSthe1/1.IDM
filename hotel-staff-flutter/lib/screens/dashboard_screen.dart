@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/guest_provider.dart';
 import '../utils/app_theme.dart';
-import '../utils/enhanced_popups.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -109,27 +108,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16)),
                             itemBuilder: (context) => [
-                              PopupMenuItem(
-                                child: ListTile(
-                                  leading: const Icon(Icons.storage,
-                                      size: 20, color: Colors.blue),
-                                  title:
-                                      const Text('Verify QloApps Connection'),
-                                  contentPadding: EdgeInsets.zero,
-                                  onTap: () async {
-                                    Navigator.pop(context);
-                                    await guestProvider.debugPrintQloAppsData();
-                                    if (mounted) {
-                                      EnhancedPopups.showEnhancedSnackBar(
-                                        context,
-                                        message: 'Check console/debug output for QloApps connection details',
-                                        type: PopupType.info,
-                                        duration: const Duration(seconds: 3),
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
                               PopupMenuItem(
                                 child: ListTile(
                                   leading: const Icon(Icons.logout_rounded,
@@ -238,13 +216,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   icon: Icons.login_rounded,
                                   color: const Color(0xFF00B894),
                                   onTap: () => context.push('/check-in'))),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 12),
                           Expanded(
                               child: _CompactActionCard(
                                   title: 'Check-Out',
                                   icon: Icons.logout_rounded,
                                   color: const Color(0xFF0984E3),
                                   onTap: () => context.push('/check-out'))),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: _CompactActionCard(
+                                  title: 'Rooms',
+                                  icon: Icons.meeting_room_rounded,
+                                  color: const Color(0xFF6C5CE7),
+                                  onTap: () => context.push('/rooms'))),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -279,48 +264,48 @@ class _StatsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
+              blurRadius: 6,
               offset: const Offset(0, 2))
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8)),
-                  child: Icon(icon, color: color, size: 16)),
-              Icon(Icons.trending_up_rounded,
-                  color: Colors.grey.shade400, size: 14),
-            ],
+          Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, color: color, size: 18)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 2),
+                Text(value,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: color,
+                        height: 1,
+                        letterSpacing: -0.5)),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: color,
-                  height: 1,
-                  letterSpacing: -0.5)),
-          const SizedBox(height: 2),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w600)),
         ],
       ),
     );

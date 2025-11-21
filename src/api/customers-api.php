@@ -55,12 +55,26 @@ try {
         // Format to match expected structure with additional address info
         $formattedCustomers = [];
         foreach ($customers as $customer) {
+            // Filter out temp emails - return null instead
+            $email = $customer['email'];
+            if (strpos($email, '@temp.local') !== false || 
+                strpos($email, 'noemail_') !== false ||
+                strpos($email, '@hotel.com') !== false) {
+                $email = null;
+            }
+            
+            // Filter out placeholder phone numbers
+            $phone = $customer['phone'] ?: $customer['phone_mobile'] ?: '';
+            if ($phone === '0000000000' || empty($phone)) {
+                $phone = null;
+            }
+            
             $formattedCustomers[] = [
                 'id' => $customer['id'],
                 'firstname' => $customer['firstname'],
                 'lastname' => $customer['lastname'],
-                'email' => $customer['email'] ?: '', // Use email from customer table
-                'phone' => $customer['phone'] ?: $customer['phone_mobile'] ?: '',
+                'email' => $email, // Return null if temp email
+                'phone' => $phone, // Return null if placeholder or empty
                 'address1' => $customer['address1'] ?: '',
                 'address2' => $customer['address2'] ?: '',
                 'city' => $customer['city'] ?: '',

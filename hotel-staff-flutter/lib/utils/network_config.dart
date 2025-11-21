@@ -85,7 +85,7 @@ class NetworkConfig {
     }
   }
 
-  /// Escort attachments API endpoint 
+  /// Escort attachments API endpoint
   static String get escortAttachmentsApiUrl {
     if (useWiFi) {
       return 'http://$computerIp/guest-api/upload-escort-attachments.php';
@@ -99,4 +99,10 @@ class NetworkConfig {
 
   /// Escorts API base URL
   static String get escortsApiUrl => nodeBackendUrl;
+
+  /// Rooms API endpoint (custom API that bypasses PrestaShop webservice auth)
+  static String get roomsApiUrl => '$wampBaseUrl/custom-api/rooms.php';
+
+  /// Notifications API base URL
+  static String get notificationsApiUrl => '$wampBaseUrl/custom-api';
 }

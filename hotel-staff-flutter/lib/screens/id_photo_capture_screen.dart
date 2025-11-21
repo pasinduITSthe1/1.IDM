@@ -9,7 +9,6 @@ import '../utils/id_photo_storage.dart';
 import '../utils/app_theme.dart';
 import '../utils/enhanced_popups.dart';
 
-
 /// ID Photo Capture Screen - Captures cropped photos of documents
 /// Smart detection: Passport (1 photo) vs ID Card (2 photos)
 /// Only captures the highlighted frame area, not full screen
@@ -40,7 +39,6 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
 
   // Database service for saving photo paths
 
-
   @override
   void initState() {
     super.initState();
@@ -53,8 +51,6 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
   void _detectDocumentType() {
     final docType = widget.mrzData['type']?.toLowerCase() ?? '';
     _isPassport = docType.contains('passport');
-
-
   }
 
   Future<void> _requestPermissionsAndInit() async {
@@ -142,7 +138,9 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
         if (mounted) {
           EnhancedPopups.showEnhancedSnackBar(
             context,
-            message: _isPassport ? 'Passport photo captured' : 'Front photo captured',
+            message: _isPassport
+                ? 'Passport photo captured'
+                : 'Front photo captured',
             type: PopupType.success,
             duration: const Duration(seconds: 1),
           );
@@ -286,8 +284,6 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
       _currentStage = CaptureStage.front;
     });
   }
-
-
 
   void _showError(String message) {
     if (mounted) {
