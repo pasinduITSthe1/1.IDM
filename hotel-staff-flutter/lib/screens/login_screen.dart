@@ -54,8 +54,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -105,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Hotel Management System',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[700],
+                      color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -115,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(

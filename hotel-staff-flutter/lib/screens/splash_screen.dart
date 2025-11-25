@@ -42,8 +42,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -84,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
               'Hotel Management System',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[700],
+                color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
                 fontWeight: FontWeight.w500,
               ),
             ),

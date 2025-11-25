@@ -28,6 +28,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final guestProvider = Provider.of<GuestProvider>(context);
     final guests = guestProvider.guests;
 
@@ -58,14 +59,19 @@ class _GuestListScreenState extends State<GuestListScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppTheme.primaryOrange,
-              AppTheme.secondaryOrange,
-            ],
+            colors: isDark
+                ? [
+                    const Color(0xFF1E1E1E),
+                    const Color(0xFF2C2C2C),
+                  ]
+                : [
+                    AppTheme.primaryOrange,
+                    AppTheme.secondaryOrange,
+                  ],
           ),
         ),
         child: SafeArea(
@@ -118,7 +124,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -134,20 +140,27 @@ class _GuestListScreenState extends State<GuestListScreen> {
                         _searchQuery = value;
                       });
                     },
-                    style: const TextStyle(
-                      color: Color(0xFF1F2937),
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFFE1E1E1)
+                          : const Color(0xFF1F2937),
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Search by name, email, phone, ...',
                       hintStyle: TextStyle(
-                        color: Colors.grey[400],
+                        color:
+                            isDark ? const Color(0xFF707070) : Colors.grey[400],
                         fontSize: 13,
                       ),
-                      prefixIcon:
-                          Icon(Icons.search, color: Colors.grey[400], size: 20),
+                      prefixIcon: Icon(Icons.search,
+                          color: isDark
+                              ? const Color(0xFF707070)
+                              : Colors.grey[400],
+                          size: 20),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor:
+                          isDark ? const Color(0xFF2C2C2C) : Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -161,88 +174,102 @@ class _GuestListScreenState extends State<GuestListScreen> {
 
               const SizedBox(height: 14),
 
-              // Filter Chips
-              SizedBox(
-                height: 40,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    _buildFilterChip('All', 'all', guests.length),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(
-                      'Checked In',
-                      'checked-in',
-                      guests
-                          .where((g) =>
-                              g.status == 'checked-in' ||
-                              g.status == 'checked_in')
-                          .length,
-                    ),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(
-                      'Checked Out',
-                      'checked-out',
-                      guests
-                          .where((g) =>
-                              g.status == 'checked-out' ||
-                              g.status == 'checked_out')
-                          .length,
-                    ),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(
-                      'Pending',
-                      'pending',
-                      guests.where((g) => g.status == 'pending').length,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
               // Guest List
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: isDark ? const Color(0xFF121212) : Colors.grey[50],
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
                     ),
                   ),
-                  child: filteredGuests.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.people_outline,
-                                size: 80,
-                                color: Colors.grey[300],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _searchQuery.isEmpty
-                                    ? 'No guests found'
-                                    : 'No matching guests',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: filteredGuests.length,
-                          itemBuilder: (context, index) {
-                            final guest = filteredGuests[index];
-                            return _buildGuestCard(
-                                context, guest, guestProvider);
-                          },
+                  child: Column(
+                    children: [
+                      // Filter Chips (moved inside the container)
+                      Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          children: [
+                            _buildFilterChip(
+                                'All', 'all', guests.length, isDark),
+                            const SizedBox(width: 8),
+                            _buildFilterChip(
+                              'Checked In',
+                              'checked-in',
+                              guests
+                                  .where((g) =>
+                                      g.status == 'checked-in' ||
+                                      g.status == 'checked_in')
+                                  .length,
+                              isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildFilterChip(
+                              'Checked Out',
+                              'checked-out',
+                              guests
+                                  .where((g) =>
+                                      g.status == 'checked-out' ||
+                                      g.status == 'checked_out')
+                                  .length,
+                              isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildFilterChip(
+                              'Pending',
+                              'pending',
+                              guests.where((g) => g.status == 'pending').length,
+                              isDark,
+                            ),
+                          ],
                         ),
+                      ),
+
+                      // Guest List
+                      Expanded(
+                        child: filteredGuests.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.people_outline,
+                                      size: 80,
+                                      color: isDark
+                                          ? const Color(0xFF404040)
+                                          : Colors.grey[300],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      _searchQuery.isEmpty
+                                          ? 'No guests found'
+                                          : 'No matching guests',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: isDark
+                                            ? const Color(0xFFB0B0B0)
+                                            : Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.all(16),
+                                itemCount: filteredGuests.length,
+                                itemBuilder: (context, index) {
+                                  final guest = filteredGuests[index];
+                                  return _buildGuestCard(
+                                      context, guest, guestProvider, isDark);
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -252,7 +279,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, String value, int count) {
+  Widget _buildFilterChip(String label, String value, int count, bool isDark) {
     final isSelected = _filterStatus == value;
     return GestureDetector(
       onTap: () {
@@ -263,10 +290,14 @@ class _GuestListScreenState extends State<GuestListScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withOpacity(0.25),
+          color: isSelected
+              ? AppTheme.primaryOrange
+              : (isDark ? const Color(0xFF2C2C2C) : Colors.grey[200]),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.4),
+            color: isSelected
+                ? AppTheme.primaryOrange
+                : (isDark ? const Color(0xFF404040) : Colors.grey[300]!),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -277,16 +308,19 @@ class _GuestListScreenState extends State<GuestListScreen> {
               Container(
                 margin: const EdgeInsets.only(right: 6),
                 padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryOrange,
+                decoration: BoxDecoration(
+                  color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check, color: Colors.white, size: 10),
+                child:
+                    Icon(Icons.check, color: AppTheme.primaryOrange, size: 10),
               ),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.primaryOrange : Colors.white,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? const Color(0xFFE1E1E1) : Colors.black87),
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -296,14 +330,16 @@ class _GuestListScreenState extends State<GuestListScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.primaryOrange.withOpacity(0.15)
-                    : Colors.white.withOpacity(0.2),
+                    ? Colors.white.withOpacity(0.25)
+                    : (isDark ? const Color(0xFF404040) : Colors.grey[300]),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 count.toString(),
                 style: TextStyle(
-                  color: isSelected ? AppTheme.primaryOrange : Colors.white,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? const Color(0xFFB0B0B0) : Colors.grey[700]),
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
                 ),
@@ -316,7 +352,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
   }
 
   Widget _buildGuestCard(
-      BuildContext context, Guest guest, GuestProvider provider) {
+      BuildContext context, Guest guest, GuestProvider provider, bool isDark) {
     final statusColor = _getStatusColor(guest.status);
     final hasEmail = guest.email != null && guest.email!.isNotEmpty;
     final hasPhone = guest.phone != null && guest.phone!.isNotEmpty;
@@ -324,9 +360,12 @@ class _GuestListScreenState extends State<GuestListScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
+        border: Border.all(
+          color: isDark ? const Color(0xFF404040) : Colors.grey[200]!,
+          width: 1,
+        ),
       ),
       child: InkWell(
         onTap: () => _showGuestDetails(context, guest, provider),
@@ -361,10 +400,12 @@ class _GuestListScreenState extends State<GuestListScreen> {
                       children: [
                         Text(
                           guest.fullName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1F2937),
+                            color: isDark
+                                ? const Color(0xFFE1E1E1)
+                                : const Color(0xFF1F2937),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -384,7 +425,9 @@ class _GuestListScreenState extends State<GuestListScreen> {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[600],
+                                color: isDark
+                                    ? const Color(0xFF808080)
+                                    : Colors.grey[600],
                                 letterSpacing: 0.3,
                               ),
                             ),
@@ -423,7 +466,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(
@@ -432,14 +475,19 @@ class _GuestListScreenState extends State<GuestListScreen> {
                         Row(
                           children: [
                             Icon(Icons.email_outlined,
-                                size: 16, color: Colors.grey[600]),
+                                size: 16,
+                                color: isDark
+                                    ? const Color(0xFF808080)
+                                    : Colors.grey[600]),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 guest.email!,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey[700],
+                                  color: isDark
+                                      ? const Color(0xFFB0B0B0)
+                                      : Colors.grey[700],
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -451,13 +499,18 @@ class _GuestListScreenState extends State<GuestListScreen> {
                         Row(
                           children: [
                             Icon(Icons.phone_outlined,
-                                size: 16, color: Colors.grey[600]),
+                                size: 16,
+                                color: isDark
+                                    ? const Color(0xFF808080)
+                                    : Colors.grey[600]),
                             const SizedBox(width: 8),
                             Text(
                               guest.phone!,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey[700],
+                                color: isDark
+                                    ? const Color(0xFFB0B0B0)
+                                    : Colors.grey[700],
                               ),
                             ),
                           ],
@@ -470,14 +523,19 @@ class _GuestListScreenState extends State<GuestListScreen> {
                         Row(
                           children: [
                             Icon(Icons.login_rounded,
-                                size: 16, color: Colors.grey[600]),
+                                size: 16,
+                                color: isDark
+                                    ? const Color(0xFF808080)
+                                    : Colors.grey[600]),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'In: ${_formatDate(guest.checkInDate!)}',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey[700],
+                                  color: isDark
+                                      ? const Color(0xFFB0B0B0)
+                                      : Colors.grey[700],
                                 ),
                               ),
                             ),
@@ -490,14 +548,19 @@ class _GuestListScreenState extends State<GuestListScreen> {
                         Row(
                           children: [
                             Icon(Icons.logout_rounded,
-                                size: 16, color: Colors.grey[600]),
+                                size: 16,
+                                color: isDark
+                                    ? const Color(0xFF808080)
+                                    : Colors.grey[600]),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Out: ${_formatDate(guest.checkOutDate!)}',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey[700],
+                                  color: isDark
+                                      ? const Color(0xFFB0B0B0)
+                                      : Colors.grey[700],
                                 ),
                               ),
                             ),
@@ -515,13 +578,16 @@ class _GuestListScreenState extends State<GuestListScreen> {
   }
 
   Color _getStatusColor(String status) {
-    switch (status) {
+    // Normalize status to handle both hyphen and underscore formats
+    final normalizedStatus = status.toLowerCase().replaceAll('_', '-');
+
+    switch (normalizedStatus) {
       case 'checked-in':
         return Colors.green;
       case 'checked-out':
-        return Colors.blue;
+        return Colors.red;
       case 'pending':
-        return Colors.orange;
+        return Colors.yellow[700]!;
       default:
         return Colors.grey;
     }
@@ -548,12 +614,13 @@ class _GuestListScreenState extends State<GuestListScreen> {
     final hasEmail = guest.email != null && guest.email!.isNotEmpty;
     final hasPhone = guest.phone != null && guest.phone!.isNotEmpty;
     final hasAddress = guest.address != null && guest.address!.isNotEmpty;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
@@ -564,7 +631,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: isDark ? const Color(0xFF121212) : Colors.grey[50],
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(24),
                 topRight: Radius.circular(24),
@@ -576,7 +643,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: isDark ? const Color(0xFF404040) : Colors.grey[300],
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -623,10 +690,12 @@ class _GuestListScreenState extends State<GuestListScreen> {
                         const SizedBox(height: 14),
                         Text(
                           guest.fullName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1F2937),
+                            color: isDark
+                                ? const Color(0xFFE1E1E1)
+                                : const Color(0xFF1F2937),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -648,7 +717,9 @@ class _GuestListScreenState extends State<GuestListScreen> {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[600],
+                                color: isDark
+                                    ? const Color(0xFF808080)
+                                    : Colors.grey[600],
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -658,32 +729,60 @@ class _GuestListScreenState extends State<GuestListScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 20),
+
+                  // Manage Companions Button - Moved to top for better access
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        context.push('/guest/${guest.id}/escorts',
+                            extra: guest);
+                      },
+                      icon: const Icon(Icons.people_outline, size: 20),
+                      label: const Text('Manage Companions',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryOrange,
+                        side: const BorderSide(
+                            color: AppTheme.primaryOrange, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
 
                   // Contact Information
                   if (hasEmail || hasPhone || hasAddress) ...[
-                    _buildSectionTitle('Contact Information'),
+                    _buildSectionTitle('Contact Information', isDark),
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.grey[50],
+                        color:
+                            isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
                         children: [
                           if (hasEmail)
-                            _buildInfoRow(
-                                Icons.email_outlined, 'Email', guest.email!),
+                            _buildInfoRow(Icons.email_outlined, 'Email',
+                                guest.email!, isDark),
                           if (hasEmail && hasPhone) const SizedBox(height: 12),
                           if (hasPhone)
-                            _buildInfoRow(
-                                Icons.phone_outlined, 'Phone', guest.phone!),
+                            _buildInfoRow(Icons.phone_outlined, 'Phone',
+                                guest.phone!, isDark),
                           if ((hasEmail || hasPhone) && hasAddress)
                             const SizedBox(height: 12),
                           if (hasAddress)
                             _buildInfoRow(Icons.location_on_outlined, 'Address',
-                                guest.address!),
+                                guest.address!, isDark),
                         ],
                       ),
                     ),
@@ -695,32 +794,36 @@ class _GuestListScreenState extends State<GuestListScreen> {
                       guest.documentNumber != null ||
                       guest.nationality != null ||
                       guest.dateOfBirth != null) ...[
-                    _buildSectionTitle('Document Information'),
+                    _buildSectionTitle('Document Information', isDark),
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.grey[50],
+                        color:
+                            isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
                         children: [
                           if (guest.documentType != null)
                             _buildInfoRow(Icons.badge_outlined, 'Document Type',
-                                guest.documentType!),
+                                guest.documentType!, isDark),
                           if (guest.documentType != null &&
                               guest.documentNumber != null)
                             const SizedBox(height: 12),
                           if (guest.documentNumber != null)
-                            _buildInfoRow(Icons.numbers_outlined,
-                                'Document Number', guest.documentNumber!),
+                            _buildInfoRow(
+                                Icons.numbers_outlined,
+                                'Document Number',
+                                guest.documentNumber!,
+                                isDark),
                           if ((guest.documentType != null ||
                                   guest.documentNumber != null) &&
                               guest.nationality != null)
                             const SizedBox(height: 12),
                           if (guest.nationality != null)
                             _buildInfoRow(Icons.flag_outlined, 'Nationality',
-                                guest.nationality!),
+                                guest.nationality!, isDark),
                           if ((guest.documentType != null ||
                                   guest.documentNumber != null ||
                                   guest.nationality != null) &&
@@ -728,7 +831,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
                             const SizedBox(height: 12),
                           if (guest.dateOfBirth != null)
                             _buildInfoRow(Icons.cake_outlined, 'Date of Birth',
-                                guest.dateOfBirth!),
+                                guest.dateOfBirth!, isDark),
                         ],
                       ),
                     ),
@@ -739,25 +842,26 @@ class _GuestListScreenState extends State<GuestListScreen> {
                   if (guest.roomNumber != null ||
                       guest.checkInDate != null ||
                       guest.checkOutDate != null) ...[
-                    _buildSectionTitle('Stay Information'),
+                    _buildSectionTitle('Stay Information', isDark),
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.grey[50],
+                        color:
+                            isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
                         children: [
                           if (guest.roomNumber != null)
                             _buildInfoRow(Icons.hotel_outlined, 'Room Number',
-                                guest.roomNumber!),
+                                guest.roomNumber!, isDark),
                           if (guest.roomNumber != null &&
                               guest.checkInDate != null)
                             const SizedBox(height: 12),
                           if (guest.checkInDate != null)
                             _buildInfoRow(Icons.login_rounded, 'Check-in Date',
-                                _formatDate(guest.checkInDate!)),
+                                _formatDate(guest.checkInDate!), isDark),
                           if ((guest.roomNumber != null ||
                                   guest.checkInDate != null) &&
                               guest.checkOutDate != null)
@@ -766,37 +870,13 @@ class _GuestListScreenState extends State<GuestListScreen> {
                             _buildInfoRow(
                                 Icons.logout_rounded,
                                 'Check-out Date',
-                                _formatDate(guest.checkOutDate!)),
+                                _formatDate(guest.checkOutDate!),
+                                isDark),
                         ],
                       ),
                     ),
                     const SizedBox(height: 18),
                   ],
-
-                  // Manage Escorts Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        context.push('/guest/${guest.id}/escorts',
-                            extra: guest);
-                      },
-                      icon: const Icon(Icons.people_outline, size: 18),
-                      label: const Text('Manage Escorts & Companions'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.primaryOrange,
-                        side: const BorderSide(
-                            color: AppTheme.primaryOrange, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
 
                   // Action Buttons
                   if (guest.status == 'pending')
@@ -849,7 +929,7 @@ class _GuestListScreenState extends State<GuestListScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, bool isDark) {
     return Text(
       title,
       style: const TextStyle(
@@ -861,11 +941,13 @@ class _GuestListScreenState extends State<GuestListScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, bool isDark) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: Colors.grey[600]),
+        Icon(icon,
+            size: 16,
+            color: isDark ? const Color(0xFF808080) : Colors.grey[600]),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -875,17 +957,19 @@ class _GuestListScreenState extends State<GuestListScreen> {
                 label,
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.grey[600],
+                  color: isDark ? const Color(0xFF808080) : Colors.grey[600],
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1F2937),
+                  color: isDark
+                      ? const Color(0xFFE1E1E1)
+                      : const Color(0xFF1F2937),
                 ),
               ),
             ],

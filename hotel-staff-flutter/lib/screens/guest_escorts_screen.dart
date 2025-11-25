@@ -30,9 +30,9 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Escort'),
+        title: const Text('Delete Companion'),
         content: Text(
-            'Are you sure you want to remove ${escort.fullName} from the escorts list?'),
+            'Are you sure you want to remove ${escort.fullName} from the companions list?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -48,7 +48,7 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('✅ Escort removed successfully'),
+                    content: Text('✅ Companion removed successfully'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -91,16 +91,16 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
           children: [
             Icon(Icons.qr_code_scanner, color: AppTheme.primaryOrange),
             SizedBox(width: 12),
-            Text('Scan Escort Document'),
+            Text('Scan Companion Document'),
           ],
         ),
         content: const Text(
-          'To scan an escort\'s document:\n\n'
-          '1. Click "Add Escort" button below\n'
+          'To scan a companion\'s document:\n\n'
+          '1. Click "Add Companion" button below\n'
           '2. On the registration form, scan their document first\n'
           '3. The form will auto-fill with scanned data\n'
           '4. Complete and submit the form\n\n'
-          'This will register the escort for this guest.',
+          'This will register the companion for this guest.',
           style: TextStyle(fontSize: 15),
         ),
         actions: [
@@ -117,7 +117,7 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
               backgroundColor: AppTheme.primaryOrange,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Add Escort'),
+            child: const Text('Add Companion'),
           ),
         ],
       ),
@@ -132,11 +132,11 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Escorts & Companions'),
+        title: const Text('Companions'),
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
-            tooltip: 'Scan Escort Document',
+            tooltip: 'Scan Companion Document',
             onPressed: _scanEscortDocument,
           ),
         ],
@@ -199,7 +199,7 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '${escorts.length} ${escorts.length == 1 ? 'Escort' : 'Escorts'}',
+                    '${escorts.length} ${escorts.length == 1 ? 'Companion' : 'Companions'}',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -211,7 +211,7 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
             ),
           ),
 
-          // Escorts List
+          // Companions List
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -227,7 +227,7 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No escorts added yet',
+                              'No companions added yet',
                               style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.grey.shade600,
@@ -236,7 +236,7 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Add companions or escorts for this guest',
+                              'Add companions for this guest',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey.shade500,
@@ -276,7 +276,7 @@ class _GuestEscortsScreenState extends State<GuestEscortsScreen> {
             onPressed: _addEscort,
             backgroundColor: AppTheme.primaryOrange,
             icon: const Icon(Icons.add),
-            label: const Text('Add Escort'),
+            label: const Text('Add Companion'),
           ),
         ],
       ),

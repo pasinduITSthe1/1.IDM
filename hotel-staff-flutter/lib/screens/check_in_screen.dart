@@ -29,6 +29,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final guestProvider = Provider.of<GuestProvider>(context);
     final pendingGuests = guestProvider.guests
         .where((g) => g.status == 'pending')
@@ -41,15 +42,21 @@ class _CheckInScreenState extends State<CheckInScreen> {
         .toList();
 
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppTheme.primaryOrange,
-              AppTheme.secondaryOrange,
-            ],
+            colors: isDark
+                ? [
+                    const Color(0xFF1E1E1E),
+                    const Color(0xFF2C2C2C),
+                  ]
+                : [
+                    AppTheme.primaryOrange,
+                    AppTheme.secondaryOrange,
+                  ],
           ),
         ),
         child: SafeArea(
@@ -102,7 +109,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -118,20 +125,20 @@ class _CheckInScreenState extends State<CheckInScreen> {
                         _searchQuery = value;
                       });
                     },
-                    style: const TextStyle(
-                      color: Color(0xFF1F2937),
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1F2937),
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Search guests...',
                       hintStyle: TextStyle(
-                        color: Colors.grey[400],
+                        color: isDark ? const Color(0xFF707070) : Colors.grey[400],
                         fontSize: 13,
                       ),
                       prefixIcon:
-                          Icon(Icons.search, color: Colors.grey[400], size: 20),
+                          Icon(Icons.search, color: isDark ? const Color(0xFF707070) : Colors.grey[400], size: 20),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -149,7 +156,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: isDark ? const Color(0xFF121212) : Colors.grey[50],
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
@@ -163,7 +170,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                               Icon(
                                 Icons.check_circle_outline,
                                 size: 80,
-                                color: Colors.grey[300],
+                                color: isDark ? const Color(0xFF404040) : Colors.grey[300],
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -172,7 +179,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                     : 'No matching guests',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  color: Colors.grey[600],
+                                  color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
                                 ),
                               ),
                               if (_searchQuery.isEmpty) ...[
@@ -181,7 +188,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                   'All guests have been checked in!',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey[500],
+                                    color: isDark ? const Color(0xFF808080) : Colors.grey[500],
                                   ),
                                 ),
                               ],
@@ -194,7 +201,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                           itemBuilder: (context, index) {
                             final guest = pendingGuests[index];
                             return _buildGuestCard(
-                                context, guest, guestProvider);
+                                context, guest, guestProvider, isDark);
                           },
                         ),
                 ),
@@ -207,7 +214,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
   }
 
   Widget _buildGuestCard(
-      BuildContext context, Guest guest, GuestProvider provider) {
+      BuildContext context, Guest guest, GuestProvider provider, bool isDark) {
     _roomControllers.putIfAbsent(
       guest.id,
       () => TextEditingController(text: guest.roomNumber ?? ''),
@@ -219,9 +226,12 @@ class _CheckInScreenState extends State<CheckInScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
+        border: Border.all(
+          color: isDark ? const Color(0xFF404040) : Colors.grey[200]!,
+          width: 1,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -253,10 +263,10 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     children: [
                       Text(
                         guest.fullName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -276,7 +286,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey[600],
+                              color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
                               letterSpacing: 0.3,
                             ),
                           ),
@@ -294,7 +304,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
+                  color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
@@ -303,14 +313,14 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       Row(
                         children: [
                           Icon(Icons.email_outlined,
-                              size: 16, color: Colors.grey[600]),
+                              size: 16, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               guest.email!,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey[700],
+                                color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -322,13 +332,13 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       Row(
                         children: [
                           Icon(Icons.phone_outlined,
-                              size: 16, color: Colors.grey[600]),
+                              size: 16, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
                           const SizedBox(width: 8),
                           Text(
                             guest.phone!,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[700],
+                              color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
                             ),
                           ),
                         ],
@@ -345,14 +355,14 @@ class _CheckInScreenState extends State<CheckInScreen> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(color: isDark ? const Color(0xFF404040) : Colors.grey[300]!),
                   borderRadius: BorderRadius.circular(10),
-                  color: Colors.grey[50],
+                  color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.hotel_outlined,
-                        color: Colors.grey[600], size: 20),
+                        color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600], size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -364,12 +374,12 @@ class _CheckInScreenState extends State<CheckInScreen> {
                           fontWeight: FontWeight.w500,
                           color:
                               _roomControllers[guest.id]?.text.isEmpty ?? true
-                                  ? Colors.grey[600]
-                                  : Colors.black87,
+                                  ? (isDark ? const Color(0xFF909090) : Colors.grey[600])
+                                  : (isDark ? const Color(0xFFE1E1E1) : Colors.black87),
                         ),
                       ),
                     ),
-                    Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
+                    Icon(Icons.arrow_drop_down, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
                   ],
                 ),
               ),

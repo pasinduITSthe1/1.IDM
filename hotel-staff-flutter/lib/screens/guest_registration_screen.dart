@@ -583,7 +583,7 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: _RadioOption(
-                            label: 'Visa',
+                            label: 'No MRZ ID',
                             value: 'visa',
                             groupValue: _selectedDocumentType,
                             onChanged: (val) =>
@@ -829,7 +829,7 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
                       controller: _addressController,
                       maxLines: 2,
                       decoration: const InputDecoration(
-                        labelText: 'Address (optional)',
+                        labelText: 'Home Address (optional)',
                         prefixIcon: Icon(Icons.home_outlined),
                         alignLabelWithHint: true,
                       ),

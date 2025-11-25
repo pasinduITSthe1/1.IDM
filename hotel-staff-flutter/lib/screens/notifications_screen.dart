@@ -29,21 +29,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
       body: SafeArea(
         child: Column(
           children: [
             // Simple Header
             Container(
               width: double.infinity,
+              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
                 children: [
                   Image.asset('assets/images/logo_1.png',
                       height: 40, width: 48, fit: BoxFit.contain),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -51,12 +54,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF1A1A1A),
+                                color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1A1A1A),
                                 letterSpacing: -0.3)),
                         Text('Administrator',
                             style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: isDark ? const Color(0xFFB0B0B0) : Colors.grey,
                                 fontWeight: FontWeight.w500)),
                       ],
                     ),
@@ -67,15 +70,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             // Title with Refresh Button
             Container(
               width: double.infinity,
+              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text('Notifications',
                         style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF1A1A1A))),
+                            color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1A1A1A))),
                   ),
                   IconButton(
                     onPressed: () {
@@ -133,6 +137,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildSimpleNotificationItem(NotificationModel notification) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     Color iconColor;
     Color backgroundColor;
     IconData iconData;
@@ -187,11 +192,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
-          color: notification.isRead ? Colors.grey.shade50 : Colors.white,
+          color: notification.isRead 
+              ? (isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade50) 
+              : (isDark ? const Color(0xFF2C2C2C) : Colors.white),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: notification.isRead
-                ? Colors.grey.shade200
+                ? (isDark ? const Color(0xFF404040) : Colors.grey.shade200)
                 : const Color(0xFFFF6B35).withValues(alpha: 0.3),
             width: notification.isRead ? 1 : 1.5,
           ),
@@ -225,8 +232,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: notification.isRead
-                        ? Colors.grey.shade600
-                        : const Color(0xFF2D3436),
+                        ? (isDark ? const Color(0xFF909090) : Colors.grey.shade600)
+                        : (isDark ? const Color(0xFFE1E1E1) : const Color(0xFF2D3436)),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -252,8 +259,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   color: notification.isRead
-                      ? Colors.grey.shade500
-                      : Colors.grey.shade600,
+                      ? (isDark ? const Color(0xFF707070) : Colors.grey.shade500)
+                      : (isDark ? const Color(0xFFB0B0B0) : Colors.grey.shade600),
                   height: 1.2,
                 ),
                 maxLines: 2,
@@ -286,20 +293,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.notifications_none, size: 80, color: Colors.grey[300]),
+          Icon(Icons.notifications_none, 
+              size: 80, 
+              color: isDark ? const Color(0xFF404040) : Colors.grey[300]),
           const SizedBox(height: 16),
           Text(
             'No notifications',
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 18, 
+              color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'You\'re all caught up!',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(
+              fontSize: 14, 
+              color: isDark ? const Color(0xFF909090) : Colors.grey[500],
+            ),
           ),
         ],
       ),
@@ -307,6 +323,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildErrorState(String error, NotificationProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -315,12 +332,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 16),
           Text(
             'Failed to load notifications',
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 18, 
+              color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             error,
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(
+              fontSize: 14, 
+              color: isDark ? const Color(0xFF909090) : Colors.grey[500],
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
