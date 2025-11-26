@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../providers/guest_provider.dart';
 import '../models/guest.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class GuestRegistrationScreen extends StatefulWidget {
   final Map<String, dynamic>? scannedData;
@@ -49,15 +50,6 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
 
   void _populateScannedData() {
     if (widget.scannedData != null) {
-      debugPrint('📥 Received scanned data: ${widget.scannedData}');
-      debugPrint('📊 Scanned fields: ${widget.scannedData!.keys.join(", ")}');
-      debugPrint('📊 Data entries: ${widget.scannedData!.length}');
-
-      // Print each field individually for debugging
-      widget.scannedData!.forEach((key, value) {
-        debugPrint('  🔸 $key: $value (${value.runtimeType})');
-      });
-
       final data = widget.scannedData!;
 
       // Extract photo paths
@@ -68,10 +60,6 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
       if (data['isPassport'] != null) {
         _isPassport = data['isPassport'].toString().toLowerCase() == 'true';
       }
-
-      debugPrint('📸 Front photo path: $_frontPhotoPath');
-      debugPrint('📸 Back photo path: $_backPhotoPath');
-      debugPrint('📖 Is passport: $_isPassport');
 
       // Populate text fields
       _firstNameController.text = data['firstName'] ?? '';
@@ -123,36 +111,18 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
       if (_dateOfBirthController.text.isNotEmpty) populatedCount++;
       if (_nationalityController.text.isNotEmpty) populatedCount++;
 
-      debugPrint('✅ Auto-filled $populatedCount fields from scan');
-
-      // Also show the actual populated values for debugging
-      debugPrint('🎯 Populated field values:');
-      if (_firstNameController.text.isNotEmpty)
-        debugPrint('  First Name: ${_firstNameController.text}');
-      if (_lastNameController.text.isNotEmpty)
-        debugPrint('  Last Name: ${_lastNameController.text}');
-      if (_documentNumberController.text.isNotEmpty)
-        debugPrint('  Doc Number: ${_documentNumberController.text}');
-      if (_dateOfBirthController.text.isNotEmpty)
-        debugPrint('  DOB: ${_dateOfBirthController.text}');
-      if (_nationalityController.text.isNotEmpty)
-        debugPrint('  Nationality: ${_nationalityController.text}');
-
       // Show a snackbar with the results
       if (populatedCount > 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  '✅ Auto-filled $populatedCount fields. Please verify and complete the form.'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 4),
-            ),
+          EnhancedPopups.showEnhancedSnackBar(
+            context,
+            message:
+                'Auto-filled $populatedCount fields. Please verify and complete the form.',
+            type: PopupType.success,
+            duration: const Duration(seconds: 4),
           );
         });
       }
-    } else {
-      debugPrint('⚠️ No scanned data received - widget.scannedData is null');
     }
   }
 
@@ -254,12 +224,10 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
   // Handle retaking photos
   void _retakePhotos() {
     if (widget.scannedData == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('❌ No scan data available. Please scan document again.'),
-          backgroundColor: Colors.red,
-        ),
+      EnhancedPopups.showEnhancedSnackBar(
+        context,
+        message: 'No scan data available. Please scan document again.',
+        type: PopupType.error,
       );
       return;
     }
@@ -277,11 +245,10 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
 
     // Ensure we have the essential data
     if (mrzData.isEmpty || mrzData['documentNumber'] == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('❌ Invalid scan data. Please scan document again.'),
-          backgroundColor: Colors.red,
-        ),
+      EnhancedPopups.showEnhancedSnackBar(
+        context,
+        message: 'Invalid scan data. Please scan document again.',
+        type: PopupType.error,
       );
       return;
     }
@@ -356,24 +323,29 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
       );
 
       final guestProvider = Provider.of<GuestProvider>(context, listen: false);
-      final success = await guestProvider.addGuest(guest);
+
+      // ✅ Pass photo paths to save them to database
+      final success = await guestProvider.addGuest(
+        guest,
+        frontPhotoPath: _frontPhotoPath,
+        backPhotoPath: _backPhotoPath,
+        passportPhotoPath: _isPassport ? _frontPhotoPath : null,
+      );
 
       setState(() => _isLoading = false);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Guest registered successfully!'),
-            backgroundColor: Colors.green,
-          ),
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: 'Guest registered successfully!',
+          type: PopupType.success,
         );
         context.go('/dashboard');
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Failed to register guest'),
-            backgroundColor: Colors.red,
-          ),
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: 'Failed to register guest',
+          type: PopupType.error,
         );
       }
     }
@@ -382,8 +354,12 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Guest Registration'),
+        centerTitle: false,
+        elevation: 0,
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -406,24 +382,32 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
               // Scanned data indicator
               if (widget.scannedData != null) ...[
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryOrange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                        color: AppTheme.primaryOrange.withOpacity(0.3)),
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green[200]!, width: 1),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.check_circle,
-                          color: AppTheme.primaryOrange, size: 20),
-                      SizedBox(width: 8),
-                      Expanded(
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(Icons.check,
+                            color: Colors.white, size: 14),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
                         child: Text(
-                          ' Form auto-filled from scanned document',
+                          'Form auto-filled from scanned document',
                           style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1F2937),
                           ),
                         ),
                       ),
@@ -436,37 +420,48 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
               // Photo Preview Section
               if (_frontPhotoPath != null || _backPhotoPath != null) ...[
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey[200]!, width: 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Icon(
-                            Icons.photo_camera,
-                            color: AppTheme.primaryOrange,
-                            size: 20,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryOrange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.photo_camera,
+                              color: AppTheme.primaryOrange,
+                              size: 16,
+                            ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           const Text(
                             'Captured Photos',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
                             ),
                           ),
                           const Spacer(),
                           TextButton.icon(
                             onPressed: _retakePhotos,
-                            icon: const Icon(Icons.refresh, size: 18),
-                            label: const Text('Retake'),
+                            icon: const Icon(Icons.refresh, size: 16),
+                            label: const Text('Retake',
+                                style: TextStyle(fontSize: 12)),
                             style: TextButton.styleFrom(
                               foregroundColor: AppTheme.primaryOrange,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
                             ),
                           ),
                         ],
@@ -509,251 +504,364 @@ class _GuestRegistrationScreenState extends State<GuestRegistrationScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            color: Colors.green,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _isPassport
-                                ? 'Passport photo captured'
-                                : '${_backPhotoPath != null ? 'Both sides' : 'Front side'} captured',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade700,
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green[700],
+                              size: 14,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 6),
+                            Text(
+                              _isPassport
+                                  ? 'Passport photo captured'
+                                  : '${_backPhotoPath != null ? 'Both sides' : 'Front side'} captured',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.green[700],
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
               ],
 
-              // Document Type
-              const Text('Document Type',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _RadioOption(
-                      label: 'Passport',
-                      value: 'passport',
-                      groupValue: _selectedDocumentType,
-                      onChanged: (val) =>
-                          setState(() => _selectedDocumentType = val!),
+              // Document Type Section
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey[200]!, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Document Type',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _RadioOption(
-                      label: 'ID Card',
-                      value: 'id_card',
-                      groupValue: _selectedDocumentType,
-                      onChanged: (val) =>
-                          setState(() => _selectedDocumentType = val!),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _RadioOption(
+                            label: 'Passport',
+                            value: 'passport',
+                            groupValue: _selectedDocumentType,
+                            onChanged: (val) =>
+                                setState(() => _selectedDocumentType = val!),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _RadioOption(
+                            label: 'ID Card',
+                            value: 'id_card',
+                            groupValue: _selectedDocumentType,
+                            onChanged: (val) =>
+                                setState(() => _selectedDocumentType = val!),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _RadioOption(
+                            label: 'No MRZ ID',
+                            value: 'visa',
+                            groupValue: _selectedDocumentType,
+                            onChanged: (val) =>
+                                setState(() => _selectedDocumentType = val!),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _RadioOption(
-                      label: 'Visa',
-                      value: 'visa',
-                      groupValue: _selectedDocumentType,
-                      onChanged: (val) =>
-                          setState(() => _selectedDocumentType = val!),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Personal Information Section
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey[200]!, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Personal Information',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryOrange,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 14),
+
+                    // First Name
+                    TextFormField(
+                      controller: _firstNameController,
+                      decoration: InputDecoration(
+                        labelText: 'First Name *',
+                        prefixIcon: const Icon(Icons.person_outline, size: 20),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                              color: AppTheme.primaryOrange, width: 1.5),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        labelStyle: const TextStyle(fontSize: 13),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter first name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Last Name
+                    TextFormField(
+                      controller: _lastNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Last Name *',
+                        prefixIcon: const Icon(Icons.person_outline, size: 20),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                              color: AppTheme.primaryOrange, width: 1.5),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        labelStyle: const TextStyle(fontSize: 13),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter last name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Document Number
+                    TextFormField(
+                      controller: _documentNumberController,
+                      decoration: InputDecoration(
+                        labelText: 'Document Number',
+                        prefixIcon: const Icon(Icons.badge_outlined, size: 20),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                              color: AppTheme.primaryOrange, width: 1.5),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        labelStyle: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Issued Country
+                    TextFormField(
+                      controller: _issuedCountryController,
+                      decoration: const InputDecoration(
+                        labelText: 'Issued Country',
+                        prefixIcon: Icon(Icons.public_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Issued Date
+                    TextFormField(
+                      controller: _issuedDateController,
+                      readOnly: true,
+                      onTap: _selectIssuedDate,
+                      decoration: const InputDecoration(
+                        labelText: 'Issued Date',
+                        prefixIcon: Icon(Icons.calendar_today_outlined),
+                        suffixIcon: Icon(Icons.arrow_drop_down),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Expiry Date
+                    TextFormField(
+                      controller: _expiryDateController,
+                      readOnly: true,
+                      onTap: _selectExpiryDate,
+                      decoration: const InputDecoration(
+                        labelText: 'Expiry Date',
+                        prefixIcon: Icon(Icons.event_outlined),
+                        suffixIcon: Icon(Icons.arrow_drop_down),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Date of Birth
+                    TextFormField(
+                      controller: _dateOfBirthController,
+                      readOnly: true,
+                      onTap: _selectDate,
+                      decoration: const InputDecoration(
+                        labelText: 'Date of Birth',
+                        prefixIcon: Icon(Icons.calendar_today_outlined),
+                        suffixIcon: Icon(Icons.arrow_drop_down),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Sex
+                    const Text('Sex',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _RadioOption(
+                            label: 'Male',
+                            value: 'M',
+                            groupValue: _selectedSex,
+                            onChanged: (val) =>
+                                setState(() => _selectedSex = val!),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _RadioOption(
+                            label: 'Female',
+                            value: 'F',
+                            groupValue: _selectedSex,
+                            onChanged: (val) =>
+                                setState(() => _selectedSex = val!),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Nationality
+                    TextFormField(
+                      controller: _nationalityController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nationality',
+                        prefixIcon: Icon(Icons.flag_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Email
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Email (optional)',
+                        prefixIcon: Icon(Icons.email_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Phone
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone (optional)',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Address
+                    TextFormField(
+                      controller: _addressController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Home Address (optional)',
+                        prefixIcon: Icon(Icons.home_outlined),
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Visit Purpose
+                    TextFormField(
+                      controller: _visitPurposeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Visit Purpose',
+                        prefixIcon: Icon(Icons.business_center_outlined),
+                        hintText: 'e.g., Tourism, Business, Family Visit',
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
-
-              // First Name
-              TextFormField(
-                controller: _firstNameController,
-                decoration: const InputDecoration(
-                  labelText: 'First Name *',
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter first name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Last Name
-              TextFormField(
-                controller: _lastNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Last Name *',
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter last name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Document Number
-              TextFormField(
-                controller: _documentNumberController,
-                decoration: const InputDecoration(
-                  labelText: 'Document Number',
-                  prefixIcon: Icon(Icons.badge_outlined),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Issued Country
-              TextFormField(
-                controller: _issuedCountryController,
-                decoration: const InputDecoration(
-                  labelText: 'Issued Country',
-                  prefixIcon: Icon(Icons.public_outlined),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Issued Date
-              TextFormField(
-                controller: _issuedDateController,
-                readOnly: true,
-                onTap: _selectIssuedDate,
-                decoration: const InputDecoration(
-                  labelText: 'Issued Date',
-                  prefixIcon: Icon(Icons.calendar_today_outlined),
-                  suffixIcon: Icon(Icons.arrow_drop_down),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Expiry Date
-              TextFormField(
-                controller: _expiryDateController,
-                readOnly: true,
-                onTap: _selectExpiryDate,
-                decoration: const InputDecoration(
-                  labelText: 'Expiry Date',
-                  prefixIcon: Icon(Icons.event_outlined),
-                  suffixIcon: Icon(Icons.arrow_drop_down),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Date of Birth
-              TextFormField(
-                controller: _dateOfBirthController,
-                readOnly: true,
-                onTap: _selectDate,
-                decoration: const InputDecoration(
-                  labelText: 'Date of Birth',
-                  prefixIcon: Icon(Icons.calendar_today_outlined),
-                  suffixIcon: Icon(Icons.arrow_drop_down),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Sex
-              const Text('Sex', style: TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _RadioOption(
-                      label: 'Male',
-                      value: 'M',
-                      groupValue: _selectedSex,
-                      onChanged: (val) => setState(() => _selectedSex = val!),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _RadioOption(
-                      label: 'Female',
-                      value: 'F',
-                      groupValue: _selectedSex,
-                      onChanged: (val) => setState(() => _selectedSex = val!),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Nationality
-              TextFormField(
-                controller: _nationalityController,
-                decoration: const InputDecoration(
-                  labelText: 'Nationality',
-                  prefixIcon: Icon(Icons.flag_outlined),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Email
-              TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email (optional)',
-                  prefixIcon: Icon(Icons.email_outlined),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Phone
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone (optional)',
-                  prefixIcon: Icon(Icons.phone_outlined),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Address
-              TextFormField(
-                controller: _addressController,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Address (optional)',
-                  prefixIcon: Icon(Icons.home_outlined),
-                  alignLabelWithHint: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Visit Purpose
-              TextFormField(
-                controller: _visitPurposeController,
-                decoration: const InputDecoration(
-                  labelText: 'Visit Purpose',
-                  prefixIcon: Icon(Icons.business_center_outlined),
-                  hintText: 'e.g., Tourism, Business, Family Visit',
-                ),
-              ),
-              const SizedBox(height: 24),
 
               // Submit Button
               SizedBox(
-                height: 50,
+                height: 48,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleSubmit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryOrange,
                     foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -800,24 +908,22 @@ class _RadioOption extends StatelessWidget {
     return GestureDetector(
       onTap: () => onChanged(value),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primaryOrange.withOpacity(0.1)
-              : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? AppTheme.primaryOrange : Colors.white,
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryOrange : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
+            color: isSelected ? AppTheme.primaryOrange : Colors.grey[300]!,
+            width: 1.5,
           ),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: isSelected ? AppTheme.primaryOrange : Colors.grey.shade700,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            fontSize: 13,
+            color: isSelected ? Colors.white : const Color(0xFF1F2937),
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
           ),
         ),
       ),

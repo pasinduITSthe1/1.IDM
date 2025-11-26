@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isDemoMode = false;
+  bool _rememberMe = false;
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -32,9 +33,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.login(
-        _emailController.text,
-        _passwordController.text,
-        demoMode: _isDemoMode,
+        _emailController.text.trim(), // Remove whitespace
+        _passwordController.text.trim(), // Remove whitespace
+        rememberMe: _rememberMe,
       );
 
       setState(() => _isLoading = false);
@@ -42,11 +43,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success && mounted) {
         context.go('/dashboard');
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid credentials. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
+        EnhancedPopups.showEnhancedSnackBar(
+          context,
+          message: 'Invalid credentials. Please try again.',
+          type: PopupType.error,
         );
       }
     }
@@ -54,8 +54,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -105,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Hotel Management System',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[700],
+                      color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -115,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -128,45 +130,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Mode Selection
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _ModeChip(
-                                label: 'Online',
-                                isSelected: !_isDemoMode,
-                                onTap: () =>
-                                    setState(() => _isDemoMode = false),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _ModeChip(
-                                label: 'Demo',
-                                isSelected: _isDemoMode,
-                                onTap: () => setState(() => _isDemoMode = true),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-
                         // Username/Email Input
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
-                            labelText: _isDemoMode ? 'Email' : 'Username',
-                            hintText: _isDemoMode ? 'demo@hotel.com' : 'admin',
-                            prefixIcon: Icon(_isDemoMode
-                                ? Icons.email_outlined
-                                : Icons.person_outline),
+                          decoration: const InputDecoration(
+                            labelText: 'Username',
+                            hintText: 'admin',
+                            prefixIcon: Icon(Icons.person_outline),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return _isDemoMode
-                                  ? 'Please enter your email'
-                                  : 'Please enter your username';
+                              return 'Please enter your username';
                             }
                             return null;
                           },
@@ -202,7 +177,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+
+                        // Remember Me Checkbox
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _rememberMe,
+                              onChanged: (value) {
+                                setState(() => _rememberMe = value ?? false);
+                              },
+                              activeColor: AppTheme.primaryOrange,
+                            ),
+                            const Text(
+                              'Remember Me',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
 
                         // Login Button
                         SizedBox(
@@ -235,79 +231,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                           ),
                         ),
-
-                        // Demo credentials hint
-                        if (_isDemoMode) ...[
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryOrange.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '📝 Demo Credentials',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Email: demo@hotel.com\nPassword: demo123',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ModeChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ModeChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          gradient: isSelected ? AppTheme.orangeGradient : null,
-          color: isSelected ? null : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade600,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
       ),

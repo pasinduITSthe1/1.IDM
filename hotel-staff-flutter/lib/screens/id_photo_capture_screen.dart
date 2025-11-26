@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image/image.dart' as img;
 import '../utils/id_photo_storage.dart';
 import '../utils/app_theme.dart';
+import '../utils/enhanced_popups.dart';
 
 /// ID Photo Capture Screen - Captures cropped photos of documents
 /// Smart detection: Passport (1 photo) vs ID Card (2 photos)
@@ -32,10 +33,11 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
 
   // Document type detection
   bool _isPassport = false;
-  int _requiredPhotos = 2; // Default: ID card needs 2 photos
 
   // Current capture stage
   CaptureStage _currentStage = CaptureStage.front;
+
+  // Database service for saving photo paths
 
   @override
   void initState() {
@@ -49,10 +51,6 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
   void _detectDocumentType() {
     final docType = widget.mrzData['type']?.toLowerCase() ?? '';
     _isPassport = docType.contains('passport');
-    _requiredPhotos = _isPassport ? 1 : 2; // Passport: 1 photo, ID: 2 photos
-
-    debugPrint('Document type: ${_isPassport ? "Passport" : "ID Card"}');
-    debugPrint('Required photos: $_requiredPhotos');
   }
 
   Future<void> _requestPermissionsAndInit() async {
@@ -138,14 +136,13 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
 
         // Show success message
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(_isPassport
-                  ? '✓ Passport photo captured'
-                  : '✓ Front photo captured'),
-              duration: const Duration(seconds: 1),
-              backgroundColor: Colors.green,
-            ),
+          EnhancedPopups.showEnhancedSnackBar(
+            context,
+            message: _isPassport
+                ? 'Passport photo captured'
+                : 'Front photo captured',
+            type: PopupType.success,
+            duration: const Duration(seconds: 1),
           );
         }
 
@@ -221,12 +218,8 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
       // Delete original
       await File(imagePath).delete();
 
-      debugPrint(
-          'Image cropped: ${cropWidth}x${cropHeight} from ${imageWidth}x${imageHeight}');
-
       return croppedPath;
     } catch (e) {
-      debugPrint('Crop error: $e');
       return imagePath; // Return original if crop fails
     }
   }
@@ -250,6 +243,9 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
       if (!_isPassport && _backPhotoPath != null) {
         await IDPhotoStorage.saveBackPhoto(guestId, _backPhotoPath!);
       }
+
+      // Photos will be saved to database during guest registration process
+      // Removed immediate saving to prevent duplicate entries
 
       if (mounted) {
         // Add photo paths to MRZ data
@@ -291,12 +287,11 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
 
   void _showError(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
+      EnhancedPopups.showEnhancedSnackBar(
+        context,
+        message: message,
+        type: PopupType.error,
+        duration: const Duration(seconds: 3),
       );
     }
   }

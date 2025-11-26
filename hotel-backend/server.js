@@ -21,6 +21,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/guests', require('./routes/guests'));
 app.use('/api/rooms', require('./routes/rooms'));
+app.use('/api', require('./routes/escorts')); // Escorts API
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -64,8 +65,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server - Listen on all network interfaces for physical device access
-app.listen(PORT, '0.0.0.0', () => {
+// Start server - Listen on configured port (binding host removed to avoid EACCES on some Windows setups)
+// Default binding will listen on all interfaces when permitted. If you need to restrict to localhost, set the host explicitly.
+app.listen(PORT, () => {
   console.log('╔════════════════════════════════════════════════════════╗');
   console.log('║                                                        ║');
   console.log('║        🏨 Hotel Staff Management API Server           ║');
@@ -84,6 +86,8 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`  - GET  /api/guests`);
   console.log(`  - POST /api/guests`);
   console.log(`  - GET  /api/rooms`);
+  console.log(`  - POST /api/escorts`);
+  console.log(`  - GET  /api/escorts/guest/:guestId`);
   console.log('');
 });
 

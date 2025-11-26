@@ -6,7 +6,7 @@ class GuestController {
   static async getAllGuests(req, res) {
     try {
       const [rows] = await db.query(
-        'SELECT * FROM guests ORDER BY created_at DESC'
+        'SELECT id_customer as id, firstname as first_name, lastname as last_name, email, phone, date_add as created_at, active FROM qlo_customer WHERE deleted = 0 ORDER BY date_add DESC'
       );
 
       res.json({
@@ -29,7 +29,7 @@ class GuestController {
       const { id } = req.params;
 
       const [rows] = await db.query(
-        'SELECT * FROM guests WHERE id = ?',
+        'SELECT id_customer as id, firstname as first_name, lastname as last_name, email, phone, date_add as created_at, active FROM qlo_customer WHERE id_customer = ? AND deleted = 0',
         [id]
       );
 
