@@ -53,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $check_in_method = $conn->real_escape_string($data['check_in_method'] ?? 'app');
     $checked_in_by = $conn->real_escape_string($data['checked_in_by'] ?? 'app_user');
     $notes = $conn->real_escape_string($data['notes'] ?? '');
+    
+    // Debug logging
+    error_log("Check-in request: customer=$id_customer, room_id=$id_room, room_number=$room_number");
 
     // Insert into guest_checkins table
     $sql = "INSERT INTO guest_checkins (
@@ -67,6 +70,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($conn->query($sql) === TRUE) {
         $checkin_id = $conn->insert_id;
+        
+        // ✅ UPDATE ROOM STATUS TO OCCUPIED (id_status = 2)
+        if ($id_room > 0) {
+            $updateRoomSql = "UPDATE " . _DB_PREFIX_ . "htl_room_information 
+                              SET id_status = 2, date_upd = NOW() 
+                              WHERE id = $id_room";
+            $updateResult = $conn->query($updateRoomSql);
+            
+            if ($updateResult) {
+                $affectedRows = $conn->affected_rows;
+                error_log("✅ Room status update SUCCESS - Room ID: $id_room, Rows affected: $affectedRows");
+            } else {
+                error_log("❌ Room status update FAILED - Room ID: $id_room, Error: " . $conn->error);
+            }
+        } else {
+            error_log("⚠️ Room ID is 0 or invalid: $id_room");
+        }
         
         // Also update customer note field
         $note = "Checked in: " . date('Y-m-d H:i:s') . " - Room: $room_number";
@@ -92,6 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'success' => true,
             'message' => 'Guest checked in successfully',
             'checkin_id' => $checkin_id,
+            'room_id' => $id_room,
             'room_number' => $room_number,
             'check_in_time' => $check_in_time
         ]);

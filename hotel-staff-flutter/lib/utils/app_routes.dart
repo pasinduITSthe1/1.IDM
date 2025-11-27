@@ -13,8 +13,12 @@ import '../screens/escort_registration_screen.dart';
 import '../screens/rooms/room_dashboard_screen.dart';
 import '../screens/rooms/room_details_screen.dart';
 import '../screens/rooms/today_activity_screen.dart';
+import '../screens/room_change/room_change_list_screen.dart';
+import '../screens/room_change/room_change_details_screen.dart';
+import '../screens/room_change/create_room_change_screen.dart';
 import '../models/guest.dart';
 import '../models/room.dart';
+import '../models/room_change.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -110,6 +114,24 @@ class AppRoutes {
         path: '/rooms/today-activity',
         name: 'today-activity',
         builder: (context, state) => const TodayActivityScreen(),
+      ),
+      GoRoute(
+        path: '/room-change',
+        name: 'room-change-list',
+        builder: (context, state) => const RoomChangeListScreen(),
+      ),
+      GoRoute(
+        path: '/room-change/details',
+        name: 'room-change-details',
+        builder: (context, state) {
+          final roomChange = state.extra as RoomChange;
+          return RoomChangeDetailsScreen(roomChange: roomChange);
+        },
+      ),
+      GoRoute(
+        path: '/room-change/create',
+        name: 'room-change-create',
+        builder: (context, state) => const CreateRoomChangeScreen(),
       ),
     ],
   );

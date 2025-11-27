@@ -108,8 +108,10 @@ class RoomAPI {
         
         if ($result) {
             foreach ($result as &$room) {
-                // Determine actual status based on booking and room status
-                if ($room['is_occupied'] > 0) {
+                // Determine actual status - PRIORITIZE room_status field over booking check
+                // Status codes: 1=Available, 2=Occupied, 3=Cleaning, 4=Maintenance, 5=Reserved
+                if ($room['room_status'] == 2) {
+                    // Explicitly marked as occupied
                     $room['current_status'] = 'occupied';
                     $room['status_color'] = '#dc3545'; // Red
                 } else if ($room['room_status'] == 3) {
@@ -118,6 +120,13 @@ class RoomAPI {
                 } else if ($room['room_status'] == 4) {
                     $room['current_status'] = 'maintenance';
                     $room['status_color'] = '#6c757d'; // Gray
+                } else if ($room['room_status'] == 5) {
+                    $room['current_status'] = 'reserved';
+                    $room['status_color'] = '#17a2b8'; // Cyan
+                } else if ($room['is_occupied'] > 0) {
+                    // Has active booking but status not set
+                    $room['current_status'] = 'occupied';
+                    $room['status_color'] = '#dc3545'; // Red
                 } else {
                     $room['current_status'] = 'available';
                     $room['status_color'] = '#28a745'; // Green
@@ -190,23 +199,16 @@ class RoomAPI {
         
         $sql = "SELECT 
                     COUNT(*) AS total_rooms,
-                    SUM(CASE WHEN (
-                        SELECT COUNT(*) 
-                        FROM "._DB_PREFIX_."htl_booking_detail hbd 
-                        WHERE hbd.id_room = hr.id 
-                        AND hbd.date_from <= '".$tomorrow."' 
-                        AND hbd.date_to > '".$today."'
-                        AND hbd.id_status NOT IN (3, 7)
-                    ) > 0 THEN 1 ELSE 0 END) AS occupied_rooms,
-                    SUM(CASE WHEN id_status = 3 THEN 1 ELSE 0 END) AS cleaning_rooms,
-                    SUM(CASE WHEN id_status = 4 THEN 1 ELSE 0 END) AS maintenance_rooms
+                    SUM(CASE WHEN hr.id_status = 2 THEN 1 ELSE 0 END) AS occupied_rooms,
+                    SUM(CASE WHEN hr.id_status = 3 THEN 1 ELSE 0 END) AS cleaning_rooms,
+                    SUM(CASE WHEN hr.id_status = 4 THEN 1 ELSE 0 END) AS maintenance_rooms,
+                    SUM(CASE WHEN hr.id_status = 1 THEN 1 ELSE 0 END) AS available_rooms
                 FROM "._DB_PREFIX_."htl_room_information hr
                 WHERE hr.active = 1";
         
         $result = Db::getInstance()->getRow($sql);
         
         if ($result) {
-            $result['available_rooms'] = $result['total_rooms'] - $result['occupied_rooms'] - $result['cleaning_rooms'] - $result['maintenance_rooms'];
             $result['occupancy_rate'] = $result['total_rooms'] > 0 
                 ? round(($result['occupied_rooms'] / $result['total_rooms']) * 100, 2) 
                 : 0;

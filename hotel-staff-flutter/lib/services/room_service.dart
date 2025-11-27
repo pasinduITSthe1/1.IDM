@@ -144,4 +144,21 @@ class RoomService {
   Future<bool> markAsMaintenance(int roomId) async {
     return await updateRoomStatus(roomId, 4);
   }
+
+  // Reset all rooms to available (for testing/admin)
+  Future<bool> resetAllRoomsToAvailable() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl?action=reset-all-available'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['success'] == true;
+      }
+      return false;
+    } catch (e) {
+      throw Exception('Error resetting rooms: $e');
+    }
+  }
 }

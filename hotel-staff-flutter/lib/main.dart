@@ -6,6 +6,7 @@ import 'providers/guest_provider.dart';
 import 'providers/checkout_provider.dart';
 import 'providers/escort_provider.dart';
 import 'providers/room_provider.dart';
+import 'providers/room_change_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'utils/app_theme.dart';
@@ -44,6 +45,7 @@ class HotelStaffApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CheckoutProvider()),
         ChangeNotifierProvider(create: (_) => EscortProvider()),
         ChangeNotifierProvider(create: (_) => RoomProvider()),
+        ChangeNotifierProvider(create: (_) => RoomChangeProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: Consumer<ThemeProvider>(

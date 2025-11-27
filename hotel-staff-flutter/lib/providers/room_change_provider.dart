@@ -1,48 +1,62 @@
 import 'package:flutter/foundation.dart';
 import '../models/room_change.dart';
-import '../models/room.dart';
 import '../services/room_change_service.dart';
 
 class RoomChangeProvider with ChangeNotifier {
-  // Room changes list
+  final RoomChangeService _service = RoomChangeService();
+
   List<RoomChange> _roomChanges = [];
-  List<RoomChange> get roomChanges => _roomChanges;
-
-  // Available rooms for change
-  List<Room> _availableRooms = [];
-  List<Room> get availableRooms => _availableRooms;
-
-  // Statistics
+  List<OccupiedRoom> _occupiedRooms = [];
+  List<AvailableRoom> _availableRooms = [];
   RoomChangeStatistics? _statistics;
-  RoomChangeStatistics? get statistics => _statistics;
 
-  // Loading states
   bool _isLoading = false;
-  bool get isLoading => _isLoading;
-
-  bool _isLoadingAvailableRooms = false;
-  bool get isLoadingAvailableRooms => _isLoadingAvailableRooms;
-
-  // Error handling
-  String? _error;
-  String? get error => _error;
+  bool _isLoadingOccupied = false;
+  bool _isLoadingAvailable = false;
+  String? _errorMessage;
 
   // Filters
   String? _statusFilter;
+
+  // Getters
+  List<RoomChange> get roomChanges => _roomChanges;
+  List<OccupiedRoom> get occupiedRooms => _occupiedRooms;
+  List<AvailableRoom> get availableRooms => _availableRooms;
+  RoomChangeStatistics? get statistics => _statistics;
+  bool get isLoading => _isLoading;
+  bool get isLoadingOccupied => _isLoadingOccupied;
+  bool get isLoadingAvailable => _isLoadingAvailable;
+  String? get errorMessage => _errorMessage;
   String? get statusFilter => _statusFilter;
 
-  /// Load all room changes with optional status filter
+  // Filtered lists
+  List<RoomChange> get pendingChanges =>
+      _roomChanges.where((change) => change.isPending).toList();
+
+  List<RoomChange> get completedChanges =>
+      _roomChanges.where((change) => change.isCompleted).toList();
+
+  List<RoomChange> get cancelledChanges =>
+      _roomChanges.where((change) => change.isCancelled).toList();
+
+  // Counts
+  int get totalChangesCount => _roomChanges.length;
+  int get pendingCount => pendingChanges.length;
+  int get completedCount => completedChanges.length;
+  int get cancelledCount => cancelledChanges.length;
+
+  /// Load all room changes
   Future<void> loadRoomChanges({String? status}) async {
     _isLoading = true;
-    _error = null;
+    _errorMessage = null;
     _statusFilter = status;
     notifyListeners();
 
     try {
-      _roomChanges = await RoomChangeService.getAllRoomChanges(status: status);
-      _error = null;
+      _roomChanges = await _service.getAllRoomChanges(status: status);
+      _errorMessage = null;
     } catch (e) {
-      _error = e.toString();
+      _errorMessage = e.toString();
       _roomChanges = [];
     } finally {
       _isLoading = false;
@@ -50,143 +64,134 @@ class RoomChangeProvider with ChangeNotifier {
     }
   }
 
-  /// Load room change by ID
-  Future<RoomChange?> loadRoomChangeById(int id) async {
-    _isLoading = true;
-    _error = null;
+  /// Load occupied rooms (for source room selection)
+  Future<void> loadOccupiedRooms() async {
+    _isLoadingOccupied = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final roomChange = await RoomChangeService.getRoomChangeById(id);
-      _error = null;
-      _isLoading = false;
-      notifyListeners();
-      return roomChange;
+      _occupiedRooms = await _service.getOccupiedRooms();
+      _errorMessage = null;
     } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
+      _errorMessage = e.toString();
+      _occupiedRooms = [];
+    } finally {
+      _isLoadingOccupied = false;
       notifyListeners();
-      return null;
     }
   }
 
-  /// Load room changes for a specific booking
-  Future<List<RoomChange>> loadRoomChangesByBookingId(int bookingId) async {
-    _isLoading = true;
-    _error = null;
+  /// Load available rooms for a date range
+  Future<void> loadAvailableRooms({
+    required DateTime checkIn,
+    required DateTime checkOut,
+    int? hotelId,
+  }) async {
+    _isLoadingAvailable = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final changes =
-          await RoomChangeService.getRoomChangesByBookingId(bookingId);
-      _error = null;
-      _isLoading = false;
-      notifyListeners();
-      return changes;
+      _availableRooms = await _service.getAvailableRooms(
+        checkIn: checkIn,
+        checkOut: checkOut,
+        hotelId: hotelId,
+      );
+      _errorMessage = null;
     } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
+      _errorMessage = e.toString();
+      _availableRooms = [];
+    } finally {
+      _isLoadingAvailable = false;
       notifyListeners();
+    }
+  }
+
+  /// Load statistics
+  Future<void> loadStatistics() async {
+    try {
+      _statistics = await _service.getStatistics();
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+    }
+  }
+
+  /// Get recent room changes
+  Future<List<RoomChange>> getRecentChanges({int limit = 10}) async {
+    try {
+      return await _service.getRecentChanges(limit: limit);
+    } catch (e) {
+      _errorMessage = e.toString();
       return [];
     }
   }
 
-  /// Load available rooms for room change
-  Future<void> loadAvailableRoomsForChange({
-    required String checkInDate,
-    required String checkOutDate,
-    required int currentRoomId,
-  }) async {
-    _isLoadingAvailableRooms = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      _availableRooms = await RoomChangeService.getAvailableRoomsForChange(
-        checkInDate: checkInDate,
-        checkOutDate: checkOutDate,
-        currentRoomId: currentRoomId,
-      );
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-      _availableRooms = [];
-    } finally {
-      _isLoadingAvailableRooms = false;
-      notifyListeners();
-    }
-  }
-
   /// Create a new room change
-  Future<Map<String, dynamic>> createRoomChange(
-      RoomChangeRequest request) async {
+  Future<bool> createRoomChange(RoomChangeRequest request) async {
     _isLoading = true;
-    _error = null;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final result = await RoomChangeService.createRoomChange(request);
-      _error = null;
+      final result = await _service.createRoomChange(request);
 
-      // Reload room changes after successful creation
       if (result['success'] == true) {
+        // Reload the list after successful creation
         await loadRoomChanges(status: _statusFilter);
+        _errorMessage = null;
+        return true;
+      } else {
+        _errorMessage = result['error'] ?? 'Failed to create room change';
+        return false;
       }
-
-      _isLoading = false;
-      notifyListeners();
-      return result;
     } catch (e) {
-      _error = e.toString();
+      _errorMessage = e.toString();
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return {
-        'success': false,
-        'message': e.toString(),
-      };
     }
   }
 
   /// Update room change status
-  Future<Map<String, dynamic>> updateRoomChangeStatus({
+  Future<bool> updateRoomChangeStatus({
     required int id,
     required String status,
     String? notes,
   }) async {
     _isLoading = true;
-    _error = null;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final result = await RoomChangeService.updateRoomChangeStatus(
+      final success = await _service.updateRoomChangeStatus(
         id: id,
         status: status,
         notes: notes,
       );
-      _error = null;
 
-      // Reload room changes after successful update
-      if (result['success'] == true) {
+      if (success) {
+        // Reload the list after successful update
         await loadRoomChanges(status: _statusFilter);
+        _errorMessage = null;
+      } else {
+        _errorMessage = 'Failed to update room change status';
       }
 
-      _isLoading = false;
-      notifyListeners();
-      return result;
+      return success;
     } catch (e) {
-      _error = e.toString();
+      _errorMessage = e.toString();
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return {
-        'success': false,
-        'message': e.toString(),
-      };
     }
   }
 
   /// Complete a room change
-  Future<Map<String, dynamic>> completeRoomChange(int id,
-      [String? notes]) async {
+  Future<bool> completeRoomChange(int id, {String? notes}) async {
     return await updateRoomChangeStatus(
       id: id,
       status: 'completed',
@@ -195,8 +200,7 @@ class RoomChangeProvider with ChangeNotifier {
   }
 
   /// Cancel a room change
-  Future<Map<String, dynamic>> cancelRoomChange(int id,
-      [String? notes]) async {
+  Future<bool> cancelRoomChange(int id, {String? notes}) async {
     return await updateRoomChangeStatus(
       id: id,
       status: 'cancelled',
@@ -204,58 +208,26 @@ class RoomChangeProvider with ChangeNotifier {
     );
   }
 
-  /// Load statistics
-  Future<void> loadStatistics({String? startDate, String? endDate}) async {
-    try {
-      _statistics = await RoomChangeService.getRoomChangeStatistics(
-        startDate: startDate,
-        endDate: endDate,
-      );
-      _error = null;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _statistics = null;
-      notifyListeners();
-    }
-  }
-
-  /// Refresh all data
-  Future<void> refresh() async {
-    await loadRoomChanges(status: _statusFilter);
-    await loadStatistics();
-  }
-
-  /// Clear error
+  /// Clear error message
   void clearError() {
-    _error = null;
+    _errorMessage = null;
     notifyListeners();
   }
 
-  /// Filter by status
-  void filterByStatus(String? status) {
+  /// Set status filter
+  void setStatusFilter(String? status) {
+    _statusFilter = status;
     loadRoomChanges(status: status);
   }
 
-  /// Get filtered room changes
-  List<RoomChange> get filteredRoomChanges {
-    if (_statusFilter == null || _statusFilter!.isEmpty) {
-      return _roomChanges;
-    }
-    return _roomChanges.where((rc) => rc.status == _statusFilter).toList();
+  /// Clear all data
+  void clearAll() {
+    _roomChanges = [];
+    _occupiedRooms = [];
+    _availableRooms = [];
+    _statistics = null;
+    _errorMessage = null;
+    _statusFilter = null;
+    notifyListeners();
   }
-
-  /// Get counts by status
-  int get pendingCount =>
-      _roomChanges.where((rc) => rc.status == 'pending').length;
-  int get completedCount =>
-      _roomChanges.where((rc) => rc.status == 'completed').length;
-  int get cancelledCount =>
-      _roomChanges.where((rc) => rc.status == 'cancelled').length;
-
-  /// Check if there are any room changes
-  bool get hasRoomChanges => _roomChanges.isNotEmpty;
-
-  /// Check if there are any available rooms
-  bool get hasAvailableRooms => _availableRooms.isNotEmpty;
 }

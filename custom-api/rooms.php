@@ -129,28 +129,25 @@ class RoomAPI {
         
         // Add computed fields
         foreach ($rooms as &$room) {
-            // Determine current status based on room_status and occupancy
-            if ($room['is_occupied'] > 0) {
+            // Determine current status - PRIORITIZE room_status field over booking check
+            // Status codes: 1=Available, 2=Occupied, 3=Cleaning, 4=Maintenance
+            if ($room['room_status'] == ROOM_STATUS_OCCUPIED) {
+                // Explicitly marked as occupied
                 $status = 'occupied';
-                $color = '#FF9800';
+                $color = '#dc3545'; // Red
+            } else if ($room['room_status'] == ROOM_STATUS_CLEANING) {
+                $status = 'cleaning';
+                $color = '#ffc107'; // Yellow
+            } else if ($room['room_status'] == ROOM_STATUS_MAINTENANCE) {
+                $status = 'maintenance';
+                $color = '#6c757d'; // Gray
+            } else if ($room['is_occupied'] > 0) {
+                // Has active booking but status not set
+                $status = 'occupied';
+                $color = '#dc3545'; // Red
             } else {
-                switch ($room['room_status']) {
-                    case ROOM_STATUS_AVAILABLE:
-                        $status = 'available';
-                        $color = '#4CAF50';
-                        break;
-                    case ROOM_STATUS_CLEANING:
-                        $status = 'cleaning';
-                        $color = '#2196F3';
-                        break;
-                    case ROOM_STATUS_MAINTENANCE:
-                        $status = 'maintenance';
-                        $color = '#F44336';
-                        break;
-                    default:
-                        $status = 'available';
-                        $color = '#4CAF50';
-                }
+                $status = 'available';
+                $color = '#28a745'; // Green
             }
             
             $room['current_status'] = $status;
@@ -169,32 +166,14 @@ class RoomAPI {
         
         $sql = "SELECT 
                     COUNT(*) as total_rooms,
-                    SUM(CASE 
-                        WHEN EXISTS (
-                            SELECT 1 FROM qlo_htl_booking_detail hbd 
-                            WHERE hbd.id_room = hr.id 
-                            AND DATE(:today1) BETWEEN DATE(hbd.date_from) AND DATE(hbd.date_to)
-                            AND hbd.id_status NOT IN (3, 7)
-                        ) THEN 1 ELSE 0 
-                    END) as occupied_rooms,
-                    SUM(CASE 
-                        WHEN hr.id_status = " . ROOM_STATUS_AVAILABLE . " 
-                        AND NOT EXISTS (
-                            SELECT 1 FROM qlo_htl_booking_detail hbd 
-                            WHERE hbd.id_room = hr.id 
-                            AND DATE(:today2) BETWEEN DATE(hbd.date_from) AND DATE(hbd.date_to)
-                            AND hbd.id_status NOT IN (3, 7)
-                        ) THEN 1 ELSE 0 
-                    END) as available_rooms,
+                    SUM(CASE WHEN hr.id_status = " . ROOM_STATUS_OCCUPIED . " THEN 1 ELSE 0 END) as occupied_rooms,
+                    SUM(CASE WHEN hr.id_status = " . ROOM_STATUS_AVAILABLE . " THEN 1 ELSE 0 END) as available_rooms,
                     SUM(CASE WHEN hr.id_status = " . ROOM_STATUS_CLEANING . " THEN 1 ELSE 0 END) as cleaning_rooms,
                     SUM(CASE WHEN hr.id_status = " . ROOM_STATUS_MAINTENANCE . " THEN 1 ELSE 0 END) as maintenance_rooms
                 FROM qlo_htl_room_information hr";
         
         $stmt = self::$pdo->prepare($sql);
-        $stmt->execute([
-            ':today1' => $today,
-            ':today2' => $today
-        ]);
+        $stmt->execute();
         
         $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -334,6 +313,39 @@ try {
                         $response = [
                             'success' => true,
                             'data' => RoomAPI::getTodayCheckOuts()
+                        ];
+                        break;
+                    
+                    case 'debug':
+                        // Debug endpoint to check raw database status
+                        $debugSql = "SELECT id, room_num, id_status,
+                                     CASE 
+                                        WHEN id_status = 1 THEN 'Available'
+                                        WHEN id_status = 2 THEN 'Occupied'
+                                        WHEN id_status = 3 THEN 'Cleaning'
+                                        WHEN id_status = 4 THEN 'Maintenance'
+                                        ELSE 'Unknown'
+                                     END as status_name
+                                     FROM qlo_htl_room_information 
+                                     ORDER BY room_num 
+                                     LIMIT 20";
+                        $debugStmt = $pdo->prepare($debugSql);
+                        $debugStmt->execute();
+                        $response = [
+                            'success' => true,
+                            'data' => $debugStmt->fetchAll(PDO::FETCH_ASSOC)
+                        ];
+                        break;
+                    
+                    case 'reset-all-available':
+                        // Reset all rooms to available status
+                        $resetSql = "UPDATE qlo_htl_room_information SET id_status = 1 WHERE id_status != 1";
+                        $resetStmt = $pdo->prepare($resetSql);
+                        $resetStmt->execute();
+                        $affectedRows = $resetStmt->rowCount();
+                        $response = [
+                            'success' => true,
+                            'message' => "Reset $affectedRows rooms to available status"
                         ];
                         break;
                     

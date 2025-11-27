@@ -1,273 +1,224 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/room_change.dart';
-import '../models/room.dart';
 import '../utils/network_config.dart';
 
 class RoomChangeService {
-  static String get _baseUrl => '${NetworkConfig.wampBaseUrl}/api/room-change.php';
+  String get baseUrl => '${NetworkConfig.wampBaseUrl}/api/room-change.php';
 
-  /// Get all room changes with optional filters
-  static Future<List<RoomChange>> getAllRoomChanges({
+  /// Get all room changes with optional status filter
+  Future<List<RoomChange>> getAllRoomChanges({
     String? status,
     int limit = 100,
     int offset = 0,
   }) async {
     try {
-      final Map<String, String> params = {
-        'action': 'get-all',
+      var uri = Uri.parse(baseUrl);
+      final queryParams = <String, String>{
+        'action': 'list',
         'limit': limit.toString(),
         'offset': offset.toString(),
       };
 
       if (status != null && status.isNotEmpty) {
-        params['status'] = status;
+        queryParams['status'] = status;
       }
 
-      final uri = Uri.parse(_baseUrl).replace(queryParameters: params);
-      final response = await http.get(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(NetworkConfig.connectionTimeout);
+      uri = uri.replace(queryParameters: queryParams);
+
+      final response = await http.get(uri).timeout(
+            NetworkConfig.connectionTimeout,
+          );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        if (jsonResponse['success'] == true) {
-          final List<dynamic> data = jsonResponse['data'] ?? [];
-          return data.map((json) => RoomChange.fromJson(json)).toList();
-        } else {
-          throw Exception(
-              jsonResponse['message'] ?? 'Failed to fetch room changes');
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> changesJson = data['data'];
+          return changesJson.map((json) => RoomChange.fromJson(json)).toList();
         }
-      } else {
-        throw Exception(
-            'Server error: ${response.statusCode} - ${response.body}');
       }
+      throw Exception('Failed to load room changes');
     } catch (e) {
-      throw Exception('Failed to get room changes: $e');
+      throw Exception('Error fetching room changes: $e');
     }
   }
 
   /// Get room change by ID
-  static Future<RoomChange?> getRoomChangeById(int id) async {
+  Future<RoomChange?> getRoomChangeById(int id) async {
     try {
-      final uri = Uri.parse(_baseUrl).replace(queryParameters: {
-        'action': 'get-by-id',
-        'id': id.toString(),
-      });
-
-      final response = await http.get(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(NetworkConfig.connectionTimeout);
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl?action=get&id=$id'),
+          )
+          .timeout(NetworkConfig.connectionTimeout);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        if (jsonResponse['success'] == true && jsonResponse['data'] != null) {
-          return RoomChange.fromJson(jsonResponse['data']);
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          return RoomChange.fromJson(data['data']);
         }
-        return null;
-      } else {
-        throw Exception(
-            'Server error: ${response.statusCode} - ${response.body}');
       }
+      return null;
     } catch (e) {
-      throw Exception('Failed to get room change: $e');
+      throw Exception('Error fetching room change: $e');
     }
   }
 
-  /// Get room changes for a specific booking
-  static Future<List<RoomChange>> getRoomChangesByBookingId(
-      int bookingId) async {
-    try {
-      final uri = Uri.parse(_baseUrl).replace(queryParameters: {
-        'action': 'get-by-booking',
-        'booking_id': bookingId.toString(),
-      });
-
-      final response = await http.get(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(NetworkConfig.connectionTimeout);
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        if (jsonResponse['success'] == true) {
-          final List<dynamic> data = jsonResponse['data'] ?? [];
-          return data.map((json) => RoomChange.fromJson(json)).toList();
-        } else {
-          throw Exception(
-              jsonResponse['message'] ?? 'Failed to fetch room changes');
-        }
-      } else {
-        throw Exception(
-            'Server error: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Failed to get room changes by booking: $e');
-    }
-  }
-
-  /// Get available rooms for room change
-  static Future<List<Room>> getAvailableRoomsForChange({
-    required String checkInDate,
-    required String checkOutDate,
-    required int currentRoomId,
+  /// Get available rooms for a specific date range
+  Future<List<AvailableRoom>> getAvailableRooms({
+    required DateTime checkIn,
+    required DateTime checkOut,
+    int? hotelId,
   }) async {
     try {
-      final uri = Uri.parse(_baseUrl).replace(queryParameters: {
+      final queryParams = <String, String>{
         'action': 'available-rooms',
-        'check_in_date': checkInDate,
-        'check_out_date': checkOutDate,
-        'current_room_id': currentRoomId.toString(),
-      });
+        'check_in': checkIn.toIso8601String().split('T')[0],
+        'check_out': checkOut.toIso8601String().split('T')[0],
+      };
 
-      final response = await http.get(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(NetworkConfig.connectionTimeout);
+      if (hotelId != null) {
+        queryParams['hotel_id'] = hotelId.toString();
+      }
+
+      final uri = Uri.parse(baseUrl).replace(queryParameters: queryParams);
+      final response = await http.get(uri).timeout(
+            NetworkConfig.connectionTimeout,
+          );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        if (jsonResponse['success'] == true) {
-          final List<dynamic> data = jsonResponse['data'] ?? [];
-          // Convert to simplified Room objects
-          return data.map((json) {
-            return Room(
-              id: int.parse(json['id'].toString()),
-              idProduct: int.parse(json['id_product'].toString()),
-              idHotel: int.parse(json['id_hotel'].toString()),
-              roomNum: json['room_num'].toString(),
-              roomStatus: int.parse(json['room_status'].toString()),
-              floor: json['floor']?.toString(),
-              hotelName: json['hotel_name'].toString(),
-              roomTypeId: int.parse(json['id_product'].toString()),
-              roomTypeName: json['room_type_name'].toString(),
-              description: json['description']?.toString(),
-              isOccupied: 0,
-              currentStatus: 'available',
-              statusColor: '#28a745',
-            );
-          }).toList();
-        } else {
-          throw Exception(jsonResponse['message'] ??
-              'Failed to fetch available rooms');
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> roomsJson = data['data'];
+          return roomsJson.map((json) => AvailableRoom.fromJson(json)).toList();
         }
-      } else {
-        throw Exception(
-            'Server error: ${response.statusCode} - ${response.body}');
       }
+      throw Exception('Failed to load available rooms');
     } catch (e) {
-      throw Exception('Failed to get available rooms: $e');
+      throw Exception('Error fetching available rooms: $e');
     }
   }
 
-  /// Create a new room change
-  static Future<Map<String, dynamic>> createRoomChange(
-      RoomChangeRequest request) async {
+  /// Get currently occupied rooms
+  Future<List<OccupiedRoom>> getOccupiedRooms() async {
     try {
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(request.toJson()),
-      ).timeout(NetworkConfig.connectionTimeout);
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl?action=occupied-rooms'),
+          )
+          .timeout(NetworkConfig.connectionTimeout);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-        return jsonResponse;
-      } else {
-        throw Exception(
-            'Server error: ${response.statusCode} - ${response.body}');
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> roomsJson = data['data'];
+          return roomsJson.map((json) => OccupiedRoom.fromJson(json)).toList();
+        }
       }
+      throw Exception('Failed to load occupied rooms');
     } catch (e) {
-      throw Exception('Failed to create room change: $e');
+      throw Exception('Error fetching occupied rooms: $e');
+    }
+  }
+
+  /// Get room change statistics
+  Future<RoomChangeStatistics> getStatistics() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl?action=statistics'),
+          )
+          .timeout(NetworkConfig.connectionTimeout);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          return RoomChangeStatistics.fromJson(data['data']);
+        }
+      }
+      throw Exception('Failed to load statistics');
+    } catch (e) {
+      throw Exception('Error fetching statistics: $e');
+    }
+  }
+
+  /// Get recent room changes
+  Future<List<RoomChange>> getRecentChanges({int limit = 10}) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl?action=recent&limit=$limit'),
+          )
+          .timeout(NetworkConfig.connectionTimeout);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> changesJson = data['data'];
+          return changesJson.map((json) => RoomChange.fromJson(json)).toList();
+        }
+      }
+      throw Exception('Failed to load recent changes');
+    } catch (e) {
+      throw Exception('Error fetching recent changes: $e');
+    }
+  }
+
+  /// Create a new room change request
+  Future<Map<String, dynamic>> createRoomChange(
+    RoomChangeRequest request,
+  ) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse(baseUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(request.toJson()),
+          )
+          .timeout(NetworkConfig.connectionTimeout);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      }
+      throw Exception('Failed to create room change');
+    } catch (e) {
+      throw Exception('Error creating room change: $e');
     }
   }
 
   /// Update room change status
-  static Future<Map<String, dynamic>> updateRoomChangeStatus({
+  Future<bool> updateRoomChangeStatus({
     required int id,
     required String status,
     String? notes,
   }) async {
     try {
-      final Map<String, dynamic> body = {
-        'action': 'update-status',
-        'id': id,
-        'status': status,
-      };
-
-      if (notes != null && notes.isNotEmpty) {
-        body['notes'] = notes;
-      }
-
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(body),
-      ).timeout(NetworkConfig.connectionTimeout);
+      final response = await http
+          .post(
+            Uri.parse(baseUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'action': 'update-status',
+              'id': id,
+              'status': status,
+              'notes': notes,
+            }),
+          )
+          .timeout(NetworkConfig.connectionTimeout);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-        return jsonResponse;
-      } else {
-        throw Exception(
-            'Server error: ${response.statusCode} - ${response.body}');
+        final data = json.decode(response.body);
+        return data['success'] == true;
       }
+      return false;
     } catch (e) {
-      throw Exception('Failed to update room change status: $e');
+      throw Exception('Error updating room change status: $e');
     }
   }
 
-  /// Get room change statistics
-  static Future<RoomChangeStatistics> getRoomChangeStatistics({
-    String? startDate,
-    String? endDate,
-  }) async {
-    try {
-      final Map<String, String> params = {'action': 'statistics'};
-
-      if (startDate != null && startDate.isNotEmpty) {
-        params['start_date'] = startDate;
-      }
-
-      if (endDate != null && endDate.isNotEmpty) {
-        params['end_date'] = endDate;
-      }
-
-      final uri = Uri.parse(_baseUrl).replace(queryParameters: params);
-      final response = await http.get(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(NetworkConfig.connectionTimeout);
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        if (jsonResponse['success'] == true && jsonResponse['data'] != null) {
-          return RoomChangeStatistics.fromJson(jsonResponse['data']);
-        } else {
-          throw Exception(
-              jsonResponse['message'] ?? 'Failed to fetch statistics');
-        }
-      } else {
-        throw Exception(
-            'Server error: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Failed to get room change statistics: $e');
-    }
-  }
-
-  // Helper methods for common operations
-
-  /// Complete a room change
-  static Future<Map<String, dynamic>> completeRoomChange(
-      int id, String? notes) async {
+  /// Helper: Mark room change as completed
+  Future<bool> completeRoomChange(int id, {String? notes}) async {
     return await updateRoomChangeStatus(
       id: id,
       status: 'completed',
@@ -275,23 +226,12 @@ class RoomChangeService {
     );
   }
 
-  /// Cancel a room change
-  static Future<Map<String, dynamic>> cancelRoomChange(
-      int id, String? notes) async {
+  /// Helper: Cancel room change
+  Future<bool> cancelRoomChange(int id, {String? notes}) async {
     return await updateRoomChangeStatus(
       id: id,
       status: 'cancelled',
       notes: notes,
     );
-  }
-
-  /// Get pending room changes
-  static Future<List<RoomChange>> getPendingRoomChanges() async {
-    return await getAllRoomChanges(status: 'pending');
-  }
-
-  /// Get completed room changes
-  static Future<List<RoomChange>> getCompletedRoomChanges() async {
-    return await getAllRoomChanges(status: 'completed');
   }
 }

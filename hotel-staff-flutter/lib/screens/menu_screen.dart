@@ -40,12 +40,16 @@ class MenuScreen extends StatelessWidget {
                                   style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w800,
-                                      color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1A1A1A),
+                                      color: isDark
+                                          ? const Color(0xFFE1E1E1)
+                                          : const Color(0xFF1A1A1A),
                                       letterSpacing: -0.3)),
                               Text(authProvider.userName ?? 'Staff Member',
                                   style: TextStyle(
                                       fontSize: 12,
-                                      color: isDark ? const Color(0xFFB0B0B0) : Colors.grey.shade600,
+                                      color: isDark
+                                          ? const Color(0xFFB0B0B0)
+                                          : Colors.grey.shade600,
                                       fontWeight: FontWeight.w500)),
                             ],
                           ),
@@ -57,14 +61,18 @@ class MenuScreen extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
-                            color: isDark ? const Color(0xFFE1E1E1) : Colors.grey.shade900,
+                            color: isDark
+                                ? const Color(0xFFE1E1E1)
+                                : Colors.grey.shade900,
                             letterSpacing: -0.8,
                             height: 1.1)),
                     const SizedBox(height: 4),
                     Text('Access all hotel management features',
                         style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? const Color(0xFFB0B0B0) : Colors.grey.shade600,
+                            color: isDark
+                                ? const Color(0xFFB0B0B0)
+                                : Colors.grey.shade600,
                             fontWeight: FontWeight.w500)),
                   ],
                 ),
@@ -182,7 +190,8 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+  Widget _buildSection(
+      BuildContext context, String title, List<Widget> children) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +212,8 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeToggle(BuildContext context, ThemeProvider themeProvider, bool isDark) {
+  Widget _buildThemeToggle(
+      BuildContext context, ThemeProvider themeProvider, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -245,7 +255,9 @@ class MenuScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF2D3436),
+                    color: isDark
+                        ? const Color(0xFFE1E1E1)
+                        : const Color(0xFF2D3436),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -253,7 +265,8 @@ class MenuScreen extends StatelessWidget {
                   isDark ? 'Switch to light theme' : 'Switch to dark theme',
                   style: TextStyle(
                     fontSize: 11,
-                    color: isDark ? const Color(0xFFB0B0B0) : Colors.grey.shade600,
+                    color:
+                        isDark ? const Color(0xFFB0B0B0) : Colors.grey.shade600,
                   ),
                 ),
               ],
@@ -317,7 +330,9 @@ class MenuScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF2D3436),
+                      color: isDark
+                          ? const Color(0xFFE1E1E1)
+                          : const Color(0xFF2D3436),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -325,7 +340,9 @@ class MenuScreen extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 11,
-                      color: isDark ? const Color(0xFFB0B0B0) : Colors.grey.shade600,
+                      color: isDark
+                          ? const Color(0xFFB0B0B0)
+                          : Colors.grey.shade600,
                     ),
                   ),
                 ],
@@ -518,14 +535,17 @@ class MenuScreen extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? const Color(0xFFB0B0B0) : Colors.grey.shade600,
+                      color: isDark
+                          ? const Color(0xFFB0B0B0)
+                          : Colors.grey.shade600,
                     ),
                   ),
                 ],
               ),
             ),
             Icon(Icons.arrow_forward_ios,
-                color: isDark ? const Color(0xFF606060) : Colors.grey.shade400, size: 16),
+                color: isDark ? const Color(0xFF606060) : Colors.grey.shade400,
+                size: 16),
           ],
         ),
       ),

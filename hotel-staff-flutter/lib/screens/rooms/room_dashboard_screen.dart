@@ -85,6 +85,62 @@ class _RoomDashboardScreenState extends State<RoomDashboardScreen> {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
+                    const SizedBox(width: 8),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert,
+                          color: Colors.white, size: 24),
+                      onSelected: (value) async {
+                        if (value == 'reset') {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Reset All Rooms'),
+                              content: const Text(
+                                  'This will reset all rooms to Available status. Continue?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('Reset'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirmed == true && context.mounted) {
+                            final provider = context.read<RoomProvider>();
+                            final success =
+                                await provider.resetAllRoomsToAvailable();
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(success
+                                      ? 'All rooms reset to available'
+                                      : 'Failed to reset rooms'),
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'reset',
+                          child: Row(
+                            children: [
+                              Icon(Icons.refresh_outlined),
+                              SizedBox(width: 8),
+                              Text('Reset All to Available'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

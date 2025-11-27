@@ -26,7 +26,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         elevation: 0,
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Colors.black87),
+          icon: Icon(Icons.arrow_back,
+              color: isDark ? Colors.white : Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -38,14 +39,17 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         ),
         actions: [
           PopupMenuButton<int>(
-            icon: Icon(Icons.more_vert, color: isDark ? Colors.white : Colors.black87),
+            icon: Icon(Icons.more_vert,
+                color: isDark ? Colors.white : Colors.black87),
             onSelected: (statusCode) => _updateStatus(context, statusCode),
             itemBuilder: (context) => [
               const PopupMenuItem(
                 value: 1,
                 child: ListTile(
-                  leading: Icon(Icons.check_circle, color: Colors.green, size: 20),
-                  title: Text('Mark as Available', style: TextStyle(fontSize: 14)),
+                  leading:
+                      Icon(Icons.check_circle, color: Colors.green, size: 20),
+                  title:
+                      Text('Mark as Available', style: TextStyle(fontSize: 14)),
                   contentPadding: EdgeInsets.zero,
                   dense: true,
                 ),
@@ -53,8 +57,10 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
               const PopupMenuItem(
                 value: 3,
                 child: ListTile(
-                  leading: Icon(Icons.cleaning_services, color: Colors.blue, size: 20),
-                  title: Text('Mark as Cleaning', style: TextStyle(fontSize: 14)),
+                  leading: Icon(Icons.cleaning_services,
+                      color: Colors.blue, size: 20),
+                  title:
+                      Text('Mark as Cleaning', style: TextStyle(fontSize: 14)),
                   contentPadding: EdgeInsets.zero,
                   dense: true,
                 ),
@@ -63,7 +69,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                 value: 4,
                 child: ListTile(
                   leading: Icon(Icons.build, color: Colors.red, size: 20),
-                  title: Text('Mark as Maintenance', style: TextStyle(fontSize: 14)),
+                  title: Text('Mark as Maintenance',
+                      style: TextStyle(fontSize: 14)),
                   contentPadding: EdgeInsets.zero,
                   dense: true,
                 ),
@@ -175,7 +182,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
                   color: Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                child: const Icon(Icons.info_outline,
+                    color: Colors.orange, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
@@ -189,33 +197,42 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildModernInfoRow('Room Number', widget.room.roomNum, Icons.meeting_room, isDark),
+          _buildModernInfoRow(
+              'Room Number', widget.room.roomNum, Icons.meeting_room, isDark),
           const SizedBox(height: 16),
-          _buildModernInfoRow('Room Type', widget.room.roomTypeName, Icons.bed, isDark),
+          _buildModernInfoRow(
+              'Room Type', widget.room.roomTypeName, Icons.bed, isDark),
           if (widget.room.floor != null) ...[
             const SizedBox(height: 16),
-            _buildModernInfoRow('Floor', widget.room.floor!, Icons.stairs, isDark),
+            _buildModernInfoRow(
+                'Floor', widget.room.floor!, Icons.stairs, isDark),
           ],
-          if (widget.room.description != null && widget.room.description!.isNotEmpty) ...[
+          if (widget.room.description != null &&
+              widget.room.description!.isNotEmpty) ...[
             const SizedBox(height: 16),
             _buildDescriptionSection(widget.room.description!, isDark),
           ],
           const SizedBox(height: 16),
-          _buildModernInfoRow('Hotel', widget.room.hotelName, Icons.apartment, isDark),
+          _buildModernInfoRow(
+              'Hotel', widget.room.hotelName, Icons.apartment, isDark),
           if (widget.room.hotelPhone != null) ...[
             const SizedBox(height: 16),
-            _buildModernInfoRow('Hotel Phone', widget.room.hotelPhone!, Icons.phone, isDark),
+            _buildModernInfoRow(
+                'Hotel Phone', widget.room.hotelPhone!, Icons.phone, isDark),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildModernInfoRow(String label, String value, IconData icon, bool isDark) {
+  Widget _buildModernInfoRow(
+      String label, String value, IconData icon, bool isDark) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: isDark ? const Color(0xFF808080) : Colors.grey[600]),
+        Icon(icon,
+            size: 18,
+            color: isDark ? const Color(0xFF808080) : Colors.grey[600]),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -248,13 +265,15 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
   Widget _buildDescriptionSection(String description, bool isDark) {
     const int maxLines = 3;
     final bool isLongDescription = description.length > 150;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(Icons.description, size: 18, color: isDark ? const Color(0xFF808080) : Colors.grey[600]),
+            Icon(Icons.description,
+                size: 18,
+                color: isDark ? const Color(0xFF808080) : Colors.grey[600]),
             const SizedBox(width: 12),
             Text(
               'Description',
@@ -274,8 +293,12 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
             children: [
               Text(
                 description,
-                maxLines: _isDescriptionExpanded ? null : (isLongDescription ? maxLines : null),
-                overflow: _isDescriptionExpanded ? null : (isLongDescription ? TextOverflow.ellipsis : null),
+                maxLines: _isDescriptionExpanded
+                    ? null
+                    : (isLongDescription ? maxLines : null),
+                overflow: _isDescriptionExpanded
+                    ? null
+                    : (isLongDescription ? TextOverflow.ellipsis : null),
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
@@ -320,7 +343,8 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: isDark ? Border.all(color: Colors.orange.withOpacity(0.3)) : null,
+        border:
+            isDark ? Border.all(color: Colors.orange.withOpacity(0.3)) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,25 +371,33 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildGuestInfoRow('Guest Name', widget.room.guestName!, Icons.person_outline, isDark),
+          _buildGuestInfoRow('Guest Name', widget.room.guestName!,
+              Icons.person_outline, isDark),
           if (widget.room.checkInDate != null) ...[
             const SizedBox(height: 12),
-            _buildGuestInfoRow('Check-in', _formatDateTime(widget.room.checkInDate!), Icons.login, isDark),
+            _buildGuestInfoRow('Check-in',
+                _formatDateTime(widget.room.checkInDate!), Icons.login, isDark),
           ],
           if (widget.room.checkOutDate != null) ...[
             const SizedBox(height: 12),
-            _buildGuestInfoRow('Check-out', _formatDateTime(widget.room.checkOutDate!), Icons.logout, isDark),
+            _buildGuestInfoRow(
+                'Check-out',
+                _formatDateTime(widget.room.checkOutDate!),
+                Icons.logout,
+                isDark),
           ],
           if (widget.room.bookingId != null) ...[
             const SizedBox(height: 12),
-            _buildGuestInfoRow('Booking ID', '#${widget.room.bookingId}', Icons.confirmation_number, isDark),
+            _buildGuestInfoRow('Booking ID', '#${widget.room.bookingId}',
+                Icons.confirmation_number, isDark),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildGuestInfoRow(String label, String value, IconData icon, bool isDark) {
+  Widget _buildGuestInfoRow(
+      String label, String value, IconData icon, bool isDark) {
     return Row(
       children: [
         Icon(icon, size: 16, color: Colors.orange),

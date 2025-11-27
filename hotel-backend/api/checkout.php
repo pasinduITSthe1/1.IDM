@@ -69,6 +69,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($conn->query($sql) === TRUE) {
         $checkout_id = $conn->insert_id;
         
+        // ✅ UPDATE ROOM STATUS TO CLEANING (id_status = 3) after checkout
+        if ($id_room > 0) {
+            $updateRoomSql = "UPDATE " . _DB_PREFIX_ . "htl_room_information 
+                              SET id_status = 3, date_upd = NOW() 
+                              WHERE id = $id_room";
+            if (!$conn->query($updateRoomSql)) {
+                error_log("Failed to update room status: " . $conn->error);
+            }
+        }
+        
         // Update check-in record status
         $updateCheckin = "UPDATE guest_checkins SET status = 'checked_out' WHERE id = $id_checkin";
         $conn->query($updateCheckin);

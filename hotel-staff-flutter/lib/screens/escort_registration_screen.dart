@@ -736,7 +736,7 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: _RadioOption(
-                            label: 'Visa',
+                            label: 'No MRZ ID',
                             value: 'visa',
                             groupValue: _selectedDocumentType,
                             onChanged: (val) =>
@@ -1133,7 +1133,7 @@ class _EscortRegistrationScreenState extends State<EscortRegistrationScreen> {
                       controller: _addressController,
                       maxLines: 2,
                       decoration: InputDecoration(
-                        labelText: 'Address',
+                        labelText: 'Home Address',
                         prefixIcon:
                             const Icon(Icons.location_on_outlined, size: 20),
                         filled: true,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/guest_provider.dart';
+import '../providers/room_provider.dart';
 import '../models/guest.dart';
 import '../utils/app_theme.dart';
 import '../utils/enhanced_popups.dart';
@@ -116,19 +117,26 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                       });
                     },
                     style: TextStyle(
-                      color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1F2937),
+                      color: isDark
+                          ? const Color(0xFFE1E1E1)
+                          : const Color(0xFF1F2937),
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Search by name, room, email...',
                       hintStyle: TextStyle(
-                        color: isDark ? const Color(0xFF707070) : Colors.grey[400],
+                        color:
+                            isDark ? const Color(0xFF707070) : Colors.grey[400],
                         fontSize: 13,
                       ),
-                      prefixIcon:
-                          Icon(Icons.search, color: isDark ? const Color(0xFF707070) : Colors.grey[400], size: 20),
+                      prefixIcon: Icon(Icons.search,
+                          color: isDark
+                              ? const Color(0xFF707070)
+                              : Colors.grey[400],
+                          size: 20),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                      fillColor:
+                          isDark ? const Color(0xFF2C2C2C) : Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -160,7 +168,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                               Icon(
                                 Icons.hotel_outlined,
                                 size: 80,
-                                color: isDark ? const Color(0xFF404040) : Colors.grey[300],
+                                color: isDark
+                                    ? const Color(0xFF404040)
+                                    : Colors.grey[300],
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -169,7 +179,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                     : 'No matching guests',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
+                                  color: isDark
+                                      ? const Color(0xFFB0B0B0)
+                                      : Colors.grey[600],
                                 ),
                               ),
                               if (_searchQuery.isEmpty) ...[
@@ -178,7 +190,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                                   'No active check-ins found',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: isDark ? const Color(0xFF808080) : Colors.grey[500],
+                                    color: isDark
+                                        ? const Color(0xFF808080)
+                                        : Colors.grey[500],
                                   ),
                                 ),
                               ],
@@ -217,7 +231,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF404040) : Colors.grey[200]!, width: 1),
+        border: Border.all(
+            color: isDark ? const Color(0xFF404040) : Colors.grey[200]!,
+            width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -252,7 +268,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1F2937),
+                          color: isDark
+                              ? const Color(0xFFE1E1E1)
+                              : const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -272,7 +290,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[600],
                               letterSpacing: 0.3,
                             ),
                           ),
@@ -281,7 +301,9 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                               ' • $daysSinceCheckIn day${daysSinceCheckIn > 1 ? 's' : ''}',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: isDark ? const Color(0xFF909090) : Colors.grey[500],
+                                color: isDark
+                                    ? const Color(0xFF909090)
+                                    : Colors.grey[500],
                               ),
                             ),
                           ],
@@ -326,14 +348,19 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                       Row(
                         children: [
                           Icon(Icons.email_outlined,
-                              size: 16, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
+                              size: 16,
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[600]),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               guest.email!,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
+                                color: isDark
+                                    ? const Color(0xFFB0B0B0)
+                                    : Colors.grey[700],
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -345,13 +372,18 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                       Row(
                         children: [
                           Icon(Icons.phone_outlined,
-                              size: 16, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
+                              size: 16,
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[600]),
                           const SizedBox(width: 8),
                           Text(
                             guest.phone!,
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[700],
                             ),
                           ),
                         ],
@@ -362,14 +394,19 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                       Row(
                         children: [
                           Icon(Icons.access_time_outlined,
-                              size: 16, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
+                              size: 16,
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[600]),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Checked in: ${_formatDate(guest.checkInDate!)}',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
+                                color: isDark
+                                    ? const Color(0xFFB0B0B0)
+                                    : Colors.grey[700],
                               ),
                             ),
                           ),
@@ -443,6 +480,11 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
 
     if (confirmed == true) {
       await provider.checkOutGuest(guest.id);
+
+      // Reload room provider to update room status immediately
+      final roomProvider = Provider.of<RoomProvider>(context, listen: false);
+      await roomProvider.loadAll();
+
       if (context.mounted) {
         EnhancedPopups.showEnhancedSnackBar(
           context,

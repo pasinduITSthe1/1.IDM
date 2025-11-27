@@ -222,7 +222,10 @@ class GuestProvider with ChangeNotifier {
 
   // Check-in guest - SAVE TO HOTEL BACKEND DATABASE
   Future<bool> checkInGuest(String id,
-      {String? roomNumber, String? expectedCheckoutDate, String? notes}) async {
+      {String? roomNumber,
+      int? roomId,
+      String? expectedCheckoutDate,
+      String? notes}) async {
     try {
       final index = _guests.indexWhere((g) => g.id == id);
       if (index != -1) {
@@ -236,14 +239,19 @@ class GuestProvider with ChangeNotifier {
 
         debugPrint('📤 Checking in guest in HOTEL BACKEND database...');
         debugPrint('   Customer ID: $id');
-        debugPrint('   Room: $roomNumber');
+        debugPrint('   Room: $roomNumber (ID: $roomId)');
 
         // ✅ IMPORTANT: Save check-in to hotel backend database using HotelManagementService
         try {
+          debugPrint('🔍 Check-in Details:');
+          debugPrint('   - Customer ID: ${int.parse(id)}');
+          debugPrint('   - Room ID: $roomId');
+          debugPrint('   - Room Number: $roomNumber');
+
           final response = await _hotelService.checkInGuest(
             customerId: int.parse(id),
             bookingId: 1, // Default booking ID (improve this later)
-            roomId: int.tryParse(roomNumber ?? '0') ?? 0,
+            roomId: roomId ?? 0, // Use the actual room ID from database
             roomNumber: roomNumber ?? '',
             checkedInBy: 'app_user',
             notes: notes ?? '',

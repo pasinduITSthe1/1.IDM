@@ -248,6 +248,26 @@ class RoomProvider with ChangeNotifier {
     return _rooms.where((r) => r.isOccupiedStatus).toList();
   }
 
+  /// Reset all rooms to available status (for testing/admin)
+  Future<bool> resetAllRoomsToAvailable() async {
+    try {
+      _setLoading(true);
+      final success = await _roomService.resetAllRoomsToAvailable();
+
+      if (success) {
+        // Reload all data after reset
+        await loadAll();
+      }
+
+      _setLoading(false);
+      return success;
+    } catch (e) {
+      _setLoading(false);
+      _setError('Failed to reset rooms: $e');
+      return false;
+    }
+  }
+
   /// Get rooms in cleaning status
   List<Room> get cleaningRooms {
     return _rooms.where((r) => r.isCleaning).toList();

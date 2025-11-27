@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../providers/room_change_provider.dart';
 import '../../models/room_change.dart';
-import 'room_change_details_screen.dart';
-import 'create_room_change_screen.dart';
 
 class RoomChangeListScreen extends StatefulWidget {
-  const RoomChangeListScreen({Key? key}) : super(key: key);
+  const RoomChangeListScreen({super.key});
 
   @override
   State<RoomChangeListScreen> createState() => _RoomChangeListScreenState();
@@ -24,16 +24,11 @@ class _RoomChangeListScreenState extends State<RoomChangeListScreen> {
   }
 
   Future<void> _loadData() async {
-    final provider = context.read<RoomChangeProvider>();
-    await provider.loadRoomChanges(status: _selectedStatus);
-    await provider.loadStatistics();
-  }
-
-  void _filterByStatus(String? status) {
-    setState(() {
-      _selectedStatus = status;
-    });
-    context.read<RoomChangeProvider>().filterByStatus(status);
+    final provider = Provider.of<RoomChangeProvider>(context, listen: false);
+    await Future.wait([
+      provider.loadRoomChanges(status: _selectedStatus),
+      provider.loadStatistics(),
+    ]);
   }
 
   @override
@@ -41,304 +36,272 @@ class _RoomChangeListScreenState extends State<RoomChangeListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Room Changes'),
-        backgroundColor: Colors.blue,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
-            tooltip: 'Refresh',
           ),
         ],
       ),
       body: Consumer<RoomChangeProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading && !provider.hasRoomChanges) {
+          if (provider.isLoading && provider.roomChanges.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (provider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error: ${provider.error}',
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadData,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
+          return RefreshIndicator(
+            onRefresh: _loadData,
+            child: Column(
+              children: [
+                // Statistics Cards
+                if (provider.statistics != null)
+                  _buildStatisticsSection(provider.statistics!),
 
-          return Column(
-            children: [
-              // Statistics Cards
-              if (provider.statistics != null)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          title: 'Total',
-                          count: provider.statistics!.totalChanges,
-                          color: Colors.blue,
-                          icon: Icons.swap_horiz,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _StatCard(
-                          title: 'Pending',
-                          count: provider.statistics!.pendingChanges,
-                          color: Colors.orange,
-                          icon: Icons.pending_actions,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _StatCard(
-                          title: 'Completed',
-                          count: provider.statistics!.completedChanges,
-                          color: Colors.green,
-                          icon: Icons.check_circle,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Status Filter Chips
+                _buildFilterChips(provider),
 
-              // Filter Chips
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      ChoiceChip(
-                        label: const Text('All'),
-                        selected: _selectedStatus == null,
-                        onSelected: (_) => _filterByStatus(null),
-                      ),
-                      const SizedBox(width: 8),
-                      ChoiceChip(
-                        label: const Text('Pending'),
-                        selected: _selectedStatus == 'pending',
-                        onSelected: (_) => _filterByStatus('pending'),
-                      ),
-                      const SizedBox(width: 8),
-                      ChoiceChip(
-                        label: const Text('Completed'),
-                        selected: _selectedStatus == 'completed',
-                        onSelected: (_) => _filterByStatus('completed'),
-                      ),
-                      const SizedBox(width: 8),
-                      ChoiceChip(
-                        label: const Text('Cancelled'),
-                        selected: _selectedStatus == 'cancelled',
-                        onSelected: (_) => _filterByStatus('cancelled'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const Divider(),
-
-              // Room Changes List
-              Expanded(
-                child: provider.hasRoomChanges
-                    ? RefreshIndicator(
-                        onRefresh: _loadData,
-                        child: ListView.builder(
+                // Room Changes List
+                Expanded(
+                  child: provider.roomChanges.isEmpty
+                      ? _buildEmptyState()
+                      : ListView.builder(
                           padding: const EdgeInsets.all(16),
-                          itemCount: provider.filteredRoomChanges.length,
+                          itemCount: provider.roomChanges.length,
                           itemBuilder: (context, index) {
-                            final roomChange =
-                                provider.filteredRoomChanges[index];
-                            return _RoomChangeCard(
-                              roomChange: roomChange,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        RoomChangeDetailsScreen(
-                                      roomChange: roomChange,
-                                    ),
-                                  ),
-                                ).then((_) => _loadData());
-                              },
-                            );
+                            final roomChange = provider.roomChanges[index];
+                            return _buildRoomChangeCard(roomChange);
                           },
                         ),
-                      )
-                    : Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.swap_horiz,
-                                size: 64, color: Colors.grey),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No room changes found',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-              ),
-            ],
+                ),
+              ],
+            ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CreateRoomChangeScreen(),
-            ),
-          ).then((_) => _loadData());
+          context.push('/room-change/create');
         },
         icon: const Icon(Icons.add),
         label: const Text('New Room Change'),
-        backgroundColor: Colors.blue,
       ),
     );
   }
-}
 
-class _StatCard extends StatelessWidget {
-  final String title;
-  final int count;
-  final Color color;
-  final IconData icon;
+  Widget _buildStatisticsSection(RoomChangeStatistics stats) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Statistics',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Total',
+                  stats.totalChanges.toString(),
+                  Colors.blue,
+                  Icons.swap_horiz,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatCard(
+                  'Pending',
+                  stats.pendingChanges.toString(),
+                  Colors.orange,
+                  Icons.pending,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatCard(
+                  'Completed',
+                  stats.completedChanges.toString(),
+                  Colors.green,
+                  Icons.check_circle,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Today',
+                  stats.todayChanges.toString(),
+                  Colors.purple,
+                  Icons.today,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatCard(
+                  'This Week',
+                  stats.weekChanges.toString(),
+                  Colors.teal,
+                  Icons.date_range,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatCard(
+                  'This Month',
+                  stats.monthChanges.toString(),
+                  Colors.indigo,
+                  Icons.calendar_month,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-  const _StatCard({
-    required this.title,
-    required this.count,
-    required this.color,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildStatCard(
+      String label, String value, Color color, IconData icon) {
     return Card(
-      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 4),
             Text(
-              count.toString(),
+              value,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
             ),
             Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
+              label,
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class _RoomChangeCard extends StatelessWidget {
-  final RoomChange roomChange;
-  final VoidCallback onTap;
-
-  const _RoomChangeCard({
-    required this.roomChange,
-    required this.onTap,
-  });
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return Colors.orange;
-      case 'completed':
-        return Colors.green;
-      case 'cancelled':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
+  Widget _buildFilterChips(RoomChangeProvider provider) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          FilterChip(
+            label: const Text('All'),
+            selected: _selectedStatus == null,
+            onSelected: (selected) {
+              setState(() {
+                _selectedStatus = null;
+              });
+              provider.setStatusFilter(null);
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text('Pending'),
+            selected: _selectedStatus == 'pending',
+            onSelected: (selected) {
+              setState(() {
+                _selectedStatus = selected ? 'pending' : null;
+              });
+              provider.setStatusFilter(_selectedStatus);
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text('Completed'),
+            selected: _selectedStatus == 'completed',
+            onSelected: (selected) {
+              setState(() {
+                _selectedStatus = selected ? 'completed' : null;
+              });
+              provider.setStatusFilter(_selectedStatus);
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text('Cancelled'),
+            selected: _selectedStatus == 'cancelled',
+            onSelected: (selected) {
+              setState(() {
+                _selectedStatus = selected ? 'cancelled' : null;
+              });
+              provider.setStatusFilter(_selectedStatus);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildRoomChangeCard(RoomChange roomChange) {
+    final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
+
+    Color statusColor;
+    switch (roomChange.status) {
+      case 'pending':
+        statusColor = Colors.orange;
+        break;
+      case 'completed':
+        statusColor = Colors.green;
+        break;
+      case 'cancelled':
+        statusColor = Colors.red;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
       child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        onTap: () {
+          context.push('/room-change/details', extra: roomChange);
+        },
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header with status
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          roomChange.guestName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Booking #${roomChange.bookingId}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      roomChange.guestName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(roomChange.status).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: _getStatusColor(roomChange.status),
-                        width: 1,
-                      ),
+                      color: statusColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       roomChange.statusDisplayName,
                       style: TextStyle(
-                        color: _getStatusColor(roomChange.status),
+                        color: statusColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -346,123 +309,72 @@ class _RoomChangeCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const Divider(height: 20),
+              const SizedBox(height: 12),
+
+              // Room change info
               Row(
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'FROM',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.meeting_room,
-                                size: 16, color: Colors.red),
-                            const SizedBox(width: 4),
-                            Text(
-                              roomChange.oldRoomNum,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (roomChange.oldRoomType != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            roomChange.oldRoomType!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ],
+                    child: _buildRoomInfo(
+                      'From',
+                      roomChange.oldRoomNum,
+                      Icons.meeting_room,
+                      Colors.red,
                     ),
                   ),
-                  const Icon(Icons.arrow_forward, color: Colors.blue),
+                  const Icon(Icons.arrow_forward, color: Colors.grey),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'TO',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.meeting_room,
-                                size: 16, color: Colors.green),
-                            const SizedBox(width: 4),
-                            Text(
-                              roomChange.newRoomNum,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (roomChange.newRoomType != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            roomChange.newRoomType!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ],
+                    child: _buildRoomInfo(
+                      'To',
+                      roomChange.newRoomNum,
+                      Icons.meeting_room,
+                      Colors.green,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.event_note, size: 14, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Reason: ${roomChange.changeReason}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      fontStyle: FontStyle.italic,
+
+              // Reason
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline,
+                        size: 16, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        roomChange.changeReason,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
+
+              // Footer info
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(Icons.person, size: 14, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    'By: ${roomChange.changedBy}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  Row(
+                    children: [
+                      const Icon(Icons.person, size: 14, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        roomChange.changedBy,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
                   Text(
-                    roomChange.changeDate.substring(0, 16),
+                    dateFormat.format(roomChange.changeDate),
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
@@ -470,6 +382,57 @@ class _RoomChangeCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRoomInfo(
+      String label, String roomNum, IconData icon, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
+            Text(
+              roomNum,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.swap_horiz, size: 64, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          Text(
+            'No room changes found',
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _selectedStatus != null
+                ? 'Try changing the filter'
+                : 'Create your first room change',
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+          ),
+        ],
       ),
     );
   }

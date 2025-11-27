@@ -18,6 +18,7 @@ class CheckInScreen extends StatefulWidget {
 class _CheckInScreenState extends State<CheckInScreen> {
   String _searchQuery = '';
   final Map<String, TextEditingController> _roomControllers = {};
+  final Map<String, int> _roomIds = {}; // Store room IDs by guest ID
 
   @override
   void dispose() {
@@ -126,19 +127,26 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       });
                     },
                     style: TextStyle(
-                      color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1F2937),
+                      color: isDark
+                          ? const Color(0xFFE1E1E1)
+                          : const Color(0xFF1F2937),
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Search guests...',
                       hintStyle: TextStyle(
-                        color: isDark ? const Color(0xFF707070) : Colors.grey[400],
+                        color:
+                            isDark ? const Color(0xFF707070) : Colors.grey[400],
                         fontSize: 13,
                       ),
-                      prefixIcon:
-                          Icon(Icons.search, color: isDark ? const Color(0xFF707070) : Colors.grey[400], size: 20),
+                      prefixIcon: Icon(Icons.search,
+                          color: isDark
+                              ? const Color(0xFF707070)
+                              : Colors.grey[400],
+                          size: 20),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                      fillColor:
+                          isDark ? const Color(0xFF2C2C2C) : Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -170,7 +178,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
                               Icon(
                                 Icons.check_circle_outline,
                                 size: 80,
-                                color: isDark ? const Color(0xFF404040) : Colors.grey[300],
+                                color: isDark
+                                    ? const Color(0xFF404040)
+                                    : Colors.grey[300],
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -179,7 +189,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                     : 'No matching guests',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
+                                  color: isDark
+                                      ? const Color(0xFFB0B0B0)
+                                      : Colors.grey[600],
                                 ),
                               ),
                               if (_searchQuery.isEmpty) ...[
@@ -188,7 +200,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                   'All guests have been checked in!',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: isDark ? const Color(0xFF808080) : Colors.grey[500],
+                                    color: isDark
+                                        ? const Color(0xFF808080)
+                                        : Colors.grey[500],
                                   ),
                                 ),
                               ],
@@ -266,7 +280,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1F2937),
+                          color: isDark
+                              ? const Color(0xFFE1E1E1)
+                              : const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -286,7 +302,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[600],
                               letterSpacing: 0.3,
                             ),
                           ),
@@ -313,14 +331,19 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       Row(
                         children: [
                           Icon(Icons.email_outlined,
-                              size: 16, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
+                              size: 16,
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[600]),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               guest.email!,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
+                                color: isDark
+                                    ? const Color(0xFFB0B0B0)
+                                    : Colors.grey[700],
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -332,13 +355,18 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       Row(
                         children: [
                           Icon(Icons.phone_outlined,
-                              size: 16, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
+                              size: 16,
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[600]),
                           const SizedBox(width: 8),
                           Text(
                             guest.phone!,
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
+                              color: isDark
+                                  ? const Color(0xFFB0B0B0)
+                                  : Colors.grey[700],
                             ),
                           ),
                         ],
@@ -355,14 +383,18 @@ class _CheckInScreenState extends State<CheckInScreen> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: isDark ? const Color(0xFF404040) : Colors.grey[300]!),
+                  border: Border.all(
+                      color:
+                          isDark ? const Color(0xFF404040) : Colors.grey[300]!),
                   borderRadius: BorderRadius.circular(10),
                   color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.hotel_outlined,
-                        color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600], size: 20),
+                        color:
+                            isDark ? const Color(0xFFB0B0B0) : Colors.grey[600],
+                        size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -374,12 +406,19 @@ class _CheckInScreenState extends State<CheckInScreen> {
                           fontWeight: FontWeight.w500,
                           color:
                               _roomControllers[guest.id]?.text.isEmpty ?? true
-                                  ? (isDark ? const Color(0xFF909090) : Colors.grey[600])
-                                  : (isDark ? const Color(0xFFE1E1E1) : Colors.black87),
+                                  ? (isDark
+                                      ? const Color(0xFF909090)
+                                      : Colors.grey[600])
+                                  : (isDark
+                                      ? const Color(0xFFE1E1E1)
+                                      : Colors.black87),
                         ),
                       ),
                     ),
-                    Icon(Icons.arrow_drop_down, color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[600]),
+                    Icon(Icons.arrow_drop_down,
+                        color: isDark
+                            ? const Color(0xFFB0B0B0)
+                            : Colors.grey[600]),
                   ],
                 ),
               ),
@@ -429,10 +468,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
     final roomProvider = Provider.of<RoomProvider>(context, listen: false);
     final guestProvider = Provider.of<GuestProvider>(context, listen: false);
 
-    // Load rooms if not already loaded
-    if (roomProvider.rooms.isEmpty) {
-      await roomProvider.loadAll();
-    }
+    // Always reload rooms to get latest status from database
+    await roomProvider.loadAll();
 
     // Get all room numbers currently occupied by checked-in guests (excluding current guest)
     final occupiedRoomNumbers = guestProvider.guests
@@ -473,6 +510,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
       // Initialize controller if it doesn't exist
       _roomControllers[guest.id] ??= TextEditingController();
       _roomControllers[guest.id]!.text = selectedRoom.roomNum;
+      _roomIds[guest.id] = selectedRoom.id; // Store the room ID
       setState(() {});
     }
   }
@@ -480,6 +518,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
   Future<void> _checkInGuest(
       BuildContext context, Guest guest, GuestProvider provider) async {
     final roomNumber = _roomControllers[guest.id]?.text ?? '';
+    final roomProvider = Provider.of<RoomProvider>(context, listen: false);
 
     if (roomNumber.isEmpty) {
       EnhancedPopups.showEnhancedSnackBar(
@@ -521,7 +560,15 @@ class _CheckInScreenState extends State<CheckInScreen> {
     );
 
     if (confirmed == true) {
-      await provider.checkInGuest(guest.id, roomNumber: roomNumber);
+      await provider.checkInGuest(
+        guest.id,
+        roomNumber: roomNumber,
+        roomId: _roomIds[guest.id], // Pass the actual room ID
+      );
+
+      // Reload room data to update room status immediately
+      await roomProvider.loadAll();
+
       if (context.mounted) {
         EnhancedPopups.showEnhancedSnackBar(
           context,
