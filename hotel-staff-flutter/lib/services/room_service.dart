@@ -114,9 +114,9 @@ class RoomService {
         Uri.parse(baseUrl),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'action': 'update-status',
+          'action': 'updateRoomStatus',
           'room_id': roomId,
-          'status': status,
+          'status_code': status,
         }),
       );
 

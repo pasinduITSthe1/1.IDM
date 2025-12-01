@@ -147,15 +147,12 @@ class RoomProvider with ChangeNotifier {
       final success = await _roomService.updateRoomStatus(roomId, statusCode);
 
       if (success) {
-        // Update local state
-        final index = _rooms.indexWhere((r) => r.id == roomId);
-        if (index != -1) {
-          _rooms[index] = _rooms[index].copyWith(roomStatus: statusCode);
-          notifyListeners();
-        }
+        // Instead of trying to update local state, reload all rooms from server
+        // This ensures we get the correct status, currentStatus, and statusColor
+        await loadAll();
 
-        // Refresh statistics
-        loadStatistics();
+        // Also refresh statistics to update counts
+        await loadStatistics();
       }
 
       return success;

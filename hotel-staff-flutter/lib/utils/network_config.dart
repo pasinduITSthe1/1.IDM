@@ -14,7 +14,8 @@ class NetworkConfig {
   /// - Windows: Run `ipconfig` in Command Prompt, look for WiFi adapter IPv4 Address
   /// - Mac: Run `ifconfig` or check System Preferences > Network
   /// - Linux: Run `ip addr` or `ifconfig`
-  static const String computerIp = '10.0.1.26'; // 👈 CHANGE THIS ONLY
+  // static const String computerIp = '192.168.0.141'; // 👈 CHANGE THIS ONLY
+  static const String computerIp = '10.0.1.26'; //👈 CHANGE THIS ONLY
 
   // ============================================
   // Connection Type

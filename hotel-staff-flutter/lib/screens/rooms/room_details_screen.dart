@@ -291,18 +291,27 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                description,
-                maxLines: _isDescriptionExpanded
-                    ? null
-                    : (isLongDescription ? maxLines : null),
-                overflow: _isDescriptionExpanded
-                    ? null
-                    : (isLongDescription ? TextOverflow.ellipsis : null),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
-                  height: 1.5,
+              GestureDetector(
+                onTap: isLongDescription
+                    ? () {
+                        setState(() {
+                          _isDescriptionExpanded = !_isDescriptionExpanded;
+                        });
+                      }
+                    : null,
+                child: Text(
+                  description,
+                  maxLines: _isDescriptionExpanded
+                      ? null
+                      : (isLongDescription ? maxLines : null),
+                  overflow: _isDescriptionExpanded
+                      ? null
+                      : (isLongDescription ? TextOverflow.ellipsis : null),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? const Color(0xFFB0B0B0) : Colors.grey[700],
+                    height: 1.5,
+                  ),
                 ),
               ),
               if (isLongDescription) ...[
@@ -332,96 +341,336 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
 
   Widget _buildGuestSection(BuildContext context, bool isDark) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF2C2C2C), const Color(0xFF1E1E1E)]
-              : [Colors.orange[50]!, Colors.orange[100]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border:
-            isDark ? Border.all(color: Colors.orange.withOpacity(0.3)) : null,
+        border: Border.all(
+          color: isDark
+              ? Colors.orange.withOpacity(0.2)
+              : Colors.orange.withOpacity(0.1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.person, color: Colors.orange, size: 20),
+          // Enhanced Header
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [
+                        const Color(0xFF3A3A3A),
+                        const Color(0xFF2C2C2C),
+                      ]
+                    : [
+                        Colors.orange.withOpacity(0.05),
+                        Colors.orange.withOpacity(0.02),
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(width: 12),
-              Text(
-                'Current Guest',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
               ),
-            ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.orange.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.person_rounded,
+                    color: Colors.orange[600],
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'CURRENT GUEST',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? Colors.orange.withOpacity(0.8)
+                              : Colors.orange[700],
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.room.guestName!,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.green.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.green[600],
+                        size: 8,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        'Active',
+                        style: TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
-          _buildGuestInfoRow('Guest Name', widget.room.guestName!,
-              Icons.person_outline, isDark),
-          if (widget.room.checkInDate != null) ...[
-            const SizedBox(height: 12),
-            _buildGuestInfoRow('Check-in',
-                _formatDateTime(widget.room.checkInDate!), Icons.login, isDark),
-          ],
-          if (widget.room.checkOutDate != null) ...[
-            const SizedBox(height: 12),
-            _buildGuestInfoRow(
-                'Check-out',
-                _formatDateTime(widget.room.checkOutDate!),
-                Icons.logout,
-                isDark),
-          ],
-          if (widget.room.bookingId != null) ...[
-            const SizedBox(height: 12),
-            _buildGuestInfoRow('Booking ID', '#${widget.room.bookingId}',
-                Icons.confirmation_number, isDark),
-          ],
+
+          // Guest Details Section
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                if (widget.room.checkInDate != null)
+                  _buildEnhancedInfoRow(
+                    'Check-in Date',
+                    _formatDateTime(widget.room.checkInDate!),
+                    Icons.event_available_rounded,
+                    Colors.blue[600]!,
+                    isDark,
+                  ),
+
+                if (widget.room.checkOutDate != null) ...[
+                  const SizedBox(height: 8),
+                  _buildEnhancedInfoRow(
+                    'Check-out Date',
+                    _formatDateTime(widget.room.checkOutDate!),
+                    Icons.event_busy_rounded,
+                    Colors.purple[600]!,
+                    isDark,
+                  ),
+                ],
+
+                if (widget.room.bookingId != null) ...[
+                  const SizedBox(height: 8),
+                  _buildEnhancedInfoRow(
+                    'Booking Reference',
+                    '#${widget.room.bookingId}',
+                    Icons.confirmation_number_rounded,
+                    Colors.teal[600]!,
+                    isDark,
+                  ),
+                ],
+
+                // Duration Display
+                if (widget.room.checkInDate != null) ...[
+                  const SizedBox(height: 8),
+                  _buildDurationInfo(isDark),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildGuestInfoRow(
-      String label, String value, IconData icon, bool isDark) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.orange),
-        const SizedBox(width: 10),
-        Text(
-          '$label: ',
-          style: TextStyle(
-            fontSize: 13,
-            color: isDark ? const Color(0xFF808080) : Colors.grey[700],
-            fontWeight: FontWeight.w500,
-          ),
+  Widget _buildEnhancedInfoRow(
+      String label, String value, IconData icon, Color color, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isDark ? color.withOpacity(0.08) : color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
         ),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? const Color(0xFFE1E1E1) : Colors.black87,
-              fontWeight: FontWeight.w600,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 14,
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w500,
+                    color: isDark
+                        ? color.withOpacity(0.8)
+                        : color.withOpacity(0.9),
+                    letterSpacing: 0.1,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black87,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildDurationInfo(bool isDark) {
+    try {
+      final checkIn = DateTime.parse(widget.room.checkInDate!);
+      final now = DateTime.now();
+      final duration = now.difference(checkIn);
+      final days = duration.inDays;
+      final hours = duration.inHours % 24;
+
+      String durationText;
+      if (days > 0) {
+        durationText = days == 1 ? '1 day' : '$days days';
+        if (hours > 0) durationText += ' ${hours}h';
+      } else {
+        durationText = hours == 1 ? '1 hour' : '$hours hours';
+      }
+
+      return Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [
+                    Colors.orange.withOpacity(0.1),
+                    Colors.orange.withOpacity(0.05),
+                  ]
+                : [
+                    Colors.orange.withOpacity(0.08),
+                    Colors.orange.withOpacity(0.03),
+                  ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: Colors.orange.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                Icons.access_time_rounded,
+                color: Colors.orange[600],
+                size: 14,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Stay Duration',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w500,
+                      color: isDark
+                          ? Colors.orange.withOpacity(0.8)
+                          : Colors.orange[700],
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    durationText,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : Colors.black87,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      return const SizedBox.shrink();
+    }
+  }
+
+  String _formatDateTime(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.month}/${date.day}/${date.year}';
+    } catch (e) {
+      return dateString;
+    }
   }
 
   Widget _buildQuickActions(BuildContext context, bool isDark) {
@@ -547,9 +796,42 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
     if (success) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Room status updated successfully'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Room status updated successfully',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green[600],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+            elevation: 6,
+            duration: const Duration(seconds: 2),
           ),
         );
         // Go back to refresh the previous screen
@@ -559,8 +841,41 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.error ?? 'Failed to update room status'),
-            backgroundColor: Colors.red,
+            content: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.error_outline,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    provider.error ?? 'Failed to update room status',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+            elevation: 6,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -594,15 +909,6 @@ class _RoomDetailsScreenState extends State<RoomDetailsScreen> {
         return Icons.build;
       default:
         return Icons.help_outline;
-    }
-  }
-
-  String _formatDateTime(String dateString) {
-    try {
-      final date = DateTime.parse(dateString);
-      return '${date.month}/${date.day}/${date.year}';
-    } catch (e) {
-      return dateString;
     }
   }
 }

@@ -72,7 +72,7 @@ class RoomAPI {
                      AND hbd.id_status NOT IN (3, 7)
                     ) AS is_occupied,
                     
-                    -- Get guest info if occupied
+                    -- Get guest info from QloApps booking (if exists)
                     (SELECT CONCAT(c.firstname, ' ', c.lastname)
                      FROM qlo_htl_booking_detail hbd
                      JOIN qlo_orders o ON hbd.id_order = o.id_order
@@ -81,18 +81,35 @@ class RoomAPI {
                      AND DATE(:today2) BETWEEN DATE(hbd.date_from) AND DATE(hbd.date_to)
                      AND hbd.id_status NOT IN (3, 7)
                      LIMIT 1
-                    ) AS guest_name,
+                    ) AS booking_guest_name,
                     
-                    -- Get check-in date
+                    -- Get guest info from our app check-ins (priority for occupied rooms)
+                    (SELECT CONCAT(c.firstname, ' ', c.lastname)
+                     FROM guest_checkins gc
+                     JOIN qlo_customer c ON gc.id_customer = c.id_customer
+                     WHERE gc.id_room = hr.id
+                     ORDER BY gc.created_at DESC
+                     LIMIT 1
+                    ) AS checkin_guest_name,
+                    
+                    -- Get check-in time from our app
+                    (SELECT gc.check_in_time
+                     FROM guest_checkins gc
+                     WHERE gc.id_room = hr.id
+                     ORDER BY gc.created_at DESC
+                     LIMIT 1
+                    ) AS app_check_in_date,
+                    
+                    -- Get check-in date from booking
                     (SELECT DATE(hbd.date_from)
                      FROM qlo_htl_booking_detail hbd
                      WHERE hbd.id_room = hr.id
                      AND DATE(:today3) BETWEEN DATE(hbd.date_from) AND DATE(hbd.date_to)
                      AND hbd.id_status NOT IN (3, 7)
                      LIMIT 1
-                    ) AS check_in_date,
+                    ) AS booking_check_in_date,
                     
-                    -- Get check-out date
+                    -- Get check-out date from booking
                     (SELECT DATE(hbd.date_to)
                      FROM qlo_htl_booking_detail hbd
                      WHERE hbd.id_room = hr.id
@@ -129,6 +146,16 @@ class RoomAPI {
         
         // Add computed fields
         foreach ($rooms as &$room) {
+            // Merge guest data - prioritize app check-ins over bookings
+            $room['guest_name'] = $room['checkin_guest_name'] ?: $room['booking_guest_name'];
+            $room['check_in_date'] = $room['app_check_in_date'] ?: $room['booking_check_in_date'];
+            
+            // Clean up temporary fields
+            unset($room['checkin_guest_name']);
+            unset($room['booking_guest_name']);
+            unset($room['app_check_in_date']);
+            unset($room['booking_check_in_date']);
+            
             // Determine current status - PRIORITIZE room_status field over booking check
             // Status codes: 1=Available, 2=Occupied, 3=Cleaning, 4=Maintenance
             if ($room['room_status'] == ROOM_STATUS_OCCUPIED) {
