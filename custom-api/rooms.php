@@ -64,12 +64,29 @@ class RoomAPI {
                     pl.name AS room_type_name,
                     pl.description,
                     
-                    -- Check if room is currently occupied
-                    (SELECT COUNT(*) 
-                     FROM qlo_htl_booking_detail hbd 
-                     WHERE hbd.id_room = hr.id 
-                     AND DATE(:today1) BETWEEN DATE(hbd.date_from) AND DATE(hbd.date_to)
-                     AND hbd.id_status NOT IN (3, 7)
+                    -- Check if room is currently occupied (from booking OR app check-in)
+                    (SELECT 
+                        CASE 
+                            -- First check room status directly (set by app check-in)
+                            WHEN hr.id_status = 2 THEN 1
+                            -- Then check active bookings
+                            WHEN EXISTS (
+                                SELECT 1 FROM qlo_htl_booking_detail hbd 
+                                WHERE hbd.id_room = hr.id 
+                                AND DATE(:today1) BETWEEN DATE(hbd.date_from) AND DATE(hbd.date_to)
+                                AND hbd.id_status NOT IN (3, 7)
+                            ) THEN 1
+                            -- Finally check app check-ins without checkout
+                            WHEN EXISTS (
+                                SELECT 1 FROM guest_checkins gc
+                                WHERE gc.id_room = hr.id
+                                AND NOT EXISTS (
+                                    SELECT 1 FROM guest_checkouts gco 
+                                    WHERE gco.id_checkin = gc.id
+                                )
+                            ) THEN 1
+                            ELSE 0
+                        END
                     ) AS is_occupied,
                     
                     -- Get guest info from QloApps booking (if exists)
@@ -83,19 +100,27 @@ class RoomAPI {
                      LIMIT 1
                     ) AS booking_guest_name,
                     
-                    -- Get guest info from our app check-ins (priority for occupied rooms)
+                    -- Get guest info from our app check-ins (only if not checked out)
                     (SELECT CONCAT(c.firstname, ' ', c.lastname)
                      FROM guest_checkins gc
                      JOIN qlo_customer c ON gc.id_customer = c.id_customer
                      WHERE gc.id_room = hr.id
+                     AND NOT EXISTS (
+                         SELECT 1 FROM guest_checkouts gco 
+                         WHERE gco.id_checkin = gc.id
+                     )
                      ORDER BY gc.created_at DESC
                      LIMIT 1
                     ) AS checkin_guest_name,
                     
-                    -- Get check-in time from our app
+                    -- Get check-in time from our app (only if not checked out)
                     (SELECT gc.check_in_time
                      FROM guest_checkins gc
                      WHERE gc.id_room = hr.id
+                     AND NOT EXISTS (
+                         SELECT 1 FROM guest_checkouts gco 
+                         WHERE gco.id_checkin = gc.id
+                     )
                      ORDER BY gc.created_at DESC
                      LIMIT 1
                     ) AS app_check_in_date,

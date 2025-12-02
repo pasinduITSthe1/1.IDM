@@ -76,16 +76,6 @@ class _RoomDashboardScreenState extends State<RoomDashboardScreen> {
                       ),
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.refresh,
-                          color: Colors.white, size: 24),
-                      onPressed: () {
-                        context.read<RoomProvider>().refresh();
-                      },
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 8),
                     PopupMenuButton<String>(
                       icon: const Icon(Icons.more_vert,
                           color: Colors.white, size: 24),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/room_change.dart';
 import '../../providers/room_change_provider.dart';
+import '../../providers/guest_provider.dart';
 
 class RoomChangeDetailsScreen extends StatelessWidget {
   final RoomChange roomChange;
@@ -429,27 +430,34 @@ class RoomChangeDetailsScreen extends StatelessWidget {
   }
 
   Future<void> _completeRoomChange(BuildContext context, String notes) async {
-    final provider = Provider.of<RoomChangeProvider>(context, listen: false);
+    final roomChangeProvider =
+        Provider.of<RoomChangeProvider>(context, listen: false);
+    final guestProvider = Provider.of<GuestProvider>(context, listen: false);
 
-    final success = await provider.completeRoomChange(
+    final success = await roomChangeProvider.completeRoomChange(
       roomChange.id,
       notes: notes.isNotEmpty ? notes : null,
     );
 
     if (context.mounted) {
       if (success) {
+        // Refresh guest data to show updated room assignments
+        await guestProvider.loadGuests();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Room change completed successfully'),
+            content:
+                Text('Room change completed successfully! Guest room updated.'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
           ),
         );
         Navigator.of(context).pop(); // Go back to list
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(provider.errorMessage ?? 'Failed to complete room change'),
+            content: Text(roomChangeProvider.errorMessage ??
+                'Failed to complete room change'),
             backgroundColor: Colors.red,
           ),
         );

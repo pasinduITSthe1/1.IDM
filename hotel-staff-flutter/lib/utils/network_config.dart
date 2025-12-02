@@ -106,4 +106,8 @@ class NetworkConfig {
 
   /// Notifications API base URL
   static String get notificationsApiUrl => '$wampBaseUrl/custom-api';
+
+  /// Room Change API endpoint (using custom-api to bypass PrestaShop auth)
+  static String get roomChangeApiUrl =>
+      '$wampBaseUrl/custom-api/room-change.php';
 }

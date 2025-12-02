@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/room_change_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/guest_provider.dart';
 import '../../models/room_change.dart';
 
 class CreateRoomChangeScreen extends StatefulWidget {
@@ -400,10 +401,20 @@ class _CreateRoomChangeScreenState extends State<CreateRoomChangeScreen> {
 
     if (mounted) {
       if (success) {
+        // If room change was marked as completed, refresh guest data
+        if (_markAsCompleted) {
+          final guestProvider =
+              Provider.of<GuestProvider>(context, listen: false);
+          await guestProvider.loadGuests();
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Room change created successfully'),
+          SnackBar(
+            content: Text(_markAsCompleted
+                ? 'Room change completed! Guest room updated.'
+                : 'Room change request created successfully'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
           ),
         );
         Navigator.of(context).pop(); // Go back to list

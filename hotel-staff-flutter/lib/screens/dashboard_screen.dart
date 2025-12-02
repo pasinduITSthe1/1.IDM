@@ -314,8 +314,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             title: 'Room\nChange',
                                             icon: Icons.swap_horiz_rounded,
                                             color: const Color(0xFF0984E3),
-                                            onTap: () =>
-                                                context.push('/room-change'))),
+                                            onTap: () => context
+                                                .push('/room-change/create'))),
                                     SizedBox(width: screenWidth * 0.03),
                                     Expanded(
                                         child: _CompactActionCard(

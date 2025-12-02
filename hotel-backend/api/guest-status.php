@@ -58,19 +58,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['customer_id'])) {
     }
     
     // Check if guest is currently checked in
-    $checkinSql = "SELECT * FROM guest_checkins 
-                   WHERE id_customer = $customer_id 
-                   ORDER BY created_at DESC LIMIT 1";
+    $checkinSql = "SELECT gc.*, r.room_num as current_room_number
+                   FROM guest_checkins gc
+                   LEFT JOIN qlo_htl_room_information r ON gc.id_room = r.id
+                   WHERE gc.id_customer = $customer_id 
+                   AND NOT EXISTS (SELECT 1 FROM guest_checkouts WHERE id_checkin = gc.id)
+                   ORDER BY gc.created_at DESC LIMIT 1";
     $checkinResult = $conn->query($checkinSql);
     
     if ($checkinResult->num_rows > 0) {
         $checkin = $checkinResult->fetch_assoc();
+        // Use current_room_number from JOIN if available, fallback to stored room_number
+        $roomNumber = $checkin['current_room_number'] ?? $checkin['room_number'];
+        
         echo json_encode([
             'success' => true,
             'customer_id' => $customer_id,
             'status' => 'checked_in',
             'checkin_id' => $checkin['id'],
-            'room_number' => $checkin['room_number'],
+            'room_number' => $roomNumber,
             'check_in_time' => $checkin['check_in_time'],
             'id_room' => $checkin['id_room']
         ]);
@@ -119,19 +125,26 @@ else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'final_bill' => $checkout['final_bill']
             ];
         } else {
-            // Check for check-in
-            $checkinSql = "SELECT * FROM guest_checkins 
-                          WHERE id_customer = $customer_id 
-                          ORDER BY created_at DESC LIMIT 1";
+            // Check for check-in (with room number from JOIN)
+            $checkinSql = "SELECT gc.*, r.room_num as current_room_number
+                          FROM guest_checkins gc
+                          LEFT JOIN qlo_htl_room_information r ON gc.id_room = r.id
+                          WHERE gc.id_customer = $customer_id 
+                          AND NOT EXISTS (SELECT 1 FROM guest_checkouts WHERE id_checkin = gc.id)
+                          ORDER BY gc.created_at DESC LIMIT 1";
             $checkinResult = $conn->query($checkinSql);
             
             if ($checkinResult->num_rows > 0) {
                 $checkin = $checkinResult->fetch_assoc();
+                // Use current_room_number from JOIN if available, fallback to stored room_number
+                $roomNumber = $checkin['current_room_number'] ?? $checkin['room_number'];
+                
                 $status = 'checked_in';
                 $details = [
                     'checkin_id' => $checkin['id'],
-                    'room_number' => $checkin['room_number'],
-                    'check_in_time' => $checkin['check_in_time']
+                    'room_number' => $roomNumber,
+                    'check_in_time' => $checkin['check_in_time'],
+                    'id_room' => $checkin['id_room']
                 ];
             }
         }
