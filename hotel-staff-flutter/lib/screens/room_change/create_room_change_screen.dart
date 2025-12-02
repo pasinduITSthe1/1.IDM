@@ -21,9 +21,11 @@ class _CreateRoomChangeScreenState extends State<CreateRoomChangeScreen> {
 
   final _reasonController = TextEditingController();
   final _notesController = TextEditingController();
+  final _searchController = TextEditingController();
 
   bool _markAsCompleted = false;
   bool _isSubmitting = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -37,6 +39,7 @@ class _CreateRoomChangeScreenState extends State<CreateRoomChangeScreen> {
   void dispose() {
     _reasonController.dispose();
     _notesController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -58,136 +61,342 @@ class _CreateRoomChangeScreenState extends State<CreateRoomChangeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dateFormat = DateFormat('MMM dd, yyyy');
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Room Change'),
-      ),
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
       body: Consumer<RoomChangeProvider>(
         builder: (context, provider, child) {
-          return Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                // Instructions
-                Card(
-                  color: Colors.blue[50],
-                  child: const Padding(
-                    padding: EdgeInsets.all(16),
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                        const Color(0xFF1E1E1E),
+                        const Color(0xFF2C2C2C),
+                      ]
+                    : [
+                        const Color(0xFFFF6B35),
+                        const Color(0xFFFF8C42),
+                      ],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline, color: Colors.blue),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Select the guest\'s current room and the new room to move them to.',
-                            style: TextStyle(fontSize: 13),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back,
+                              color: Colors.white, size: 24),
+                          onPressed: () => Navigator.of(context).pop(),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Create Room Change',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
 
-                // Step 1: Select Current Room
-                const Text(
-                  'Step 1: Select Current Room',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-
-                if (provider.isLoadingOccupied)
-                  const Center(child: CircularProgressIndicator())
-                else if (provider.occupiedRooms.isEmpty)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
+                  // Info Card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Row(
                         children: [
-                          const Text('No occupied rooms found'),
-                          const SizedBox(height: 8),
-                          TextButton.icon(
-                            onPressed: _loadOccupiedRooms,
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Refresh'),
+                          Icon(Icons.info_outline, color: Colors.white, size: 20),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Select guest\'s current room and new room to move them to.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  )
-                else
-                  DropdownButtonFormField<OccupiedRoom>(
-                    value: _selectedOccupiedRoom,
-                    decoration: const InputDecoration(
-                      labelText: 'Current Room',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.meeting_room),
-                    ),
-                    items: provider.occupiedRooms.map((room) {
-                      return DropdownMenuItem(
-                        value: room,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // White Content Card
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: ListView(
+                          padding: const EdgeInsets.all(20),
                           children: [
-                            Text(
-                              'Room ${room.roomNum} - ${room.guestName}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                            // Search Bar
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                                ),
+                              ),
+                              child: TextField(
+                                controller: _searchController,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _searchQuery = value;
+                                  });
+                                },
+                                style: TextStyle(
+                                  color: isDark ? const Color(0xFFE1E1E1) : const Color(0xFF1F2937),
+                                  fontSize: 14,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'Search by guest name...',
+                                  hintStyle: TextStyle(
+                                    color: isDark ? Colors.grey[500] : Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.search,
+                                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                    size: 20,
+                                  ),
+                                  suffixIcon: _searchQuery.isNotEmpty
+                                      ? IconButton(
+                                          icon: Icon(
+                                            Icons.clear,
+                                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                            size: 20,
+                                          ),
+                                          onPressed: () {
+                                            _searchController.clear();
+                                            setState(() {
+                                              _searchQuery = '';
+                                            });
+                                          },
+                                        )
+                                      : null,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
                             ),
+                            const SizedBox(height: 20),
+
+                            // Step 1: Select Current Room
+                            _buildSectionHeader('Step 1: Select Current Room', Icons.room_preferences),
+                            const SizedBox(height: 12),
+
+                            if (provider.isLoadingOccupied)
+                              _buildLoadingCard()
+                            else if (provider.occupiedRooms.isEmpty)
+                              _buildEmptyCard(
+                                'No occupied rooms found',
+                                'There are no guests currently checked in',
+                                Icons.hotel_outlined,
+                                _loadOccupiedRooms,
+                              )
+                            else
+                              Builder(
+                                builder: (context) {
+                                  // Filter rooms by search query
+                                  final filteredRooms = provider.occupiedRooms.where((room) {
+                                    if (_searchQuery.isEmpty) return true;
+                                    return room.guestName.toLowerCase().contains(_searchQuery.toLowerCase());
+                                  }).toList();
+
+                                  if (filteredRooms.isEmpty) {
+                                    return _buildEmptyCard(
+                                      'No matching guests',
+                                      'No guests found matching "$_searchQuery"',
+                                      Icons.person_search,
+                                      () {
+                                        _searchController.clear();
+                                        setState(() {
+                                          _searchQuery = '';
+                                        });
+                                      },
+                                    );
+                                  }
+
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    child: DropdownButtonFormField<OccupiedRoom>(
+                                      value: _selectedOccupiedRoom,
+                                      decoration: InputDecoration(
+                                        labelText: 'Current Room',
+                                        labelStyle: TextStyle(
+                                          color: isDark ? Colors.grey[400] : Colors.grey[700],
+                                          fontSize: 14,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: const Color(0xFFFF6B35),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        prefixIcon: const Icon(Icons.meeting_room,
+                                            color: Color(0xFFFF6B35), size: 20),
+                                        filled: true,
+                                        fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
+                                        contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 14,
+                                        ),
+                                      ),
+                                      dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                                      isDense: true,
+                                      items: filteredRooms.map((room) {
+                                        return DropdownMenuItem(
+                                          value: room,
+                                          child: Text(
+                                            'Room ${room.roomNum} - ${room.guestName}',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedOccupiedRoom = value;
+                                          _selectedNewRoom = null;
+                                        });
+                                        if (value != null) {
+                                          _loadAvailableRooms();
+                                        }
+                                      },
+                                      validator: (value) {
+                                        if (value == null) {
+                                          return 'Please select the current room';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+
+                            if (_selectedOccupiedRoom != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2C2C2C) : Colors.blue[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark ? Colors.blue.withOpacity(0.3) : Colors.blue[200]!,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.person, 
+                              size: 20, 
+                              color: isDark ? Colors.blue[300] : Colors.blue[700],
+                            ),
+                            const SizedBox(width: 8),
                             Text(
-                              '${dateFormat.format(room.dateFrom)} to ${dateFormat.format(room.dateTo)}',
+                              _selectedOccupiedRoom!.guestName,
                               style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: isDark ? Colors.white : Colors.blue[900],
+                              ),
                             ),
                           ],
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedOccupiedRoom = value;
-                        _selectedNewRoom = null; // Reset new room selection
-                      });
-                      if (value != null) {
-                        _loadAvailableRooms();
-                      }
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select the current room';
-                      }
-                      return null;
-                    },
-                  ),
-
-                if (_selectedOccupiedRoom != null) ...[
-                  const SizedBox(height: 8),
-                  Card(
-                    color: Colors.grey[100],
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Guest: ${_selectedOccupiedRoom!.guestName}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Room Type: ${_selectedOccupiedRoom!.roomType ?? 'N/A'}',
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                          Text(
-                            'Stay: ${dateFormat.format(_selectedOccupiedRoom!.dateFrom)} - ${dateFormat.format(_selectedOccupiedRoom!.dateTo)}',
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.category, 
+                              size: 18, 
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Room Type: ${_selectedOccupiedRoom!.roomType ?? 'N/A'}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, 
+                              size: 18, 
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Stay: ${dateFormat.format(_selectedOccupiedRoom!.dateFrom)} - ${dateFormat.format(_selectedOccupiedRoom!.dateTo)}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -195,71 +404,77 @@ class _CreateRoomChangeScreenState extends State<CreateRoomChangeScreen> {
                 const SizedBox(height: 24),
 
                 // Step 2: Select New Room
-                const Text(
-                  'Step 2: Select New Room',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                _buildSectionHeader('Step 2: Select New Room', Icons.hotel),
                 const SizedBox(height: 12),
 
                 if (_selectedOccupiedRoom == null)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Please select a current room first',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ),
+                  _buildInfoCard(
+                    'Please select a current room first',
+                    Icons.arrow_upward,
+                    isDark,
                   )
                 else if (provider.isLoadingAvailable)
-                  const Center(child: CircularProgressIndicator())
+                  _buildLoadingCard()
                 else if (provider.availableRooms.isEmpty)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          const Text(
-                              'No available rooms found for this date range'),
-                          const SizedBox(height: 8),
-                          TextButton.icon(
-                            onPressed: _loadAvailableRooms,
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Refresh'),
-                          ),
-                        ],
-                      ),
-                    ),
+                  _buildEmptyCard(
+                    'No available rooms',
+                    'No rooms available for the selected dates',
+                    Icons.bed_outlined,
+                    _loadAvailableRooms,
                   )
                 else
-                  DropdownButtonFormField<AvailableRoom>(
-                    value: _selectedNewRoom,
-                    decoration: const InputDecoration(
-                      labelText: 'New Room',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.meeting_room),
-                    ),
-                    items: provider.availableRooms.map((room) {
-                      return DropdownMenuItem(
-                        value: room,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Room ${room.roomNum}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              room.roomType ?? 'Standard Room',
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
-                            ),
-                          ],
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
-                      );
-                    }).toList(),
+                      ],
+                    ),
+                    child: DropdownButtonFormField<AvailableRoom>(
+                      value: _selectedNewRoom,
+                      decoration: InputDecoration(
+                        labelText: 'New Room',
+                        labelStyle: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[700],
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.green, width: 2),
+                        ),
+                        prefixIcon: const Icon(Icons.hotel, color: Colors.green),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
+                      ),
+                      dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                      isDense: true,
+                      items: provider.availableRooms.map((room) {
+                        return DropdownMenuItem(
+                          value: room,
+                          child: Text(
+                            'Room ${room.roomNum}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
                     onChanged: (value) {
                       setState(() {
                         _selectedNewRoom = value;
@@ -272,82 +487,265 @@ class _CreateRoomChangeScreenState extends State<CreateRoomChangeScreen> {
                       return null;
                     },
                   ),
+                  ),
+
+                if (_selectedNewRoom != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2C2C2C) : Colors.green[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark ? Colors.green.withOpacity(0.3) : Colors.green[200]!,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.check_circle, 
+                              size: 20, 
+                              color: isDark ? Colors.green[300] : Colors.green[700],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Selected Room: ${_selectedNewRoom!.roomNum}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: isDark ? Colors.white : Colors.green[900],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.category, 
+                              size: 18, 
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Type: ${_selectedNewRoom!.roomType ?? 'N/A'}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 24),
 
                 // Step 3: Reason for Change
-                const Text(
-                  'Step 3: Reason for Change',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                _buildSectionHeader('Step 3: Provide Reason for Change', Icons.edit_note),
                 const SizedBox(height: 12),
 
-                TextFormField(
-                  controller: _reasonController,
-                  decoration: const InputDecoration(
-                    labelText: 'Reason for Room Change *',
-                    hintText:
-                        'e.g., Air conditioning malfunction, Guest request, etc.',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.description),
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  maxLines: 3,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please provide a reason for the room change';
-                    }
-                    return null;
-                  },
+                  child: TextFormField(
+                    controller: _reasonController,
+                    decoration: InputDecoration(
+                      labelText: 'Reason for Room Change',
+                      labelStyle: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[700],
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.orange, width: 2),
+                      ),
+                      prefixIcon: const Icon(Icons.edit_note, color: Colors.orange),
+                      hintText: 'e.g., Air conditioning malfunction, Guest request',
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.grey[600] : Colors.grey[400],
+                      ),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
+                    ),
+                    maxLines: 3,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please provide a reason for the room change';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 // Additional Notes
-                TextFormField(
-                  controller: _notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Additional Notes (Optional)',
-                    hintText: 'Any additional information...',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.note),
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  maxLines: 2,
+                  child: TextFormField(
+                    controller: _notesController,
+                    decoration: InputDecoration(
+                      labelText: 'Additional Notes (Optional)',
+                      labelStyle: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[700],
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[600]!, width: 2),
+                      ),
+                      prefixIcon: Icon(Icons.note, color: Colors.grey[600]),
+                      hintText: 'Any additional information...',
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.grey[600] : Colors.grey[400],
+                      ),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50],
+                    ),
+                    maxLines: 2,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 // Mark as Completed Checkbox
-                CheckboxListTile(
-                  title: const Text('Mark as Completed'),
-                  subtitle: const Text(
-                    'Check this if the guest has already moved to the new room',
-                    style: TextStyle(fontSize: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                    ),
                   ),
-                  value: _markAsCompleted,
-                  onChanged: (value) {
-                    setState(() {
-                      _markAsCompleted = value ?? false;
-                    });
-                  },
+                  child: CheckboxListTile(
+                    title: Text(
+                      'Mark as Completed',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Check this if the guest has already moved to the new room',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                    value: _markAsCompleted,
+                    onChanged: (value) {
+                      setState(() {
+                        _markAsCompleted = value ?? false;
+                      });
+                    },
+                    activeColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
 
                 // Submit Button
-                ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submitRoomChange,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
+                Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: _isSubmitting
+                          ? [Colors.grey, Colors.grey[600]!]
+                          : [const Color(0xFFFF6B35), const Color(0xFFFF8C42)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _isSubmitting 
+                            ? Colors.grey.withOpacity(0.3)
+                            : const Color(0xFFFF6B35).withOpacity(0.4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Create Room Change',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitRoomChange,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle, size: 24, color: Colors.white),
+                              SizedBox(width: 12),
+                              Text(
+                                'Create Room Change',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
-              ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -429,4 +827,115 @@ class _CreateRoomChangeScreenState extends State<CreateRoomChangeScreen> {
       }
     }
   }
+
+  // Helper Widget Methods
+  Widget _buildSectionHeader(String title, IconData icon) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard(String message, IconData icon, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.grey[600]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingCard() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.0),
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget _buildEmptyCard(
+      String title, String message, IconData icon, VoidCallback onRetry) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 48, color: Colors.grey[400]),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            message,
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Refresh'),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFFF6B35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
