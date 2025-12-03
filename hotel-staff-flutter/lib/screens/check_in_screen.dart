@@ -19,6 +19,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
   String _searchQuery = '';
   final Map<String, TextEditingController> _roomControllers = {};
   final Map<String, int> _roomIds = {}; // Store room IDs by guest ID
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   void dispose() {
@@ -26,6 +27,74 @@ class _CheckInScreenState extends State<CheckInScreen> {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  void _showMessage(String message, PopupType type) {
+    _scaffoldMessengerKey.currentState?.clearSnackBars();
+    _scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                type == PopupType.success
+                    ? Icons.check_circle_rounded
+                    : type == PopupType.error
+                        ? Icons.error_rounded
+                        : type == PopupType.warning
+                            ? Icons.warning_rounded
+                            : Icons.info_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    type == PopupType.success
+                        ? 'Success'
+                        : type == PopupType.error
+                            ? 'Error'
+                            : type == PopupType.warning
+                                ? 'Warning'
+                                : 'Info',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    message,
+                    style: const TextStyle(fontSize: 13, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: type == PopupType.success
+            ? const Color(0xFF10B981)
+            : type == PopupType.error
+                ? const Color(0xFFEF4444)
+                : type == PopupType.warning
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFF3B82F6),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   @override
@@ -42,185 +111,189 @@ class _CheckInScreenState extends State<CheckInScreen> {
             (g.phone?.contains(_searchQuery) ?? false))
         .toList();
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    const Color(0xFF1E1E1E),
-                    const Color(0xFF2C2C2C),
-                  ]
-                : [
-                    AppTheme.primaryOrange,
-                    AppTheme.secondaryOrange,
-                  ],
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: Scaffold(
+        backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [
+                      const Color(0xFF1E1E1E),
+                      const Color(0xFF2C2C2C),
+                    ]
+                  : [
+                      AppTheme.primaryOrange,
+                      AppTheme.secondaryOrange,
+                    ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back,
-                          color: Colors.white, size: 24),
-                      onPressed: () => context.pop(),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Check-In',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back,
+                            color: Colors.white, size: 24),
+                        onPressed: () => context.pop(),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.25),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${pendingGuests.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Check-In',
+                        style: TextStyle(
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          color: Colors.white,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${pendingGuests.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  child: TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    style: TextStyle(
-                      color: isDark
-                          ? const Color(0xFFE1E1E1)
-                          : const Color(0xFF1F2937),
-                      fontSize: 14,
+                ),
+
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    decoration: InputDecoration(
-                      hintText: 'Search guests...',
-                      hintStyle: TextStyle(
-                        color:
-                            isDark ? const Color(0xFF707070) : Colors.grey[400],
-                        fontSize: 13,
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      style: TextStyle(
+                        color: isDark
+                            ? const Color(0xFFE1E1E1)
+                            : const Color(0xFF1F2937),
+                        fontSize: 14,
                       ),
-                      prefixIcon: Icon(Icons.search,
+                      decoration: InputDecoration(
+                        hintText: 'Search guests...',
+                        hintStyle: TextStyle(
                           color: isDark
                               ? const Color(0xFF707070)
                               : Colors.grey[400],
-                          size: 20),
-                      filled: true,
-                      fillColor:
-                          isDark ? const Color(0xFF2C2C2C) : Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
+                          fontSize: 13,
+                        ),
+                        prefixIcon: Icon(Icons.search,
+                            color: isDark
+                                ? const Color(0xFF707070)
+                                : Colors.grey[400],
+                            size: 20),
+                        filled: true,
+                        fillColor:
+                            isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 14),
+                const SizedBox(height: 14),
 
-              // Pending Guests List
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF121212) : Colors.grey[50],
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
+                // Pending Guests List
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF121212) : Colors.grey[50],
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
+                      ),
                     ),
-                  ),
-                  child: pendingGuests.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.check_circle_outline,
-                                size: 80,
-                                color: isDark
-                                    ? const Color(0xFF404040)
-                                    : Colors.grey[300],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _searchQuery.isEmpty
-                                    ? 'No pending check-ins'
-                                    : 'No matching guests',
-                                style: TextStyle(
-                                  fontSize: 18,
+                    child: pendingGuests.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.check_circle_outline,
+                                  size: 80,
                                   color: isDark
-                                      ? const Color(0xFFB0B0B0)
-                                      : Colors.grey[600],
+                                      ? const Color(0xFF404040)
+                                      : Colors.grey[300],
                                 ),
-                              ),
-                              if (_searchQuery.isEmpty) ...[
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 16),
                                 Text(
-                                  'All guests have been checked in!',
+                                  _searchQuery.isEmpty
+                                      ? 'No pending check-ins'
+                                      : 'No matching guests',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 18,
                                     color: isDark
-                                        ? const Color(0xFF808080)
-                                        : Colors.grey[500],
+                                        ? const Color(0xFFB0B0B0)
+                                        : Colors.grey[600],
                                   ),
                                 ),
+                                if (_searchQuery.isEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'All guests have been checked in!',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? const Color(0xFF808080)
+                                          : Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: pendingGuests.length,
+                            itemBuilder: (context, index) {
+                              final guest = pendingGuests[index];
+                              return _buildGuestCard(
+                                  context, guest, guestProvider, isDark);
+                            },
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: pendingGuests.length,
-                          itemBuilder: (context, index) {
-                            final guest = pendingGuests[index];
-                            return _buildGuestCard(
-                                context, guest, guestProvider, isDark);
-                          },
-                        ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -491,11 +564,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
     if (!context.mounted) return;
 
     if (availableRooms.isEmpty) {
-      EnhancedPopups.showEnhancedSnackBar(
-        context,
-        message: 'No available rooms found',
-        type: PopupType.error,
-      );
+      _showMessage('No available rooms found', PopupType.error);
       return;
     }
 
@@ -521,11 +590,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
     final roomProvider = Provider.of<RoomProvider>(context, listen: false);
 
     if (roomNumber.isEmpty) {
-      EnhancedPopups.showEnhancedSnackBar(
-        context,
-        message: 'Please select a room',
-        type: PopupType.error,
-      );
+      _showMessage('Please select a room', PopupType.error);
       return;
     }
 
@@ -540,14 +605,10 @@ class _CheckInScreenState extends State<CheckInScreen> {
         .toList();
 
     if (guestsInRoom.isNotEmpty) {
-      if (context.mounted) {
-        EnhancedPopups.showEnhancedSnackBar(
-          context,
-          message:
-              'Room $roomNumber is already occupied by ${guestsInRoom.first.fullName}',
-          type: PopupType.error,
-        );
-      }
+      _showMessage(
+        'Room $roomNumber is already occupied by ${guestsInRoom.first.fullName}',
+        PopupType.error,
+      );
       return;
     }
 
@@ -569,13 +630,10 @@ class _CheckInScreenState extends State<CheckInScreen> {
       // Reload room data to update room status immediately
       await roomProvider.loadAll();
 
-      if (context.mounted) {
-        EnhancedPopups.showEnhancedSnackBar(
-          context,
-          message: '${guest.fullName} checked in to Room $roomNumber!',
-          type: PopupType.success,
-        );
-      }
+      _showMessage(
+        '${guest.fullName} checked in to Room $roomNumber!',
+        PopupType.success,
+      );
     }
   }
 }

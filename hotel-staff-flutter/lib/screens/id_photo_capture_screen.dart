@@ -84,7 +84,8 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
 
     _cameraController = CameraController(
       cameras.first,
-      ResolutionPreset.high,
+      ResolutionPreset
+          .medium, // Reduced from 'high' to minimize buffer pressure
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
@@ -107,6 +108,9 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
     setState(() => _isCapturing = true);
 
     try {
+      // Pause preview to reduce buffer usage during processing
+      await _cameraController!.pausePreview();
+
       // Capture full image
       final image = await _cameraController!.takePicture();
 
@@ -116,6 +120,12 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
       if (croppedPath == null) {
         _showError('Failed to crop image');
         setState(() => _isCapturing = false);
+        // Resume preview on error
+        if (mounted && _cameraController != null) {
+          try {
+            await _cameraController!.resumePreview();
+          } catch (_) {}
+        }
         return;
       }
 
@@ -163,6 +173,12 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
       }
     } catch (e) {
       _showError('Failed to capture photo: $e');
+      // Resume preview on error
+      if (mounted && _cameraController != null) {
+        try {
+          await _cameraController!.resumePreview();
+        } catch (_) {}
+      }
     } finally {
       setState(() => _isCapturing = false);
     }
@@ -297,6 +313,13 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
   }
 
   @override
+  void deactivate() {
+    // Pause camera when screen becomes inactive to prevent buffer overflow
+    _cameraController?.pausePreview();
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     _cameraController?.dispose();
@@ -393,7 +416,7 @@ class _IDPhotoCaptureScreenState extends State<IDPhotoCaptureScreen> {
         children: [
           // Back Button
           IconButton(
-            onPressed: () => context.pop(),
+            onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 8),

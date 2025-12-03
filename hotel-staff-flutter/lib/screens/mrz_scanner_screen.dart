@@ -23,6 +23,7 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
   CameraController? _cameraController;
   final TextRecognizer _textRecognizer = TextRecognizer();
   final ImagePicker _imagePicker = ImagePicker();
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   // State management
   bool _isProcessing = false;
@@ -33,7 +34,7 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
 
   // Multi-frame analysis
   final List<Map<String, String>> _scanResults = [];
-  final int _maxFrames = 1; // Reduced to 1 for faster scanning (like original)
+  final int _maxFrames = 1; // Single frame capture for immediate results
 
   @override
   void initState() {
@@ -57,7 +58,8 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
 
     _cameraController = CameraController(
       cameras.first,
-      ResolutionPreset.high,
+      ResolutionPreset
+          .high, // High resolution needed for clear MRZ text detection
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
@@ -80,6 +82,74 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
     } catch (e) {
       debugPrint('Flash toggle error: $e');
     }
+  }
+
+  void _showMessage(String message, PopupType type) {
+    _scaffoldMessengerKey.currentState?.clearSnackBars();
+    _scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                type == PopupType.success
+                    ? Icons.check_circle_rounded
+                    : type == PopupType.error
+                        ? Icons.error_rounded
+                        : type == PopupType.warning
+                            ? Icons.warning_rounded
+                            : Icons.info_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    type == PopupType.success
+                        ? 'Success'
+                        : type == PopupType.error
+                            ? 'Error'
+                            : type == PopupType.warning
+                                ? 'Warning'
+                                : 'Info',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    message,
+                    style: const TextStyle(fontSize: 13, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: type == PopupType.success
+            ? const Color(0xFF10B981)
+            : type == PopupType.error
+                ? const Color(0xFFEF4444)
+                : type == PopupType.warning
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFF3B82F6),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   // FEATURE 3: Gallery Upload Option
@@ -115,13 +185,27 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
     });
 
     try {
+      // Pause camera preview to reduce buffer usage during processing
+      await _cameraController!.pausePreview();
+
       final image = await _cameraController!.takePicture();
       await _processImage(image.path);
+
+      // Resume preview after processing if still mounted
+      if (mounted && _cameraController != null) {
+        await _cameraController!.resumePreview();
+      }
     } catch (e) {
       setState(() {
         _statusMessage = 'Capture error: $e';
         _isProcessing = false;
       });
+      // Make sure to resume preview even on error
+      if (mounted && _cameraController != null) {
+        try {
+          await _cameraController!.resumePreview();
+        } catch (_) {}
+      }
     }
   }
 
@@ -177,7 +261,16 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
       );
 
       if (mrzData != null) {
-        // FEATURE 1: Multi-frame analysis for accuracy
+        // Single-frame mode: process immediately without waiting
+        if (_maxFrames == 1) {
+          // Calculate confidence scores
+          _confidenceScores = _calculateConfidence(mrzData);
+          // Show preview immediately
+          _showDataPreview(mrzData);
+          return;
+        }
+
+        // FEATURE 1: Multi-frame analysis for accuracy (only if maxFrames > 1)
         _scanResults.add(mrzData);
 
         if (_scanResults.length < _maxFrames && _autoCapture) {
@@ -206,16 +299,37 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
           _showDataPreview(bestResult);
         } else {
           setState(() {
-            _statusMessage = 'Inconsistent data - please try again';
+            _statusMessage = 'Data inconsistent across frames - please rescan';
             _isProcessing = false;
             _scanResults.clear();
           });
+
+          if (mounted) {
+            EnhancedPopups.showEnhancedSnackBar(
+              context,
+              message:
+                  'Multiple scans didn\'t match. Try holding camera steadier.',
+              type: PopupType.warning,
+              duration: const Duration(seconds: 3),
+            );
+          }
         }
       } else {
         setState(() {
-          _statusMessage = 'No MRZ found - try again';
+          _statusMessage = 'No MRZ detected - Try better lighting or focus';
           _isProcessing = false;
         });
+
+        // Show helpful message
+        if (mounted) {
+          EnhancedPopups.showEnhancedSnackBar(
+            context,
+            message:
+                'Tip: Ensure good lighting and hold camera steady over MRZ lines',
+            type: PopupType.info,
+            duration: const Duration(seconds: 3),
+          );
+        }
       }
     } catch (e) {
       setState(() {
@@ -361,6 +475,13 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
             },
             child: const Text('Rescan'),
           ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.go('/register-guest');
+            },
+            child: const Text('Manual Entry'),
+          ),
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
@@ -370,7 +491,7 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
                 context.go('/capture-id-photos', extra: validated);
               }
             },
-            child: const Text('Next: Capture Photos'),
+            child: const Text('Next: Photos'),
           ),
         ],
       ),
@@ -414,10 +535,17 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
     }
 
     // Validate sex
-    final sex = validated['sex'];
-    if (sex != null && !['M', 'F', 'X', 'm', 'f', 'x'].contains(sex)) {
+    final sex = validated['sex']?.trim().toUpperCase();
+    if (sex != null &&
+        sex.isNotEmpty &&
+        sex != '<' &&
+        !['M', 'F', 'X'].contains(sex)) {
+      // Only show warning for truly invalid values (not empty, spaces, or placeholders)
       errors.add('Invalid sex field: $sex');
       validated['sex'] = 'X'; // Default
+    } else {
+      // Set default for missing/placeholder/invalid values
+      validated['sex'] = (sex == 'M' || sex == 'F') ? sex! : 'X';
     }
 
     // Validate document number
@@ -627,6 +755,17 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
   }
 
   Map<String, String> _formatResult(dynamic result, String docType) {
+    // Convert sex enum to standard M/F/X format
+    String sexValue = 'X';
+    if (result.sex != null) {
+      final sexStr = result.sex.toString().split('.').last.toUpperCase();
+      if (sexStr.startsWith('M')) {
+        sexValue = 'M';
+      } else if (sexStr.startsWith('F')) {
+        sexValue = 'F';
+      }
+    }
+
     return {
       'type': docType,
       'firstName': result.givenNames ?? '',
@@ -634,7 +773,7 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
       'documentNumber': result.documentNumber ?? '',
       'nationality': result.nationalityCountryCode ?? '',
       'dateOfBirth': result.birthDate?.toString().split(' ')[0] ?? '',
-      'sex': result.sex?.toString().split('.').last ?? '',
+      'sex': sexValue,
       'expiryDate': result.expiryDate?.toString().split(' ')[0] ?? '',
     };
   }
@@ -737,6 +876,13 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
   }
 
   @override
+  void deactivate() {
+    // Pause camera when screen becomes inactive to prevent buffer overflow
+    _cameraController?.pausePreview();
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -752,260 +898,319 @@ class _MRZScannerScreenState extends State<MRZScannerScreen> {
   Widget build(BuildContext context) {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       return Scaffold(
+        backgroundColor: Colors.black,
         appBar: AppBar(
           title: const Text('MRZ Scanner'),
+          backgroundColor: Colors.black87,
+          foregroundColor: Colors.white,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: Colors.orange),
+              const SizedBox(height: 16),
+              const Text(
+                'Initializing camera...',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              const SizedBox(height: 32),
+              OutlinedButton.icon(
+                onPressed: () {
+                  context.go('/register-guest');
+                },
+                icon: const Icon(Icons.edit, color: Colors.orange),
+                label: const Text(
+                  'Skip - Enter Details Manually',
+                  style: TextStyle(color: Colors.orange),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.orange, width: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Scan Document'),
-        backgroundColor: Colors.black87,
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/dashboard');
-            }
-          },
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Scan Document'),
+          backgroundColor: Colors.black87,
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/dashboard');
+              }
+            },
+          ),
+          actions: [
+            // FEATURE 1: Flash toggle button
+            IconButton(
+              icon: Icon(_isFlashOn ? Icons.flash_on : Icons.flash_off),
+              onPressed: _toggleFlash,
+              tooltip: 'Toggle Flash',
+            ),
+            // FEATURE 3: Gallery upload button
+            IconButton(
+              icon: const Icon(Icons.photo_library),
+              onPressed: _pickFromGallery,
+              tooltip: 'Pick from Gallery',
+            ),
+          ],
         ),
-        actions: [
-          // FEATURE 1: Flash toggle button
-          IconButton(
-            icon: Icon(_isFlashOn ? Icons.flash_on : Icons.flash_off),
-            onPressed: _toggleFlash,
-            tooltip: 'Toggle Flash',
-          ),
-          // FEATURE 3: Gallery upload button
-          IconButton(
-            icon: const Icon(Icons.photo_library),
-            onPressed: _pickFromGallery,
-            tooltip: 'Pick from Gallery',
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          // Camera preview
-          Positioned.fill(
-            child: CameraPreview(_cameraController!),
-          ),
+        body: Stack(
+          children: [
+            // Camera preview
+            Positioned.fill(
+              child: CameraPreview(_cameraController!),
+            ),
 
-          // FEATURE 1: Enhanced Visual guide overlay with animations
-          Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: MediaQuery.of(context).size.width * 0.85,
-              height: 200,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _isProcessing ? Colors.blue : Colors.orange,
-                  width: 3,
+            // FEATURE 1: Enhanced Visual guide overlay with animations
+            Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: MediaQuery.of(context).size.width * 0.85,
+                height: 200,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: _isProcessing ? Colors.blue : Colors.orange,
+                    width: 3,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  color: _isProcessing
+                      ? Colors.blue.withOpacity(0.1)
+                      : Colors.transparent,
                 ),
-                borderRadius: BorderRadius.circular(12),
-                color: _isProcessing
-                    ? Colors.blue.withOpacity(0.1)
-                    : Colors.transparent,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _isProcessing ? Icons.hourglass_empty : Icons.credit_card,
-                    size: 48,
-                    color: (_isProcessing ? Colors.blue : Colors.orange)
-                        .withOpacity(0.7),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _isProcessing ? 'Processing...' : 'Position MRZ lines here',
-                    style: TextStyle(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _isProcessing ? Icons.hourglass_empty : Icons.credit_card,
+                      size: 48,
                       color: (_isProcessing ? Colors.blue : Colors.orange)
-                          .withOpacity(0.9),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      backgroundColor: Colors.black54,
+                          .withOpacity(0.7),
                     ),
-                  ),
-                  if (_scanResults.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Frame ${_scanResults.length}/$_maxFrames',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                      _isProcessing
+                          ? 'Processing...'
+                          : 'Position MRZ lines here',
+                      style: TextStyle(
+                        color: (_isProcessing ? Colors.blue : Colors.orange)
+                            .withOpacity(0.9),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                         backgroundColor: Colors.black54,
                       ),
                     ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-
-          // FEATURE 1: Enhanced instruction banner
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.8),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.lightbulb_outline,
-                        color: Colors.orangeAccent,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Tips for Best Results',
-                        style: TextStyle(
-                          color: Colors.orangeAccent,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                    if (_scanResults.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Frame ${_scanResults.length}/$_maxFrames',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          backgroundColor: Colors.black54,
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '• Good lighting  • Hold steady  • Focus on MRZ lines',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 11,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Bottom controls
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.8),
-                    Colors.transparent,
                   ],
                 ),
               ),
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Status message
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Text(
-                      _statusMessage,
-                      key: ValueKey(_statusMessage),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+            ),
+
+            // FEATURE 1: Enhanced instruction banner
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.8),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.lightbulb_outline,
+                          color: Colors.orangeAccent,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Tips for Best Results',
+                          style: TextStyle(
+                            color: Colors.orangeAccent,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '• Good lighting  • Hold steady  • Focus on MRZ lines\n• Passport/ID bottom  • Clean document surface',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 11,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
 
-                  // FEATURE 1: Enhanced capture button with loading state
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Manual capture button
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: _isProcessing ? null : _captureAndScan,
-                          icon: _isProcessing
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.camera),
-                          label:
-                              Text(_isProcessing ? 'Processing...' : 'Capture'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 16,
+            // Bottom controls
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.8),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Status message
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: Text(
+                        _statusMessage,
+                        key: ValueKey(_statusMessage),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // FEATURE 1: Enhanced capture button with loading state
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Manual capture button
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: _isProcessing ? null : _captureAndScan,
+                            icon: _isProcessing
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.camera),
+                            label: Text(
+                                _isProcessing ? 'Processing...' : 'Capture'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
-                  // FEATURE 1: Auto-capture toggle
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.auto_awesome,
-                        color: Colors.white70,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Multi-frame capture',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
+                    const SizedBox(height: 12),
+
+                    // Manual entry button
+                    OutlinedButton.icon(
+                      onPressed: _isProcessing
+                          ? null
+                          : () {
+                              context.go('/register-guest');
+                            },
+                      icon: const Icon(Icons.edit_note, size: 20),
+                      label: const Text('Skip - Fill Manually'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white70),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Switch(
-                        value: _autoCapture,
-                        onChanged: (value) {
-                          setState(() => _autoCapture = value);
-                          HapticFeedback.selectionClick();
-                        },
-                        activeColor: Colors.orange,
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+
+                    // FEATURE 1: Auto-capture toggle
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Multi-frame capture',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Switch(
+                          value: _autoCapture,
+                          onChanged: (value) {
+                            setState(() => _autoCapture = value);
+                            HapticFeedback.selectionClick();
+                          },
+                          activeColor: Colors.orange,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

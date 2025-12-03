@@ -13,16 +13,25 @@ class EnhancedPopups {
     VoidCallback? onAction,
   }) {
     final colorScheme = _getColorScheme(type);
+    final icon = _getIcon(type);
+    final title = _getTitle(type);
 
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            Icon(
-              _getIcon(type),
-              color: Colors.white,
-              size: 24,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -31,14 +40,14 @@ class EnhancedPopups {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _getTitle(type),
+                    title,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     message,
                     style: const TextStyle(
@@ -69,15 +78,8 @@ class EnhancedPopups {
           borderRadius: BorderRadius.circular(12),
         ),
         margin: const EdgeInsets.all(16),
-        elevation: 8,
-        action: type == PopupType.success
-            ? SnackBarAction(
-                label: '',
-                onPressed: () {},
-                backgroundColor: Colors.transparent,
-                textColor: Colors.transparent,
-              )
-            : null,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        elevation: 6,
       ),
     );
 
@@ -254,22 +256,22 @@ class EnhancedPopups {
     switch (type) {
       case PopupType.success:
         return _ColorScheme(
-          primary: const Color(0xFF4CAF50),
+          primary: const Color(0xFF10B981), // Modern green
           background: const Color(0xFFE8F5E8),
         );
       case PopupType.error:
         return _ColorScheme(
-          primary: const Color(0xFFE53E3E),
+          primary: const Color(0xFFEF4444), // Modern red
           background: const Color(0xFFFFEBEE),
         );
       case PopupType.warning:
         return _ColorScheme(
-          primary: const Color(0xFFFF9800),
+          primary: const Color(0xFFF59E0B), // Modern amber
           background: const Color(0xFFFFF3E0),
         );
       case PopupType.info:
         return _ColorScheme(
-          primary: const Color(0xFF2196F3),
+          primary: const Color(0xFF3B82F6), // Modern blue
           background: const Color(0xFFE3F2FD),
         );
     }
@@ -278,13 +280,13 @@ class EnhancedPopups {
   static IconData _getIcon(PopupType type) {
     switch (type) {
       case PopupType.success:
-        return Icons.check_circle_outline;
+        return Icons.check_circle_rounded;
       case PopupType.error:
-        return Icons.error_outline;
+        return Icons.error_rounded;
       case PopupType.warning:
-        return Icons.warning_amber_outlined;
+        return Icons.warning_rounded;
       case PopupType.info:
-        return Icons.info_outline;
+        return Icons.info_rounded;
     }
   }
 

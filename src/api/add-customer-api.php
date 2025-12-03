@@ -96,7 +96,7 @@ try {
                 }
                 
                 // Include notification helper
-                include_once '../custom-api/create-notification.php';
+                include_once '../../custom-api/create-notification.php';
                 
                 // Create notification for new guest registration
                 $guestName = trim($firstName . ' ' . $lastName);

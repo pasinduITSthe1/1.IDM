@@ -154,8 +154,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         iconData = Icons.person_add_rounded;
         break;
       case 'checkout':
-        iconColor = const Color(0xFF0984E3);
-        backgroundColor = const Color(0xFF0984E3).withValues(alpha: 0.1);
+        iconColor = const Color(0xFFE74C3C);
+        backgroundColor = const Color(0xFFE74C3C).withValues(alpha: 0.1);
         iconData = Icons.logout_rounded;
         break;
       case 'booking':
